@@ -1,0 +1,594 @@
+# -*- coding: utf-8 -*-
+"""
+INE CTI Scanner — Módulos de búsqueda adaptados de SpiderFoot + DarkSearch
+Uso: monitoreo OSINT defensivo de información del INE expuesta públicamente
+"""
+
+import requests
+import time
+import json
+import re
+from datetime import datetime
+from bs4 import BeautifulSoup
+from urllib.parse import quote
+
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; rv:102.0) Gecko/20100101 Firefox/102.0",
+    "Accept-Language": "es-MX,es;q=0.9,en;q=0.8",
+}
+
+TIMEOUT = 12
+
+
+def ts():
+    return datetime.now().strftime("%H:%M:%S")
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 1 — GitHub Search
+# ─────────────────────────────────────────────
+def scan_github(term, token=None):
+    results = []
+    headers = HEADERS.copy()
+    if token:
+        headers["Authorization"] = f"token {token}"
+
+    url = f"https://api.github.com/search/code?q={quote(term)}&per_page=10"
+    try:
+        r = requests.get(url, headers=headers, timeout=TIMEOUT)
+        if r.status_code == 200:
+            data = r.json()
+            for item in data.get("items", []):
+                results.append({
+                    "source": "GitHub",
+                    "source_id": "github",
+                    "title": f"{item.get('name','archivo')} en {item.get('repository',{}).get('full_name','')}",
+                    "url": item.get("html_url", "#"),
+                    "category": "Código/Repositorio",
+                    "category_class": "cat-repo",
+                    "risk": "ALTO",
+                    "risk_class": "risk-high",
+                    "raw": item.get("html_url", ""),
+                    "detail": f"Archivo: {item.get('path','')} | Repo: {item.get('repository',{}).get('full_name','')}",
+                    "detected": ts(),
+                })
+        elif r.status_code == 403:
+            results.append(_rate_limit_notice("GitHub"))
+        elif r.status_code == 422:
+            # Sin token solo permite búsquedas limitadas
+            results.append(_fallback_dork("GitHub", term,
+                f"https://github.com/search?q={quote(term)}&type=code"))
+    except Exception as e:
+        results.append(_error_notice("GitHub", str(e)))
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 2 — Pastebin (vía búsqueda pública)
+# ─────────────────────────────────────────────
+def scan_pastebin(term):
+    results = []
+    # Pastebin bloquea scraping directo; usamos Google dork como fallback verificable
+    url = (f"https://www.google.com/search?q=site%3Apastebin.com+"
+           f"%22{quote(term)}%22&num=10")
+    results.append({
+        "source": "Pastebin",
+        "source_id": "pastebin",
+        "title": f'Búsqueda Google Dork: pastebin.com + "{term}"',
+        "url": url,
+        "category": "Pastebin/Leak",
+        "category_class": "cat-paste",
+        "risk": "CRÍTICO",
+        "risk_class": "risk-critical",
+        "raw": url,
+        "detail": "Verificar manualmente — dork lista pastes públicos que contienen el término",
+        "detected": ts(),
+        "is_dork": True,
+    })
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 3 — AWS S3 Buckets públicos
+# ─────────────────────────────────────────────
+def scan_s3(term):
+    results = []
+    # Variantes comunes de nombres de bucket relacionados al término
+    variants = [
+        term.lower().replace(" ", "-"),
+        term.lower().replace(" ", ""),
+        f"{term.lower()}-backup",
+        f"{term.lower()}-data",
+        f"{term.lower()}-files",
+        f"backup-{term.lower()}",
+    ]
+    for bucket in variants:
+        bucket = re.sub(r'[^a-z0-9\-]', '', bucket)
+        url = f"https://{bucket}.s3.amazonaws.com/"
+        try:
+            r = requests.get(url, timeout=6, headers=HEADERS)
+            if r.status_code == 200 and "ListBucketResult" in r.text:
+                results.append({
+                    "source": "AWS S3",
+                    "source_id": "aws",
+                    "title": f"Bucket S3 PÚBLICO encontrado: {bucket}",
+                    "url": url,
+                    "category": "Cloud Storage",
+                    "category_class": "cat-cloud",
+                    "risk": "CRÍTICO",
+                    "risk_class": "risk-critical",
+                    "raw": url,
+                    "detail": f"Bucket {bucket} responde con listado público — verificar contenido inmediatamente",
+                    "detected": ts(),
+                })
+            elif r.status_code == 403:
+                # Existe pero está protegido — relevante como hallazgo menor
+                results.append({
+                    "source": "AWS S3",
+                    "source_id": "aws",
+                    "title": f"Bucket S3 existe (acceso restringido): {bucket}",
+                    "url": url,
+                    "category": "Cloud Storage",
+                    "category_class": "cat-cloud",
+                    "risk": "BAJO",
+                    "risk_class": "risk-low",
+                    "raw": url,
+                    "detail": f"Bucket {bucket} existe pero tiene ACL restrictiva — monitorear cambios",
+                    "detected": ts(),
+                })
+        except Exception:
+            pass
+        time.sleep(0.3)
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 4 — Azure Blob Storage
+# ─────────────────────────────────────────────
+def scan_azure(term):
+    results = []
+    variants = [
+        term.lower().replace(" ", ""),
+        term.lower().replace(" ", "-"),
+        f"{term.lower()}storage",
+        f"{term.lower()}backup",
+    ]
+    for account in variants:
+        account = re.sub(r'[^a-z0-9]', '', account)[:24]
+        for container in ["public", "data", "files", "backup", "documentos"]:
+            url = f"https://{account}.blob.core.windows.net/{container}?restype=container&comp=list"
+            try:
+                r = requests.get(url, timeout=5, headers=HEADERS)
+                if r.status_code == 200 and "EnumerationResults" in r.text:
+                    results.append({
+                        "source": "Azure Blob Storage",
+                        "source_id": "azure",
+                        "title": f"Container Azure PÚBLICO: {account}/{container}",
+                        "url": url,
+                        "category": "Cloud Storage",
+                        "category_class": "cat-cloud",
+                        "risk": "CRÍTICO",
+                        "risk_class": "risk-critical",
+                        "raw": url,
+                        "detail": f"Container {container} en cuenta {account} es accesible públicamente",
+                        "detected": ts(),
+                    })
+            except Exception:
+                pass
+        time.sleep(0.2)
+
+    # Dork complementario
+    dork_url = f"https://www.google.com/search?q=site%3Ablob.core.windows.net+%22{quote(term)}%22"
+    results.append({
+        "source": "Azure Blob Storage",
+        "source_id": "azure",
+        "title": f'Google Dork: Azure Blob + "{term}"',
+        "url": dork_url,
+        "category": "Cloud Storage",
+        "category_class": "cat-cloud",
+        "risk": "ALTO",
+        "risk_class": "risk-high",
+        "raw": dork_url,
+        "detail": "Verificar manualmente resultados del dork en Google",
+        "detected": ts(),
+        "is_dork": True,
+    })
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 5 — Google Cloud Storage
+# ─────────────────────────────────────────────
+def scan_gcs(term):
+    results = []
+    dork_url = f"https://www.google.com/search?q=site%3Astorage.googleapis.com+%22{quote(term)}%22"
+    results.append({
+        "source": "Google Cloud Storage",
+        "source_id": "gcloud",
+        "title": f'Google Dork: GCS Bucket + "{term}"',
+        "url": dork_url,
+        "category": "Cloud Storage",
+        "category_class": "cat-cloud",
+        "risk": "ALTO",
+        "risk_class": "risk-high",
+        "raw": dork_url,
+        "detail": "Verificar manualmente — busca buckets GCS públicos que contienen el término",
+        "detected": ts(),
+        "is_dork": True,
+    })
+
+    # Intento directo en bucket común
+    bucket_name = re.sub(r'[^a-z0-9\-]', '', term.lower().replace(" ", "-"))
+    url = f"https://storage.googleapis.com/{bucket_name}/"
+    try:
+        r = requests.get(url, timeout=6, headers=HEADERS)
+        if r.status_code == 200:
+            results.append({
+                "source": "Google Cloud Storage",
+                "source_id": "gcloud",
+                "title": f"GCS Bucket público encontrado: {bucket_name}",
+                "url": url,
+                "category": "Cloud Storage",
+                "category_class": "cat-cloud",
+                "risk": "CRÍTICO",
+                "risk_class": "risk-critical",
+                "raw": url,
+                "detail": f"Bucket gs://{bucket_name} responde públicamente",
+                "detected": ts(),
+            })
+    except Exception:
+        pass
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 6 — Google Drive (dorks)
+# ─────────────────────────────────────────────
+def scan_googledrive(term):
+    results = []
+    dorks = [
+        (f'site:drive.google.com "{term}"', "Google Drive — archivos compartidos"),
+        (f'site:docs.google.com "{term}"', "Google Docs — documentos públicos"),
+        (f'site:sheets.google.com "{term}"', "Google Sheets — hojas de cálculo"),
+    ]
+    for q, label in dorks:
+        url = f"https://www.google.com/search?q={quote(q)}"
+        results.append({
+            "source": "Google Drive/Docs",
+            "source_id": "googledrive",
+            "title": f'{label}: "{term}"',
+            "url": url,
+            "category": "Repositorio Público",
+            "category_class": "cat-repo",
+            "risk": "ALTO",
+            "risk_class": "risk-high",
+            "raw": url,
+            "detail": f"Dork: {q}",
+            "detected": ts(),
+            "is_dork": True,
+        })
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 7 — Dropbox / OneDrive / MediaFire
+# ─────────────────────────────────────────────
+def scan_file_repos(term):
+    results = []
+    sources = [
+        ("dropbox.com", "Dropbox", "cat-repo", "ALTO", "risk-high"),
+        ("1drv.ms OR onedrive.live.com", "OneDrive", "cat-repo", "MEDIO", "risk-medium"),
+        ("mediafire.com", "MediaFire", "cat-repo", "MEDIO", "risk-medium"),
+        ("mega.nz", "MEGA", "cat-repo", "ALTO", "risk-high"),
+        ("box.com", "Box", "cat-repo", "MEDIO", "risk-medium"),
+    ]
+    for site, label, cat_class, risk, risk_class in sources:
+        url = f"https://www.google.com/search?q=site%3A{quote(site)}+%22{quote(term)}%22"
+        results.append({
+            "source": label,
+            "source_id": label.lower(),
+            "title": f'{label} — archivos públicos con "{term}"',
+            "url": url,
+            "category": "Repositorio Público",
+            "category_class": cat_class,
+            "risk": risk,
+            "risk_class": risk_class,
+            "raw": url,
+            "detail": f"Dork Google: site:{site} \"{term}\"",
+            "detected": ts(),
+            "is_dork": True,
+        })
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 8 — Ahmia (Dark Web indexada, sin Tor)
+# ─────────────────────────────────────────────
+def scan_ahmia(term):
+    results = []
+    url = f"https://ahmia.fi/search/?q={quote(term)}"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
+        if r.status_code == 200:
+            soup = BeautifulSoup(r.text, "html.parser")
+            hits = soup.select("li.result")
+            if not hits:
+                hits = soup.select(".result")
+            for hit in hits[:8]:
+                title_el = hit.select_one("h4") or hit.select_one("a")
+                link_el  = hit.select_one("a")
+                desc_el  = hit.select_one("p") or hit.select_one(".description")
+                title = title_el.get_text(strip=True) if title_el else "Resultado dark web"
+                link  = link_el.get("href", "#") if link_el else "#"
+                desc  = desc_el.get_text(strip=True)[:120] if desc_el else ""
+                results.append({
+                    "source": "Ahmia (Dark Web)",
+                    "source_id": "ahmia",
+                    "title": title,
+                    "url": link,
+                    "category": "Dark Web Indexada",
+                    "category_class": "cat-dark",
+                    "risk": "CRÍTICO",
+                    "risk_class": "risk-critical",
+                    "raw": link,
+                    "detail": desc or f"Contenido dark web indexado por Ahmia con referencia a '{term}'",
+                    "detected": ts(),
+                })
+            if not results:
+                results.append({
+                    "source": "Ahmia (Dark Web)",
+                    "source_id": "ahmia",
+                    "title": f'Ahmia: sin resultados para "{term}"',
+                    "url": url,
+                    "category": "Dark Web Indexada",
+                    "category_class": "cat-dark",
+                    "risk": "BAJO",
+                    "risk_class": "risk-low",
+                    "raw": url,
+                    "detail": "Sin hallazgos en dark web indexada por Ahmia",
+                    "detected": ts(),
+                    "is_negative": True,
+                })
+    except Exception as e:
+        results.append(_error_notice("Ahmia", str(e)))
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 9 — DarkSearch.io (dark web indexada)
+# ─────────────────────────────────────────────
+def scan_darksearch(term):
+    results = []
+    url = f"https://darksearch.io/api/search?query={quote(term)}&page=1"
+    try:
+        r = requests.get(url, headers=HEADERS, timeout=TIMEOUT)
+        if r.status_code == 200:
+            data = r.json()
+            for item in data.get("data", [])[:8]:
+                results.append({
+                    "source": "DarkSearch.io",
+                    "source_id": "darksearch",
+                    "title": item.get("title", "Sitio dark web sin título"),
+                    "url": item.get("link", "#"),
+                    "category": "Dark Web Indexada",
+                    "category_class": "cat-dark",
+                    "risk": "CRÍTICO",
+                    "risk_class": "risk-critical",
+                    "raw": item.get("link", ""),
+                    "detail": (item.get("description", "")[:150] or
+                               f"Contenido dark web con referencia a '{term}'"),
+                    "detected": ts(),
+                })
+        elif r.status_code == 429:
+            results.append(_rate_limit_notice("DarkSearch.io"))
+    except Exception as e:
+        results.append(_error_notice("DarkSearch.io", str(e)))
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 10 — LeakIX (servicios expuestos)
+# ─────────────────────────────────────────────
+def scan_leakix(term, api_key=None):
+    results = []
+    headers = HEADERS.copy()
+    headers["Accept"] = "application/json"
+    if api_key:
+        headers["api-key"] = api_key
+
+    url = f"https://leakix.net/search?scope=leak&q={quote(term)}&page=0"
+    try:
+        r = requests.get(url, headers=headers, timeout=TIMEOUT)
+        if r.status_code == 200:
+            data = r.json() if api_key else []
+            for item in data[:6]:
+                results.append({
+                    "source": "LeakIX",
+                    "source_id": "leakix",
+                    "title": item.get("event_source", "Servicio expuesto") + " — " + item.get("host", ""),
+                    "url": f"https://leakix.net/host/{item.get('host','')}",
+                    "category": "Servicio Expuesto",
+                    "category_class": "cat-cloud",
+                    "risk": "ALTO",
+                    "risk_class": "risk-high",
+                    "raw": item.get("host", ""),
+                    "detail": item.get("summary", f"Servicio expuesto relacionado con '{term}'")[:150],
+                    "detected": ts(),
+                })
+        # Siempre agregar dork de LeakIX
+        results.append({
+            "source": "LeakIX",
+            "source_id": "leakix",
+            "title": f'LeakIX — servicios expuestos: "{term}"',
+            "url": url,
+            "category": "Servicio Expuesto",
+            "category_class": "cat-cloud",
+            "risk": "ALTO",
+            "risk_class": "risk-high",
+            "raw": url,
+            "detail": "Plataforma que indexa servicios y datos expuestos en internet — verificar manualmente",
+            "detected": ts(),
+            "is_dork": True,
+        })
+    except Exception as e:
+        results.append(_error_notice("LeakIX", str(e)))
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 11 — Have I Been Pwned (dominios)
+# ─────────────────────────────────────────────
+def scan_hibp(domain, api_key=None):
+    results = []
+    if not api_key:
+        # Sin API key solo podemos generar el dork
+        url = f"https://haveibeenpwned.com/DomainSearch/{domain}"
+        results.append({
+            "source": "HaveIBeenPwned",
+            "source_id": "hibp",
+            "title": f"HIBP — verificar dominio: {domain}",
+            "url": url,
+            "category": "Credenciales Filtradas",
+            "category_class": "cat-leak",
+            "risk": "ALTO",
+            "risk_class": "risk-high",
+            "raw": url,
+            "detail": "Requiere API key ($3.50/mes) para búsqueda automática — verificar manualmente en el sitio",
+            "detected": ts(),
+            "is_dork": True,
+        })
+        return results
+
+    headers = HEADERS.copy()
+    headers["hibp-api-key"] = api_key
+    url = f"https://haveibeenpwned.com/api/v3/breacheddomain/{domain}"
+    try:
+        r = requests.get(url, headers=headers, timeout=TIMEOUT)
+        if r.status_code == 200:
+            data = r.json()
+            for email, breaches in list(data.items())[:10]:
+                results.append({
+                    "source": "HaveIBeenPwned",
+                    "source_id": "hibp",
+                    "title": f"Credencial filtrada: {email[:4]}***@{domain}",
+                    "url": f"https://haveibeenpwned.com/account/{email}",
+                    "category": "Credenciales Filtradas",
+                    "category_class": "cat-leak",
+                    "risk": "CRÍTICO",
+                    "risk_class": "risk-critical",
+                    "raw": email,
+                    "detail": f"Encontrada en brechas: {', '.join(breaches[:5])}",
+                    "detected": ts(),
+                })
+    except Exception as e:
+        results.append(_error_notice("HIBP", str(e)))
+    return results
+
+
+# ─────────────────────────────────────────────
+# MÓDULO 12 — IntelX (dark web + breaches)
+# ─────────────────────────────────────────────
+def scan_intelx(term, api_key=None):
+    results = []
+    if not api_key:
+        url = f"https://intelx.io/?s={quote(term)}"
+        results.append({
+            "source": "Intelligence X",
+            "source_id": "intelx",
+            "title": f'IntelX — búsqueda: "{term}"',
+            "url": url,
+            "category": "Dark Web / Leaks",
+            "category_class": "cat-dark",
+            "risk": "ALTO",
+            "risk_class": "risk-high",
+            "raw": url,
+            "detail": "Requiere API key gratuita en intelx.io — verificar manualmente",
+            "detected": ts(),
+            "is_dork": True,
+        })
+        return results
+
+    try:
+        # Iniciar búsqueda
+        search_url = "https://2.intelx.io/intelligent/search"
+        payload = {"term": term, "maxresults": 10, "media": 0, "target": 0}
+        headers = HEADERS.copy()
+        headers["x-key"] = api_key
+        r = requests.post(search_url, json=payload, headers=headers, timeout=TIMEOUT)
+        if r.status_code == 200:
+            search_id = r.json().get("id")
+            time.sleep(2)
+            result_url = f"https://2.intelx.io/intelligent/search/result?id={search_id}&limit=10"
+            r2 = requests.get(result_url, headers=headers, timeout=TIMEOUT)
+            if r2.status_code == 200:
+                for item in r2.json().get("records", [])[:8]:
+                    results.append({
+                        "source": "Intelligence X",
+                        "source_id": "intelx",
+                        "title": item.get("name", "Registro IntelX"),
+                        "url": f"https://intelx.io/?did={item.get('systemid','')}",
+                        "category": "Dark Web / Leaks",
+                        "category_class": "cat-dark",
+                        "risk": "CRÍTICO",
+                        "risk_class": "risk-critical",
+                        "raw": item.get("name", ""),
+                        "detail": f"Tipo: {item.get('type','')} | Fecha: {item.get('date','')[:10]}",
+                        "detected": ts(),
+                    })
+    except Exception as e:
+        results.append(_error_notice("IntelX", str(e)))
+    return results
+
+
+# ─────────────────────────────────────────────
+# HELPERS
+# ─────────────────────────────────────────────
+def _rate_limit_notice(source):
+    return {
+        "source": source,
+        "source_id": source.lower(),
+        "title": f"{source} — límite de tasa alcanzado",
+        "url": "#",
+        "category": "Sistema",
+        "category_class": "cat-repo",
+        "risk": "INFO",
+        "risk_class": "risk-low",
+        "raw": "",
+        "detail": "Rate limit — esperar antes de reintentar o usar API key",
+        "detected": ts(),
+        "is_system": True,
+    }
+
+
+def _error_notice(source, err):
+    return {
+        "source": source,
+        "source_id": source.lower(),
+        "title": f"{source} — error de conexión",
+        "url": "#",
+        "category": "Sistema",
+        "category_class": "cat-repo",
+        "risk": "INFO",
+        "risk_class": "risk-low",
+        "raw": "",
+        "detail": f"Error: {err[:80]}",
+        "detected": ts(),
+        "is_system": True,
+    }
+
+
+def _fallback_dork(source, term, url):
+    return {
+        "source": source,
+        "source_id": source.lower(),
+        "title": f'{source} — dork manual: "{term}"',
+        "url": url,
+        "category": "Repositorio Público",
+        "category_class": "cat-repo",
+        "risk": "MEDIO",
+        "risk_class": "risk-medium",
+        "raw": url,
+        "detail": "Verificar manualmente — abre el enlace para ver resultados",
+        "detected": ts(),
+        "is_dork": True,
+    }

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>INE CTI Monitor v2.0</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:       #030810;
+  --bg-card:  #060f1e;
+  --bg-panel: #091525;
+  --cyan:     #00e5ff;
+  --green:    #00ff88;
+  --red:      #ff2d55;
+  --amber:    #ffb800;
+  --blue:     #3d7fff;
+  --purple:   #b060ff;
+  --border:   rgba(0,229,255,0.13);
+  --border-h: rgba(0,229,255,0.4);
+  --t1: #e0f4ff;
+  --t2: #8ab8d4;
+  --t3: #3a6478;
+  --gcyan:  0 0 18px rgba(0,229,255,0.3);
+  --gred:   0 0 18px rgba(255,45,85,0.4);
+  --ggreen: 0 0 18px rgba(0,255,136,0.3);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--t1);font-family:'Exo 2',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+
+.wrap{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:0 20px 50px;}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 14px;border-bottom:1px solid var(--border);margin-bottom:22px;flex-wrap:wrap;gap:12px;}
+.h-left{display:flex;align-items:center;gap:14px;}
+.logo-icon{width:44px;height:44px;border:2px solid var(--cyan);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;animation:pb 3s ease-in-out infinite;}
+@keyframes pb{0%,100%{box-shadow:0 0 10px rgba(0,229,255,0.25)}50%{box-shadow:0 0 28px rgba(0,229,255,0.6)}}
+.logo-text h1{font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;letter-spacing:3px;color:var(--cyan);line-height:1;text-shadow:var(--gcyan);}
+.logo-text p{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;margin-top:3px;}
+.h-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.live-badge{display:flex;align-items:center;gap:7px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.28);border-radius:4px;padding:5px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green);}
+.ldot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 1.2s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.15}}
+.clock{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--t2);}
+
+/* TABS */
+.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);}
+.tab{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;padding:9px 20px;border:none;background:transparent;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;text-transform:uppercase;}
+.tab:hover{color:var(--t2);}
+.tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+
+/* CARDS */
+.card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin-bottom:18px;}
+.card-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:3px;color:var(--t3);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-title::before{content:'//';color:var(--cyan);}
+
+/* CONFIG GRID */
+.cfg-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end;}
+@media(max-width:900px){.cfg-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.cfg-grid{grid-template-columns:1fr;}}
+.fg{display:flex;flex-direction:column;gap:6px;}
+.fg label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;}
+.fg input,.fg select{background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:10px 13px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
+.fg input:focus,.fg select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,0.07);}
+.fg select option{background:var(--bg-panel);}
+
+/* CHECKBOXES */
+.cb-grid{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+.cbi{display:flex;align-items:center;gap:8px;cursor:pointer;background:var(--bg-panel);border:1px solid var(--border);border-radius:5px;padding:7px 12px;transition:all .2s;user-select:none;}
+.cbi:hover{border-color:rgba(0,229,255,0.3);}
+.cbi.on{border-color:var(--cyan);background:rgba(0,229,255,0.05);}
+.cbi input{display:none;}
+.cbdot{width:10px;height:10px;border-radius:2px;border:1.5px solid var(--t3);transition:all .2s;}
+.cbi.on .cbdot{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 8px rgba(0,229,255,0.5);}
+.cbi span{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);}
+
+/* API KEYS */
+.api-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:700px){.api-grid{grid-template-columns:1fr;}}
+.api-row{display:flex;flex-direction:column;gap:5px;}
+.api-row label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;}
+.api-row .api-note{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;}
+.api-row .api-note a{color:var(--cyan);text-decoration:none;}
+
+/* BUTTONS */
+.btn-scan{background:linear-gradient(135deg,rgba(0,229,255,.15),rgba(0,229,255,.04));border:1px solid var(--cyan);border-radius:7px;padding:11px 30px;color:var(--cyan);font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;white-space:nowrap;box-shadow:var(--gcyan);}
+.btn-scan:hover{background:rgba(0,229,255,.2);box-shadow:0 0 30px rgba(0,229,255,.4);transform:translateY(-1px);}
+.btn-scan:disabled{opacity:.4;cursor:not-allowed;transform:none;}
+.btn-stop{background:rgba(255,45,85,.1);border:1px solid var(--red);border-radius:7px;padding:11px 24px;color:var(--red);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;display:none;}
+.btn-stop:hover{background:rgba(255,45,85,.2);}
+.btn-stop.show{display:inline-block;}
+
+/* STATS BAR */
+.stats-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:1100px){.stats-bar{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:600px){.stats-bar{grid-template-columns:repeat(2,1fr);}}
+.stat{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:15px 17px;position:relative;overflow:hidden;}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.stat.c1::before{background:linear-gradient(90deg,transparent,var(--cyan),transparent);}
+.stat.c2::before{background:linear-gradient(90deg,transparent,var(--red),transparent);}
+.stat.c3::before{background:linear-gradient(90deg,transparent,var(--amber),transparent);}
+.stat.c4::before{background:linear-gradient(90deg,transparent,var(--green),transparent);}
+.stat.c5::before{background:linear-gradient(90deg,transparent,var(--blue),transparent);}
+.stat.c6::before{background:linear-gradient(90deg,transparent,var(--purple),transparent);}
+.stat-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;margin-bottom:7px;}
+.stat-val{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;line-height:1;}
+.stat.c1 .stat-val{color:var(--cyan);text-shadow:var(--gcyan);}
+.stat.c2 .stat-val{color:var(--red);text-shadow:var(--gred);}
+.stat.c3 .stat-val{color:var(--amber);}
+.stat.c4 .stat-val{color:var(--green);text-shadow:var(--ggreen);}
+.stat.c5 .stat-val{color:var(--blue);}
+.stat.c6 .stat-val{color:var(--purple);}
+.stat-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;}
+
+/* SCAN STATUS */
+.scan-box{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:none;}
+.scan-box.on{display:block;}
+.scan-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.scan-lbl{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:1px;}
+.scan-pct{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--cyan);}
+.prog-track{background:var(--bg-panel);border-radius:3px;height:5px;overflow:hidden;margin-bottom:10px;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:3px;width:0%;transition:width .4s ease;box-shadow:0 0 10px rgba(0,229,255,.4);}
+.scan-log{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);height:90px;overflow-y:auto;padding:8px;background:var(--bg-panel);border-radius:5px;border:1px solid rgba(0,229,255,.07);}
+.scan-log::-webkit-scrollbar{width:3px;}
+.scan-log::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.ll{padding:1px 0;}.ll.ok{color:var(--green);}.ll.warn{color:var(--amber);}.ll.error{color:var(--red);}.ll.info{color:var(--t2);}
+
+/* RESULTS */
+.res-hdr{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
+.res-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;display:flex;align-items:center;gap:10px;}
+.count-badge{font-size:11px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.2);border-radius:3px;padding:2px 9px;color:var(--cyan);font-family:'Share Tech Mono',monospace;}
+.filters{display:flex;gap:7px;flex-wrap:wrap;}
+.fbtn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:5px 12px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.fbtn:hover,.fbtn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.07);}
+.fbtn.fr{border-color:rgba(255,45,85,.35);color:var(--red);}
+.fbtn.fa{border-color:rgba(255,184,0,.35);color:var(--amber);}
+.fbtn.fg2{border-color:rgba(0,255,136,.25);color:var(--green);}
+
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;text-align:left;padding:11px 15px;border-bottom:1px solid var(--border);background:var(--bg-panel);white-space:nowrap;}
+tbody tr{border-bottom:1px solid rgba(0,229,255,.04);transition:background .15s;cursor:pointer;}
+tbody tr:hover{background:rgba(0,229,255,.035);}
+tbody tr:last-child{border-bottom:none;}
+td{padding:12px 15px;font-size:12px;vertical-align:middle;}
+.td-src{font-family:'Share Tech Mono',monospace;color:var(--cyan);font-size:10px;white-space:nowrap;}
+.td-title{color:var(--t1);max-width:280px;}
+.td-title small{display:block;color:var(--t3);font-size:9px;margin-top:3px;font-family:'Share Tech Mono',monospace;word-break:break-all;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cat{font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 9px;border-radius:3px;white-space:nowrap;}
+.cat-repo{background:rgba(61,127,255,.1);color:#7ba8ff;border:1px solid rgba(61,127,255,.22);}
+.cat-cloud{background:rgba(0,229,255,.07);color:var(--cyan);border:1px solid rgba(0,229,255,.18);}
+.cat-paste{background:rgba(255,184,0,.07);color:var(--amber);border:1px solid rgba(255,184,0,.18);}
+.cat-dark{background:rgba(176,96,255,.1);color:var(--purple);border:1px solid rgba(176,96,255,.25);}
+.cat-leak{background:rgba(255,45,85,.12);color:#ff7096;border:1px solid rgba(255,45,85,.3);}
+.risk{display:inline-flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 10px;border-radius:4px;white-space:nowrap;}
+.rH{background:rgba(255,45,85,.1);color:var(--red);border:1px solid rgba(255,45,85,.28);}
+.rM{background:rgba(255,184,0,.08);color:var(--amber);border:1px solid rgba(255,184,0,.22);}
+.rL{background:rgba(0,255,136,.07);color:var(--green);border:1px solid rgba(0,255,136,.18);}
+.rC{background:rgba(255,45,85,.2);color:#ff5575;border:1px solid rgba(255,45,85,.45);box-shadow:0 0 8px rgba(255,45,85,.25);}
+.td-time{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);white-space:nowrap;}
+.td-act a{color:var(--cyan);text-decoration:none;font-family:'Share Tech Mono',monospace;font-size:10px;border:1px solid rgba(0,229,255,.22);padding:4px 10px;border-radius:4px;transition:all .2s;display:inline-block;white-space:nowrap;}
+.td-act a:hover{background:rgba(0,229,255,.1);}
+.empty{text-align:center;padding:55px 20px;color:var(--t3);font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;}
+.empty .ei{font-size:34px;margin-bottom:14px;opacity:.3;}
+
+/* VALIDATION QUEUE */
+.vq-item{background:var(--bg-panel);border:1px solid var(--border);border-radius:8px;padding:16px;margin-bottom:12px;transition:border-color .2s;}
+.vq-item:hover{border-color:rgba(0,229,255,.3);}
+.vq-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+.vq-title{font-size:13px;color:var(--t1);flex:1;}
+.vq-meta{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);margin-bottom:10px;}
+.vq-detail{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);margin-bottom:12px;line-height:1.5;}
+.vq-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.vq-btn{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;padding:6px 16px;border-radius:5px;cursor:pointer;transition:all .2s;border:1px solid;text-transform:uppercase;}
+.vq-btn.confirm{border-color:var(--red);color:var(--red);background:rgba(255,45,85,.08);}
+.vq-btn.confirm:hover{background:rgba(255,45,85,.18);}
+.vq-btn.fp{border-color:var(--green);color:var(--green);background:rgba(0,255,136,.06);}
+.vq-btn.fp:hover{background:rgba(0,255,136,.15);}
+.vq-btn.inv{border-color:var(--amber);color:var(--amber);background:rgba(255,184,0,.06);}
+.vq-btn.inv:hover{background:rgba(255,184,0,.15);}
+.vq-btn.open{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.06);}
+.vq-btn.open:hover{background:rgba(0,229,255,.14);}
+.vq-empty{text-align:center;padding:40px;color:var(--t3);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;}
+
+/* VALIDATED LOG */
+.vlog-item{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(0,229,255,.05);}
+.vlog-item:last-child{border-bottom:none;}
+.vlog-badge{font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 9px;border-radius:3px;white-space:nowrap;flex-shrink:0;}
+.vlog-badge.confirmed{background:rgba(255,45,85,.12);color:var(--red);border:1px solid rgba(255,45,85,.3);}
+.vlog-badge.fp{background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.2);}
+.vlog-badge.investigating{background:rgba(255,184,0,.08);color:var(--amber);border:1px solid rgba(255,184,0,.22);}
+.vlog-title{font-size:12px;color:var(--t2);flex:1;}
+.vlog-ts{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);flex-shrink:0;}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
+.modal-ov.open{display:flex;}
+.modal{background:var(--bg-card);border:1px solid var(--border-h);border-radius:12px;padding:26px;max-width:580px;width:100%;box-shadow:var(--gcyan);animation:si .2s ease;}
+@keyframes si{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+.modal-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--cyan);letter-spacing:2px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
+.modal-x{background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer;transition:color .2s;}
+.modal-x:hover{color:var(--red);}
+.mrow{display:flex;gap:10px;margin-bottom:11px;padding-bottom:11px;border-bottom:1px solid var(--border);}
+.mrow:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.mrow label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;min-width:110px;padding-top:2px;flex-shrink:0;}
+.mrow .val{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t1);word-break:break-all;flex:1;line-height:1.5;}
+.mrow .val a{color:var(--cyan);text-decoration:none;}
+.macts{display:flex;gap:9px;margin-top:18px;}
+.mbtn{flex:1;padding:10px;border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;text-align:center;text-decoration:none;display:block;border:1px solid;}
+.mbtn.p{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.1);}
+.mbtn.p:hover{background:rgba(0,229,255,.2);}
+.mbtn.d{border-color:var(--red);color:var(--red);background:rgba(255,45,85,.08);}
+.mbtn.d:hover{background:rgba(255,45,85,.18);}
+
+/* FOOTER */
+footer{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;border-top:1px solid var(--border);margin-top:22px;flex-wrap:wrap;gap:8px;}
+footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;}
+.exp-btns{display:flex;gap:7px;}
+.exp-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:6px 14px;color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+.exp-btn:hover{border-color:var(--cyan);color:var(--cyan);}
+
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- HEADER -->
+<header>
+  <div class="h-left">
+    <div class="logo-icon">🛰️</div>
+    <div class="logo-text">
+      <h1>INE · CTI MONITOR</h1>
+      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.0</p>
+    </div>
+  </div>
+  <div class="h-right">
+    <div class="live-badge"><div class="ldot"></div><span id="sysStatus">SISTEMA LISTO</span></div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('monitor',this)">📡 MONITOR</button>
+  <button class="tab" onclick="showTab('hallazgos',this)">🔍 HALLAZGOS</button>
+  <button class="tab" onclick="showTab('validacion',this)">✅ VALIDACIÓN <span id="vqBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></button>
+  <button class="tab" onclick="showTab('config',this)">⚙️ CONFIGURACIÓN</button>
+</div>
+
+<!-- ══════════ TAB: MONITOR ══════════ -->
+<div id="tab-monitor" class="tab-content active">
+
+  <!-- Configuración rápida -->
+  <div class="card">
+    <div class="card-title">Parámetros de Búsqueda</div>
+    <div class="cfg-grid">
+      <div class="fg">
+        <label>Término de búsqueda</label>
+        <input type="text" id="searchTerm" placeholder='"INE" OR "padrón electoral"' value="INE">
+      </div>
+      <div class="fg">
+        <label>Dominio objetivo</label>
+        <input type="text" id="searchDomain" placeholder="ine.mx" value="ine.mx">
+      </div>
+      <div class="fg">
+        <label>Intervalo de auto-scan</label>
+        <select id="autoInterval">
+          <option value="0">Manual (sin auto-scan)</option>
+          <option value="3600">Cada hora</option>
+          <option value="21600">Cada 6 horas</option>
+          <option value="43200">Cada 12 horas</option>
+          <option value="86400">Cada 24 horas</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;align-items:flex-end">
+        <button class="btn-scan" id="btnScan" onclick="startScan()">⚡ ESCANEAR</button>
+        <button class="btn-stop" id="btnStop" onclick="stopScan()">⏹ DETENER</button>
+      </div>
+    </div>
+
+    <div class="cb-grid" id="moduleCheckboxes">
+      <label class="cbi on" data-val="github"><input type="checkbox" checked><div class="cbdot"></div><span>GitHub/GitLab</span></label>
+      <label class="cbi on" data-val="pastebin"><input type="checkbox" checked><div class="cbdot"></div><span>Pastebin</span></label>
+      <label class="cbi on" data-val="googledrive"><input type="checkbox" checked><div class="cbdot"></div><span>Google Drive</span></label>
+      <label class="cbi on" data-val="filerepos"><input type="checkbox" checked><div class="cbdot"></div><span>Dropbox/OneDrive/MEGA</span></label>
+      <label class="cbi on" data-val="aws"><input type="checkbox" checked><div class="cbdot"></div><span>AWS S3</span></label>
+      <label class="cbi on" data-val="azure"><input type="checkbox" checked><div class="cbdot"></div><span>Azure Blob</span></label>
+      <label class="cbi on" data-val="gcloud"><input type="checkbox" checked><div class="cbdot"></div><span>Google Cloud</span></label>
+      <label class="cbi on" data-val="ahmia"><input type="checkbox" checked><div class="cbdot"></div><span>Ahmia (Dark Web)</span></label>
+      <label class="cbi on" data-val="darksearch"><input type="checkbox" checked><div class="cbdot"></div><span>DarkSearch.io</span></label>
+      <label class="cbi on" data-val="leakix"><input type="checkbox" checked><div class="cbdot"></div><span>LeakIX</span></label>
+      <label class="cbi on" data-val="hibp"><input type="checkbox" checked><div class="cbdot"></div><span>HaveIBeenPwned</span></label>
+      <label class="cbi on" data-val="intelx"><input type="checkbox" checked><div class="cbdot"></div><span>Intelligence X</span></label>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-bar">
+    <div class="stat c1"><div class="stat-lbl">Fuentes</div><div class="stat-val" id="sS">0</div><div class="stat-sub">escaneadas</div></div>
+    <div class="stat c2"><div class="stat-lbl">Hallazgos</div><div class="stat-val" id="sF">0</div><div class="stat-sub">totales</div></div>
+    <div class="stat c3"><div class="stat-lbl">Alto/Crítico</div><div class="stat-val" id="sH">0</div><div class="stat-sub">requieren atención</div></div>
+    <div class="stat c4"><div class="stat-lbl">Repositorios</div><div class="stat-val" id="sR">0</div><div class="stat-sub">expuestos</div></div>
+    <div class="stat c5"><div class="stat-lbl">Cloud</div><div class="stat-val" id="sC">0</div><div class="stat-sub">storage expuesto</div></div>
+    <div class="stat c6"><div class="stat-lbl">Dark Web</div><div class="stat-val" id="sD">0</div><div class="stat-sub">menciones</div></div>
+  </div>
+
+  <!-- Scan status -->
+  <div class="scan-box" id="scanBox">
+    <div class="scan-hdr">
+      <div class="scan-lbl" id="scanLbl">INICIALIZANDO...</div>
+      <div class="scan-pct" id="scanPct">0%</div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="progFill"></div></div>
+    <div class="scan-log" id="scanLog"></div>
+  </div>
+
+</div>
+
+<!-- ══════════ TAB: HALLAZGOS ══════════ -->
+<div id="tab-hallazgos" class="tab-content">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+    <div class="res-hdr">
+      <div class="res-title">Hallazgos Detectados <span class="count-badge" id="countBadge">0</span></div>
+      <div class="filters">
+        <button class="fbtn on" onclick="filterFindings('all',this)">TODOS</button>
+        <button class="fbtn fr" onclick="filterFindings('CRÍTICO',this)">CRÍTICO</button>
+        <button class="fbtn fr" onclick="filterFindings('ALTO',this)">ALTO</button>
+        <button class="fbtn fa" onclick="filterFindings('MEDIO',this)">MEDIO</button>
+        <button class="fbtn fg2" onclick="filterFindings('BAJO',this)">BAJO</button>
+      </div>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Fuente</th><th>Hallazgo</th><th>Categoría</th>
+            <th>Riesgo</th><th>Hora</th><th>Acción</th>
+          </tr>
+        </thead>
+        <tbody id="findingsBody">
+          <tr><td colspan="7"><div class="empty"><div class="ei">🔍</div>Ejecuta un escaneo para ver hallazgos</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: VALIDACIÓN ══════════ -->
+<div id="tab-validacion" class="tab-content">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <!-- Cola de validación -->
+    <div>
+      <div class="card-title" style="margin-bottom:14px;">// PENDIENTES DE VALIDACIÓN</div>
+      <div id="validationQueue">
+        <div class="vq-empty">Sin hallazgos pendientes de validación</div>
+      </div>
+    </div>
+    <!-- Log de validados -->
+    <div>
+      <div class="card-title" style="margin-bottom:14px;">// HISTORIAL DE VALIDACIÓN</div>
+      <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:10px;overflow:hidden;max-height:600px;overflow-y:auto;">
+        <div id="validationLog">
+          <div class="vq-empty">Sin validaciones realizadas aún</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: CONFIGURACIÓN ══════════ -->
+<div id="tab-config" class="tab-content">
+  <div class="card">
+    <div class="card-title">API Keys (opcionales — amplían cobertura)</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>GitHub Token</label>
+        <input type="password" id="keyGithub" class="fg input" placeholder="ghp_xxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Gratuito — <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a></div>
+      </div>
+      <div class="api-row">
+        <label>IntelX API Key</label>
+        <input type="password" id="keyIntelx" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">Gratuito limitado — <a href="https://intelx.io/account" target="_blank" style="color:var(--cyan);text-decoration:none;">intelx.io/account</a></div>
+      </div>
+      <div class="api-row">
+        <label>HaveIBeenPwned Key</label>
+        <input type="password" id="keyHibp" placeholder="xxxxxxxxxxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">~$3.50/mes — <a href="https://haveibeenpwned.com/API/Key" target="_blank" style="color:var(--cyan);text-decoration:none;">haveibeenpwned.com/API/Key</a></div>
+      </div>
+      <div class="api-row">
+        <label>LeakIX API Key</label>
+        <input type="password" id="keyLeakix" placeholder="xxxxxxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">Gratuito limitado — <a href="https://leakix.net" target="_blank" style="color:var(--cyan);text-decoration:none;">leakix.net</a></div>
+      </div>
+    </div>
+    <div style="margin-top:16px;">
+      <button class="btn-scan" onclick="saveKeys()" style="font-size:13px;padding:9px 22px;">💾 GUARDAR KEYS</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Instrucciones de Instalación</div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:2;background:var(--bg-panel);padding:16px;border-radius:7px;border:1px solid var(--border);">
+      <span style="color:var(--t3)"># 1. Requisitos</span><br>
+      Python 3.9+ &nbsp;|&nbsp; pip<br><br>
+      <span style="color:var(--t3)"># 2. Instalar dependencias</span><br>
+      <span style="color:var(--cyan)">pip install flask flask-cors requests beautifulsoup4</span><br><br>
+      <span style="color:var(--t3)"># 3. Iniciar el servidor</span><br>
+      <span style="color:var(--cyan)">cd ine-cti &amp;&amp; python app.py</span><br><br>
+      <span style="color:var(--t3)"># 4. Abrir en el navegador</span><br>
+      <span style="color:var(--green)">http://localhost:5000</span>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <span>INE CTI MONITOR v2.0 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
+  <div class="exp-btns">
+    <button class="exp-btn" onclick="exportData('csv')">⬇ CSV</button>
+    <button class="exp-btn" onclick="exportData('json')">⬇ JSON</button>
+  </div>
+</footer>
+
+</div><!-- /wrap -->
+
+<!-- DETAIL MODAL -->
+<div class="modal-ov" id="modalOv" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">
+      <span>DETALLE DEL HALLAZGO</span>
+      <button class="modal-x" onclick="document.getElementById('modalOv').classList.remove('open')">✕</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="macts">
+      <a href="#" class="mbtn p" id="modalLink" target="_blank" rel="noopener">🔗 ABRIR URL</a>
+      <button class="mbtn d" onclick="document.getElementById('modalOv').classList.remove('open')">CERRAR</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ───
+let findings = [];
+let validated = [];
+let pendingValidation = [];
+let currentFindingFilter = 'all';
+let autoTimer = null;
+let pollTimer = null;
+const API = ''; // mismo origen
+
+// ─── CLOCK ───
+setInterval(()=>{
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    [n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':') + ' UTC-6';
+},1000);
+
+// ─── TABS ───
+function showTab(id, btn){
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── CHECKBOXES ───
+document.querySelectorAll('.cbi').forEach(el=>{
+  el.addEventListener('click',()=>{
+    el.classList.toggle('on');
+    el.querySelector('input').checked = el.classList.contains('on');
+  });
+});
+
+// ─── KEYS ───
+function getKeys(){
+  return {
+    github: document.getElementById('keyGithub').value.trim(),
+    intelx: document.getElementById('keyIntelx').value.trim(),
+    hibp:   document.getElementById('keyHibp').value.trim(),
+    leakix: document.getElementById('keyLeakix').value.trim(),
+  };
+}
+
+function saveKeys(){
+  const keys = getKeys();
+  try { localStorage.setItem('cti_keys', JSON.stringify(keys)); } catch(e){}
+  showNotif('API Keys guardadas ✔', 'green');
+}
+
+function loadKeys(){
+  try {
+    const k = JSON.parse(localStorage.getItem('cti_keys') || '{}');
+    if(k.github) document.getElementById('keyGithub').value = k.github;
+    if(k.intelx) document.getElementById('keyIntelx').value = k.intelx;
+    if(k.hibp)   document.getElementById('keyHibp').value   = k.hibp;
+    if(k.leakix) document.getElementById('keyLeakix').value = k.leakix;
+  } catch(e){}
+}
+loadKeys();
+
+// ─── SCAN ───
+async function startScan(){
+  const term    = document.getElementById('searchTerm').value.trim() || 'INE';
+  const domain  = document.getElementById('searchDomain').value.trim() || 'ine.mx';
+  const modules = Array.from(document.querySelectorAll('.cbi.on')).map(e=>e.dataset.val);
+
+  if(!modules.length){ showNotif('Selecciona al menos un módulo','red'); return; }
+
+  const body = { term, domain, modules, api_keys: getKeys() };
+
+  try {
+    const r = await fetch(API+'/api/scan/start',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    if(r.status === 409){ showNotif('Ya hay un escaneo en curso','amber'); return; }
+    if(!r.ok) throw new Error(await r.text());
+
+    document.getElementById('btnScan').disabled = true;
+    document.getElementById('btnStop').classList.add('show');
+    document.getElementById('scanBox').classList.add('on');
+    document.getElementById('sysStatus').textContent = 'ESCANEANDO...';
+    document.getElementById('scanLog').innerHTML = '';
+    findings = [];
+    pendingValidation = [];
+    renderFindings();
+    renderValidationQueue();
+
+    startPolling();
+  } catch(e){
+    // Backend no disponible — modo demo
+    showNotif('Backend no disponible — modo demo activado','amber');
+    runDemoScan(term, modules);
+  }
+}
+
+async function stopScan(){
+  try { await fetch(API+'/api/scan/stop',{method:'POST'}); } catch(e){}
+  stopPolling();
+  document.getElementById('btnScan').disabled = false;
+  document.getElementById('btnStop').classList.remove('show');
+  document.getElementById('sysStatus').textContent = 'DETENIDO';
+}
+
+// ─── POLLING ───
+function startPolling(){
+  pollTimer = setInterval(pollStatus, 1200);
+}
+
+function stopPolling(){
+  if(pollTimer) clearInterval(pollTimer);
+}
+
+async function pollStatus(){
+  try {
+    const [statusR, findingsR] = await Promise.all([
+      fetch(API+'/api/scan/status'),
+      fetch(API+'/api/scan/findings')
+    ]);
+    const status   = await statusR.json();
+    const findData = await findingsR.json();
+
+    // Update progress
+    document.getElementById('progFill').style.width  = status.progress+'%';
+    document.getElementById('scanPct').textContent   = status.progress+'%';
+    document.getElementById('scanLbl').textContent   = status.running
+      ? 'ESCANEANDO: ' + (status.current_module||'').toUpperCase()
+      : 'COMPLETADO';
+
+    // Update stats
+    const s = status.stats || {};
+    document.getElementById('sS').textContent = s.sources_scanned || 0;
+    document.getElementById('sF').textContent = s.total_findings  || 0;
+    document.getElementById('sH').textContent = s.high_critical   || 0;
+    document.getElementById('sR').textContent = s.repos           || 0;
+    document.getElementById('sC').textContent = s.cloud           || 0;
+    document.getElementById('sD').textContent = s.darkweb         || 0;
+
+    // Update log
+    const logEl = document.getElementById('scanLog');
+    logEl.innerHTML = '';
+    (status.log || []).forEach(entry=>{
+      const d = document.createElement('div');
+      d.className = 'll ' + (entry.level||'info');
+      d.textContent = `[${entry.ts}] ${entry.msg}`;
+      logEl.appendChild(d);
+    });
+    logEl.scrollTop = logEl.scrollHeight;
+
+    // Update findings
+    findings = findData.findings || [];
+    renderFindings();
+    syncValidationQueue();
+    updateVQBadge();
+
+    if(!status.running){
+      stopPolling();
+      document.getElementById('btnScan').disabled = false;
+      document.getElementById('btnStop').classList.remove('show');
+      document.getElementById('sysStatus').textContent = 'COMPLETADO';
+      scheduleAutoScan();
+    }
+  } catch(e){ stopPolling(); }
+}
+
+// ─── RENDER FINDINGS TABLE ───
+function renderFindings(){
+  const filtered = currentFindingFilter === 'all'
+    ? findings
+    : findings.filter(f=>f.risk === currentFindingFilter);
+
+  document.getElementById('countBadge').textContent = filtered.length;
+  const tbody = document.getElementById('findingsBody');
+
+  if(!filtered.length){
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="ei">🔍</div>Sin hallazgos${currentFindingFilter!=='all'?' para este filtro':' — ejecuta un escaneo'}</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((f,i)=>`
+    <tr onclick="openModal(${findings.indexOf(f)})">
+      <td class="td-time">${String(i+1).padStart(2,'0')}</td>
+      <td class="td-src">${esc(f.source)}</td>
+      <td class="td-title">
+        ${esc(truncate(f.title,75))}
+        <small>${esc(f.url)}</small>
+      </td>
+      <td><span class="cat ${f.category_class||'cat-repo'}">${esc(f.category)}</span></td>
+      <td><span class="risk ${riskClass(f.risk)}">${riskIcon(f.risk)} ${f.risk}</span></td>
+      <td class="td-time">${f.detected||''}</td>
+      <td class="td-act"><a href="${esc(f.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">VER →</a></td>
+    </tr>
+  `).join('');
+}
+
+function filterFindings(risk, btn){
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  currentFindingFilter = risk;
+  renderFindings();
+}
+
+// ─── VALIDATION QUEUE ───
+function syncValidationQueue(){
+  // Agregar hallazgos nuevos que no estén ya en cola ni validados
+  const knownUrls = new Set([
+    ...pendingValidation.map(f=>f.url),
+    ...validated.map(v=>v.url)
+  ]);
+  findings.filter(f=> f.risk === 'CRÍTICO' || f.risk === 'ALTO')
+          .filter(f=> !knownUrls.has(f.url) && !f.is_dork && !f.is_system)
+          .forEach(f=> pendingValidation.push(f));
+  renderValidationQueue();
+}
+
+function renderValidationQueue(){
+  const el = document.getElementById('validationQueue');
+  if(!pendingValidation.length){
+    el.innerHTML = '<div class="vq-empty">Sin hallazgos pendientes de validación</div>';
+    return;
+  }
+  el.innerHTML = pendingValidation.map((f,i)=>`
+    <div class="vq-item">
+      <div class="vq-hdr">
+        <div class="vq-title">${esc(truncate(f.title,80))}</div>
+        <span class="risk ${riskClass(f.risk)}" style="flex-shrink:0;">${riskIcon(f.risk)} ${f.risk}</span>
+      </div>
+      <div class="vq-meta">📡 ${esc(f.source)} &nbsp;|&nbsp; ${esc(f.category)} &nbsp;|&nbsp; 🕐 ${f.detected||''}</div>
+      <div class="vq-detail">${esc(truncate(f.detail||'',120))}</div>
+      <div class="vq-actions">
+        <button class="vq-btn confirm" onclick="validateItem(${i},'CONFIRMADO')">🚨 Confirmar amenaza</button>
+        <button class="vq-btn fp" onclick="validateItem(${i},'FALSO POSITIVO')">✅ Falso positivo</button>
+        <button class="vq-btn inv" onclick="validateItem(${i},'INVESTIGANDO')">🔎 Investigar más</button>
+        <a href="${esc(f.url)}" target="_blank" rel="noopener" class="vq-btn open" style="text-decoration:none;">🔗 Abrir</a>
+      </div>
+    </div>
+  `).join('');
+}
+
+function validateItem(idx, decision){
+  const item = pendingValidation[idx];
+  if(!item) return;
+  item.validation = decision;
+  item.validated_at = new Date().toLocaleTimeString('es-MX',{hour12:false});
+  validated.unshift(item);
+  pendingValidation.splice(idx,1);
+  renderValidationQueue();
+  renderValidationLog();
+  updateVQBadge();
+}
+
+function renderValidationLog(){
+  const el = document.getElementById('validationLog');
+  if(!validated.length){
+    el.innerHTML = '<div class="vq-empty">Sin validaciones realizadas aún</div>';
+    return;
+  }
+  el.innerHTML = validated.map(v=>`
+    <div class="vlog-item">
+      <span class="vlog-badge ${v.validation==='CONFIRMADO'?'confirmed':v.validation==='FALSO POSITIVO'?'fp':'investigating'}">
+        ${v.validation}
+      </span>
+      <div class="vlog-title">${esc(truncate(v.title,65))}</div>
+      <div class="vlog-ts">${v.validated_at||''}</div>
+    </div>
+  `).join('');
+}
+
+function updateVQBadge(){
+  const badge = document.getElementById('vqBadge');
+  if(pendingValidation.length){
+    badge.style.display = 'inline';
+    badge.textContent   = pendingValidation.length;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ─── AUTO SCAN ───
+function scheduleAutoScan(){
+  const interval = parseInt(document.getElementById('autoInterval').value);
+  if(!interval) return;
+  if(autoTimer) clearTimeout(autoTimer);
+  autoTimer = setTimeout(()=>{ startScan(); }, interval*1000);
+  showNotif(`Próximo escaneo en ${interval/3600}h`, 'cyan');
+}
+
+// ─── DEMO MODE (sin backend) ───
+const demoData = [
+  {source:'GitHub',source_id:'github',title:'Archivo config.env en repo público — referencia a INE',url:'https://github.com/search?q=INE&type=code',category:'Código/Repositorio',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:'Archivo .env con credenciales — repo público',detected:'',is_dork:false},
+  {source:'AWS S3',source_id:'aws',title:'Bucket S3 existe (acceso restringido): ine-backup',url:'https://ine-backup.s3.amazonaws.com/',category:'Cloud Storage',category_class:'cat-cloud',risk:'BAJO',risk_class:'risk-low',detail:'Bucket existe con ACL restrictiva',detected:'',is_dork:false},
+  {source:'Ahmia (Dark Web)',source_id:'ahmia',title:'Mención de INE en foro dark web indexado',url:'https://ahmia.fi/search/?q=INE',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Contenido dark web indexado por Ahmia',detected:'',is_dork:false},
+  {source:'Pastebin',source_id:'pastebin',title:'Google Dork: pastebin.com + "INE"',url:'https://www.google.com/search?q=site:pastebin.com+"INE"',category:'Pastebin/Leak',category_class:'cat-paste',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Verificar manualmente',detected:'',is_dork:true},
+  {source:'Google Drive/Docs',source_id:'googledrive',title:'Google Drive — archivos compartidos: "INE"',url:'https://www.google.com/search?q=site:drive.google.com+"INE"',category:'Repositorio Público',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:'Dork: site:drive.google.com "INE"',detected:'',is_dork:true},
+  {source:'DarkSearch.io',source_id:'darksearch',title:'Resultado en DarkSearch para "INE"',url:'https://darksearch.io/search?q=INE',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Contenido dark web con referencia a INE',detected:'',is_dork:false},
+];
+
+async function runDemoScan(term, modules){
+  document.getElementById('btnScan').disabled = true;
+  document.getElementById('btnStop').classList.add('show');
+  document.getElementById('scanBox').classList.add('on');
+  document.getElementById('sysStatus').textContent = 'MODO DEMO';
+  findings = []; pendingValidation = [];
+  renderFindings(); renderValidationQueue();
+
+  const logEl = document.getElementById('scanLog');
+  logEl.innerHTML = '';
+
+  const addLog = (msg, lvl='info')=>{
+    const d = document.createElement('div');
+    d.className = 'll '+lvl;
+    d.textContent = `[${new Date().toLocaleTimeString('es-MX',{hour12:false})}] ${msg}`;
+    logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight;
+  };
+
+  addLog(`Iniciando demo — término: "${term}"`, 'info');
+  const ts = ()=>new Date().toLocaleTimeString('es-MX',{hour12:false});
+
+  for(let i=0;i<modules.length;i++){
+    const mod = modules[i];
+    document.getElementById('progFill').style.width = Math.round(((i+1)/modules.length)*100)+'%';
+    document.getElementById('scanPct').textContent  = Math.round(((i+1)/modules.length)*100)+'%';
+    document.getElementById('scanLbl').textContent  = 'ESCANEANDO: '+mod.toUpperCase();
+    document.getElementById('sS').textContent = i+1;
+    addLog(`Escaneando: ${mod}...`, 'info');
+    await sleep(500);
+
+    const hit = demoData.find(d=>d.source_id===mod || d.source.toLowerCase().includes(mod));
+    if(hit){
+      const f = {...hit, detected: ts()};
+      findings.push(f);
+      document.getElementById('sF').textContent = findings.length;
+      document.getElementById('sH').textContent = findings.filter(x=>x.risk==='ALTO'||x.risk==='CRÍTICO').length;
+      document.getElementById('sR').textContent = findings.filter(x=>x.category_class==='cat-repo').length;
+      document.getElementById('sC').textContent = findings.filter(x=>x.category_class==='cat-cloud').length;
+      document.getElementById('sD').textContent = findings.filter(x=>x.category_class==='cat-dark').length;
+      addLog(`⚠ ${hit.source}: hallazgo detectado`, hit.risk==='CRÍTICO'?'error':'warn');
+      renderFindings();
+      syncValidationQueue();
+      updateVQBadge();
+    } else {
+      addLog(`✔ ${mod}: sin hallazgos`, 'ok');
+    }
+  }
+
+  addLog('Demo completado — ejecuta el backend para resultados reales', 'ok');
+  document.getElementById('scanLbl').textContent = 'DEMO COMPLETADO';
+  document.getElementById('sysStatus').textContent = 'DEMO COMPLETADO';
+  document.getElementById('btnScan').disabled = false;
+  document.getElementById('btnStop').classList.remove('show');
+}
+
+const sleep = ms=>new Promise(r=>setTimeout(r,ms));
+
+// ─── MODAL ───
+function openModal(idx){
+  const f = findings[idx];
+  if(!f) return;
+  document.getElementById('modalBody').innerHTML = `
+    <div class="mrow"><label>Fuente</label><div class="val">${esc(f.source)}</div></div>
+    <div class="mrow"><label>Descripción</label><div class="val">${esc(f.title)}</div></div>
+    <div class="mrow"><label>Detalle</label><div class="val">${esc(f.detail||'—')}</div></div>
+    <div class="mrow"><label>Categoría</label><div class="val"><span class="cat ${f.category_class||''}">${esc(f.category)}</span></div></div>
+    <div class="mrow"><label>Riesgo</label><div class="val"><span class="risk ${riskClass(f.risk)}">${riskIcon(f.risk)} ${f.risk}</span></div></div>
+    <div class="mrow"><label>URL</label><div class="val"><a href="${esc(f.url)}" target="_blank">${esc(f.url)}</a></div></div>
+    <div class="mrow"><label>Detectado</label><div class="val">${f.detected||'—'}</div></div>
+  `;
+  document.getElementById('modalLink').href = f.url;
+  document.getElementById('modalOv').classList.add('open');
+}
+
+function closeModal(e){ if(e.target.id==='modalOv') document.getElementById('modalOv').classList.remove('open'); }
+
+// ─── EXPORT ───
+function exportData(type){
+  window.open(API+'/api/export/'+type, '_blank');
+}
+
+// ─── HELPERS ───
+function riskClass(r){
+  if(r==='CRÍTICO') return 'rC';
+  if(r==='ALTO')    return 'rH';
+  if(r==='MEDIO')   return 'rM';
+  return 'rL';
+}
+function riskIcon(r){
+  if(r==='CRÍTICO') return '🔴';
+  if(r==='ALTO')    return '🟠';
+  if(r==='MEDIO')   return '🟡';
+  return '🟢';
+}
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function truncate(s,n){ return s&&s.length>n?s.substring(0,n)+'…':s; }
+
+function showNotif(msg, color='cyan'){
+  const n = document.createElement('div');
+  n.style.cssText = `position:fixed;top:20px;right:20px;z-index:999;background:var(--bg-card);border:1px solid var(--${color});color:var(--${color});font-family:'Share Tech Mono',monospace;font-size:12px;padding:12px 20px;border-radius:7px;box-shadow:0 0 20px rgba(0,0,0,.5);animation:si .2s ease;`;
+  n.textContent = msg;
+  document.body.appendChild(n);
+  setTimeout(()=>n.remove(), 3500);
+}
+</script>
+</body>
+</html>
