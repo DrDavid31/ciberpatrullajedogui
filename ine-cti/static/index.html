@@ -295,6 +295,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
       <label class="cbi on" data-val="gcloud"><input type="checkbox" checked><div class="cbdot"></div><span>Google Cloud</span></label>
       <label class="cbi on" data-val="ahmia"><input type="checkbox" checked><div class="cbdot"></div><span>Ahmia (Dark Web)</span></label>
       <label class="cbi on" data-val="darksearch"><input type="checkbox" checked><div class="cbdot"></div><span>DarkSearch.io</span></label>
+      <label class="cbi on" data-val="onionsearch"><input type="checkbox" checked><div class="cbdot"></div><span>OnionSearch</span></label>
       <label class="cbi on" data-val="leakix"><input type="checkbox" checked><div class="cbdot"></div><span>LeakIX</span></label>
       <label class="cbi on" data-val="hibp"><input type="checkbox" checked><div class="cbdot"></div><span>HaveIBeenPwned</span></label>
       <label class="cbi on" data-val="intelx"><input type="checkbox" checked><div class="cbdot"></div><span>Intelligence X</span></label>
@@ -399,6 +400,21 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
         <input type="password" id="keyLeakix" placeholder="xxxxxxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">Gratuito limitado — <a href="https://leakix.net" target="_blank" style="color:var(--cyan);text-decoration:none;">leakix.net</a></div>
       </div>
+      <div class="api-row">
+        <label>OnionSearch Proxy</label>
+        <input type="text" id="keyOnionProxy" placeholder="127.0.0.1:9050" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">Opcional; usa Tor local si los motores lo requieren</div>
+      </div>
+      <div class="api-row">
+        <label>OnionSearch motores / limite</label>
+        <input type="text" id="keyOnionEngines" placeholder="ahmia darksearchio phobos" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyOnionLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="1">1 pagina por motor</option>
+          <option value="2">2 paginas por motor</option>
+          <option value="3">3 paginas por motor</option>
+          <option value="5">5 paginas por motor</option>
+        </select>
+      </div>
     </div>
     <div style="margin-top:16px;">
       <button class="btn-scan" onclick="saveKeys()" style="font-size:13px;padding:9px 22px;">💾 GUARDAR KEYS</button>
@@ -411,7 +427,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
       <span style="color:var(--t3)"># 1. Requisitos</span><br>
       Python 3.9+ &nbsp;|&nbsp; pip<br><br>
       <span style="color:var(--t3)"># 2. Instalar dependencias</span><br>
-      <span style="color:var(--cyan)">pip install flask flask-cors requests beautifulsoup4</span><br><br>
+      <span style="color:var(--cyan)">pip install -r requirements.txt</span><br><br>
       <span style="color:var(--t3)"># 3. Iniciar el servidor</span><br>
       <span style="color:var(--cyan)">cd ine-cti &amp;&amp; python app.py</span><br><br>
       <span style="color:var(--t3)"># 4. Abrir en el navegador</span><br>
@@ -486,6 +502,9 @@ function getKeys(){
     intelx: document.getElementById('keyIntelx').value.trim(),
     hibp:   document.getElementById('keyHibp').value.trim(),
     leakix: document.getElementById('keyLeakix').value.trim(),
+    onion_proxy: document.getElementById('keyOnionProxy').value.trim(),
+    onion_engines: document.getElementById('keyOnionEngines').value.trim(),
+    onion_limit: document.getElementById('keyOnionLimit').value,
   };
 }
 
@@ -502,6 +521,9 @@ function loadKeys(){
     if(k.intelx) document.getElementById('keyIntelx').value = k.intelx;
     if(k.hibp)   document.getElementById('keyHibp').value   = k.hibp;
     if(k.leakix) document.getElementById('keyLeakix').value = k.leakix;
+    if(k.onion_proxy) document.getElementById('keyOnionProxy').value = k.onion_proxy;
+    if(k.onion_engines) document.getElementById('keyOnionEngines').value = k.onion_engines;
+    if(k.onion_limit) document.getElementById('keyOnionLimit').value = k.onion_limit;
   } catch(e){}
 }
 loadKeys();
@@ -741,6 +763,7 @@ const demoData = [
   {source:'Pastebin',source_id:'pastebin',title:'Google Dork: pastebin.com + "INE"',url:'https://www.google.com/search?q=site:pastebin.com+"INE"',category:'Pastebin/Leak',category_class:'cat-paste',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Verificar manualmente',detected:'',is_dork:true},
   {source:'Google Drive/Docs',source_id:'googledrive',title:'Google Drive — archivos compartidos: "INE"',url:'https://www.google.com/search?q=site:drive.google.com+"INE"',category:'Repositorio Público',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:'Dork: site:drive.google.com "INE"',detected:'',is_dork:true},
   {source:'DarkSearch.io',source_id:'darksearch',title:'Resultado en DarkSearch para "INE"',url:'https://darksearch.io/search?q=INE',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Contenido dark web con referencia a INE',detected:'',is_dork:false},
+  {source:'OnionSearch/Ahmia',source_id:'onionsearch',title:'Resultado OnionSearch para "INE"',url:'http://exampleonionurl.onion/',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Motor: ahmia | Dominio: exampleonionurl.onion',detected:'',is_dork:false},
 ];
 
 async function runDemoScan(term, modules){
