@@ -25,6 +25,7 @@ HEADERS = {
 TIMEOUT = 12
 ONIONSEARCH_TIMEOUT = 90
 TRUFFLEHOG_TIMEOUT = 180
+GITLEAKS_TIMEOUT = 180
 
 
 def ts():
@@ -704,6 +705,173 @@ def _trufflehog_url(metadata, fallback_url):
         if repo:
             return repo
     return fallback_url
+
+
+# MÓDULO 9D — Gitleaks (detección de secretos)
+def scan_gitleaks(target=".", mode="dir", config_path=None, baseline_path=None,
+                  max_findings=20, max_target_mb=None, log_opts=None):
+    results = []
+    exe = shutil.which("gitleaks") or shutil.which("gitleaks.exe")
+    if not exe:
+        results.append({
+            "source": "Gitleaks",
+            "source_id": "gitleaks",
+            "title": "Gitleaks no está instalado",
+            "url": "https://github.com/gitleaks/gitleaks",
+            "category": "Sistema",
+            "category_class": "cat-leak",
+            "risk": "INFO",
+            "risk_class": "risk-low",
+            "raw": "gitleaks",
+            "detail": "Instala el binario de Gitleaks y asegúrate de que esté en PATH",
+            "detected": ts(),
+            "is_system": True,
+        })
+        return results
+
+    target = (target or ".").strip()
+    mode = (mode or "dir").strip().lower()
+    if mode not in ("dir", "git"):
+        mode = "dir"
+    try:
+        max_findings = max(1, min(int(max_findings or 20), 100))
+    except (TypeError, ValueError):
+        max_findings = 20
+
+    fd, report_path = tempfile.mkstemp(prefix="gitleaks_", suffix=".json")
+    os.close(fd)
+
+    cmd = [
+        exe,
+        mode,
+        "--report-format", "json",
+        "--report-path", report_path,
+        "--redact=100",
+        "--no-banner",
+        "--no-color",
+        "--exit-code", "0",
+    ]
+    config_path = (config_path or "").strip()
+    baseline_path = (baseline_path or "").strip()
+    if config_path:
+        cmd.extend(["--config", config_path])
+    if baseline_path:
+        cmd.extend(["--baseline-path", baseline_path])
+    if max_target_mb:
+        try:
+            cmd.extend(["--max-target-megabytes", str(max(1, int(max_target_mb)))])
+        except (TypeError, ValueError):
+            pass
+    if mode == "git" and log_opts:
+        cmd.extend(["--log-opts", str(log_opts)])
+    cmd.append(target)
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=GITLEAKS_TIMEOUT,
+        )
+
+        data = []
+        if os.path.exists(report_path) and os.path.getsize(report_path) > 0:
+            with open(report_path, "r", encoding="utf-8", errors="replace") as f:
+                parsed = json.load(f)
+                if isinstance(parsed, list):
+                    data = parsed
+                elif isinstance(parsed, dict):
+                    data = parsed.get("Findings") or parsed.get("findings") or []
+
+        for item in data[:max_findings]:
+            finding = _gitleaks_finding(item, target)
+            if finding:
+                results.append(finding)
+
+        if not results:
+            detail = "Sin secretos encontrados en el objetivo configurado"
+            if proc.returncode not in (0, 1) and proc.stderr:
+                detail = f"Sin hallazgos parseables; stderr: {proc.stderr[:140]}"
+            results.append({
+                "source": "Gitleaks",
+                "source_id": "gitleaks",
+                "title": f"Gitleaks: sin secretos para {target[:60]}",
+                "url": target if target.startswith("http") else "https://github.com/gitleaks/gitleaks",
+                "category": "Credenciales Filtradas",
+                "category_class": "cat-leak",
+                "risk": "BAJO",
+                "risk_class": "risk-low",
+                "raw": "",
+                "detail": detail,
+                "detected": ts(),
+                "is_negative": True,
+            })
+    except subprocess.TimeoutExpired:
+        results.append(_error_notice("Gitleaks", "Tiempo máximo agotado; reduce alcance o objetivo"))
+    except Exception as e:
+        results.append(_error_notice("Gitleaks", str(e)))
+    finally:
+        try:
+            os.remove(report_path)
+        except OSError:
+            pass
+
+    return results
+
+
+def _gitleaks_finding(item, fallback_url):
+    if not isinstance(item, dict):
+        return None
+    rule_id = item.get("RuleID") or item.get("ruleID") or "secret"
+    description = item.get("Description") or item.get("description") or rule_id
+    file_name = item.get("File") or item.get("file") or ""
+    line = item.get("StartLine") or item.get("Line") or item.get("line")
+    commit = item.get("Commit") or item.get("commit") or ""
+    fingerprint = item.get("Fingerprint") or item.get("fingerprint") or ""
+    secret = item.get("Secret") or item.get("secret") or "[redacted]"
+    match = item.get("Match") or item.get("match") or ""
+    entropy = item.get("Entropy") or item.get("entropy")
+
+    location = file_name
+    if line:
+        location = f"{location}:{line}" if location else f"line {line}"
+    if commit:
+        location = f"{location} | {str(commit)[:12]}" if location else str(commit)[:12]
+
+    detail = f"Rule: {rule_id} | {description}"
+    if location:
+        detail += f" | Ubicación: {location}"
+    if entropy:
+        detail += f" | Entropía: {entropy}"
+    if fingerprint:
+        detail += f" | Fingerprint: {fingerprint}"
+
+    return {
+        "source": "Gitleaks",
+        "source_id": "gitleaks",
+        "title": f"Gitleaks: {description}",
+        "url": _gitleaks_url(fallback_url, file_name, commit, line),
+        "category": "Credenciales Filtradas",
+        "category_class": "cat-leak",
+        "risk": "ALTO",
+        "risk_class": "risk-high",
+        "raw": secret or match or "[redacted]",
+        "detail": detail,
+        "detected": ts(),
+        "is_secret": True,
+    }
+
+
+def _gitleaks_url(fallback_url, file_name, commit=None, line=None):
+    if fallback_url and str(fallback_url).startswith("http"):
+        url = str(fallback_url).rstrip("/")
+        if file_name and commit and "github.com" in url:
+            url = f"{url}/blob/{commit}/{file_name}"
+            if line:
+                url += f"#L{line}"
+        return url
+    return fallback_url or "https://github.com/gitleaks/gitleaks"
 
 
 # ─────────────────────────────────────────────
