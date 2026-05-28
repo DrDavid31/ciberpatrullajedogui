@@ -22,6 +22,15 @@ from modules.scanner import (
     scan_ahmia, scan_darksearch, scan_leakix,
     scan_hibp, scan_intelx, scan_onionsearch
 )
+from modules.ail_client import (
+    create_tracker as ail_create_tracker,
+    export_findings as ail_export_findings,
+    test_connection as ail_test_connection,
+)
+from modules.misp_client import (
+    export_findings as misp_export_findings,
+    test_connection as misp_test_connection,
+)
 
 app = Flask(__name__, static_folder="static")
 CORS(app)
@@ -48,6 +57,37 @@ scan_state = {
 
 RESULTS_FILE = os.path.join(os.path.dirname(__file__), "results", "findings.json")
 os.makedirs(os.path.dirname(RESULTS_FILE), exist_ok=True)
+
+
+def as_bool(value):
+    if isinstance(value, bool):
+        return value
+    return str(value or "").strip().lower() in ("1", "true", "yes", "on", "si")
+
+
+def ail_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "base_url": keys.get("ail_url", ""),
+        "api_key": keys.get("ail_key", ""),
+        "tags": keys.get("ail_tags", ""),
+        "tracker_type": keys.get("ail_tracker_type", "word"),
+        "verify_tls": as_bool(keys.get("ail_verify_tls")),
+    }
+
+
+def misp_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "base_url": keys.get("misp_url", ""),
+        "api_key": keys.get("misp_key", ""),
+        "tags": keys.get("misp_tags", ""),
+        "distribution": keys.get("misp_distribution", 0),
+        "threat_level_id": keys.get("misp_threat_level", ""),
+        "analysis": keys.get("misp_analysis", 0),
+        "publish": as_bool(keys.get("misp_publish")),
+        "verify_tls": as_bool(keys.get("misp_verify_tls")),
+    }
 
 
 def log(msg, level="info"):
@@ -243,9 +283,108 @@ def export_csv():
                     headers={"Content-Disposition": "attachment;filename=cti-ine-findings.csv"})
 
 
+@app.route("/api/ail/test", methods=["POST"])
+def ail_test():
+    data = request.json or {}
+    cfg = ail_config(data)
+    try:
+        result = ail_test_connection(cfg["base_url"], cfg["api_key"], cfg["verify_tls"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/ail/export", methods=["POST"])
+def ail_export():
+    data = request.json or {}
+    cfg = ail_config(data)
+    findings = data.get("findings") or scan_state["findings"]
+    try:
+        result = ail_export_findings(
+            cfg["base_url"],
+            cfg["api_key"],
+            findings,
+            cfg["tags"],
+            cfg["verify_tls"],
+        )
+        exported = len(result.get("exported", []))
+        errors = len(result.get("errors", []))
+        level = "ok" if errors == 0 else "warn"
+        log(f"AIL export: {exported} enviado(s), {errors} error(es)", level)
+        return jsonify(result)
+    except Exception as e:
+        log(f"AIL export error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/ail/tracker", methods=["POST"])
+def ail_tracker():
+    data = request.json or {}
+    cfg = ail_config(data)
+    term = data.get("term", "INE")
+    try:
+        result = ail_create_tracker(
+            cfg["base_url"],
+            cfg["api_key"],
+            term,
+            cfg["tracker_type"],
+            cfg["tags"],
+            cfg["verify_tls"],
+        )
+        log(f"AIL tracker creado: {result.get('uuid')} ({term})", "ok")
+        return jsonify(result)
+    except Exception as e:
+        log(f"AIL tracker error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/misp/test", methods=["POST"])
+def misp_test():
+    data = request.json or {}
+    cfg = misp_config(data)
+    try:
+        result = misp_test_connection(cfg["base_url"], cfg["api_key"], cfg["verify_tls"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/misp/export", methods=["POST"])
+def misp_export():
+    data = request.json or {}
+    cfg = misp_config(data)
+    findings = data.get("findings") or scan_state["findings"]
+    info = data.get("info") or f"INE CTI Monitor - {datetime.now().strftime('%Y-%m-%d')}"
+    try:
+        result = misp_export_findings(
+            cfg["base_url"],
+            cfg["api_key"],
+            findings,
+            info,
+            cfg["distribution"],
+            cfg["threat_level_id"],
+            cfg["analysis"],
+            cfg["tags"],
+            cfg["publish"],
+            cfg["verify_tls"],
+        )
+        log(f"MISP export: evento {result.get('event_id')} con {result.get('attributes')} atributo(s)", "ok")
+        return jsonify(result)
+    except Exception as e:
+        log(f"MISP export error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
 @app.route("/api/health")
 def health():
-    return jsonify({"status": "ok", "version": "2.1", "client": "INE", "onionsearch": True})
+    return jsonify({
+        "status": "ok",
+        "version": "2.2",
+        "client": "INE",
+        "onionsearch": True,
+        "ail": True,
+        "misp": True,
+    })
 
 
 if __name__ == "__main__":

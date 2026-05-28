@@ -1,4 +1,4 @@
-# INE CTI Monitor v2.0
+# INE CTI Monitor v2.2
 ## Inteligencia de Amenazas Cibernéticas
 
 Sistema de monitoreo OSINT defensivo para detectar información del INE
@@ -60,6 +60,8 @@ ine-cti/
 | ahmia          | Ahmia.fi (Dark Web)       | Dark Web indexada  | No      |
 | darksearch     | DarkSearch.io             | Dark Web indexada  | No      |
 | onionsearch    | OnionSearch               | Motores .onion     | No      |
+| ail            | AIL Framework             | Correlacion/API    | Requerida|
+| misp           | MISP                      | Threat Intel       | Requerida|
 | leakix         | LeakIX                    | Servicios expuestos| Opcional|
 | hibp           | HaveIBeenPwned            | Credenciales       | Opcional|
 | intelx         | Intelligence X            | Dark Web / Leaks   | Opcional|
@@ -76,6 +78,8 @@ Agrégalas en la pestaña **Configuración** del monitor:
 | IntelX           | Gratis*  | https://intelx.io/account             |
 | HaveIBeenPwned   | $3.50/mes| https://haveibeenpwned.com/API/Key     |
 | LeakIX           | Gratis*  | https://leakix.net                     |
+| AIL Framework    | Self-hosted| https://github.com/ail-project/ail-framework |
+| MISP             | Self-hosted| https://github.com/MISP/MISP          |
 
 *Plan gratuito con límite de consultas diarias.
 
@@ -91,6 +95,11 @@ Agrégalas en la pestaña **Configuración** del monitor:
 | `/api/scan/stop`      | POST   | Detener escaneo en curso           |
 | `/api/export/json`    | GET    | Exportar hallazgos en JSON         |
 | `/api/export/csv`     | GET    | Exportar hallazgos en CSV          |
+| `/api/ail/test`       | POST   | Probar conexion con AIL Framework  |
+| `/api/ail/export`     | POST   | Enviar hallazgos a AIL             |
+| `/api/ail/tracker`    | POST   | Crear tracker en AIL               |
+| `/api/misp/test`      | POST   | Probar conexion con MISP           |
+| `/api/misp/export`    | POST   | Crear evento MISP desde hallazgos  |
 | `/api/health`         | GET    | Estado del sistema                 |
 
 ### Ejemplo de llamada a /api/scan/start
@@ -107,7 +116,20 @@ POST /api/scan/start
     "leakix": "xxxx",
     "onion_proxy": "127.0.0.1:9050",
     "onion_engines": "ahmia darksearchio phobos",
-    "onion_limit": 1
+    "onion_limit": 1,
+    "ail_url": "https://localhost:7000",
+    "ail_key": "AIL_API_KEY",
+    "ail_tags": "ine-cti, osint",
+    "ail_tracker_type": "word",
+    "ail_verify_tls": false,
+    "misp_url": "https://misp.local",
+    "misp_key": "MISP_API_KEY",
+    "misp_tags": "tlp:amber, osint, ine-cti",
+    "misp_distribution": 0,
+    "misp_threat_level": "",
+    "misp_analysis": 0,
+    "misp_verify_tls": false,
+    "misp_publish": false
   }
 }
 ```
@@ -145,6 +167,12 @@ POST /api/scan/start
 - OnionSearch amplía la cobertura consultando múltiples motores .onion.
   Se instala con `pip install -r requirements.txt`; el proxy Tor local
   `127.0.0.1:9050` es opcional y se configura desde la pestaña Configuración.
+- AIL Framework se integra como plataforma externa. Desde Configuracion puedes
+  probar la conexion, enviar hallazgos del monitor como items de texto y crear
+  trackers para el termino activo.
+- MISP se integra como plataforma externa. Desde Configuracion puedes probar
+  la conexion y crear un evento MISP con atributos derivados de los hallazgos
+  actuales; por defecto los atributos se envian con `to_ids=false`.
 
 ---
 
