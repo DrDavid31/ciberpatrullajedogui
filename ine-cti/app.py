@@ -21,7 +21,7 @@ from modules.scanner import (
     scan_gcs, scan_googledrive, scan_file_repos,
     scan_ahmia, scan_darksearch, scan_leakix,
     scan_hibp, scan_intelx, scan_onionsearch,
-    scan_trufflehog, scan_gitleaks
+    scan_trufflehog, scan_gitleaks, scan_social_analyzer
 )
 from modules.ail_client import (
     create_tracker as ail_create_tracker,
@@ -165,6 +165,21 @@ def run_scan(term, domain, active_modules, api_keys):
             api_keys.get("gitleaks_max_mb"),
             api_keys.get("gitleaks_log_opts"),
         )),
+        ("socialanalyzer", "Social Analyzer",       lambda: scan_social_analyzer(
+            api_keys.get("social_username") or term,
+            api_keys.get("social_websites"),
+            api_keys.get("social_top", 100),
+            api_keys.get("social_mode", "fast"),
+            api_keys.get("social_method", "find"),
+            api_keys.get("social_filter", "good"),
+            api_keys.get("social_profiles", "detected"),
+            as_bool(api_keys.get("social_metadata")),
+            as_bool(api_keys.get("social_extract")),
+            api_keys.get("social_countries"),
+            api_keys.get("social_type"),
+            api_keys.get("social_timeout", 10),
+            api_keys.get("social_limit", 30),
+        )),
         ("leakix",      "LeakIX",                   lambda: scan_leakix(term, api_keys.get("leakix"))),
         ("hibp",        "HaveIBeenPwned",           lambda: scan_hibp(domain, api_keys.get("hibp"))),
         ("intelx",      "Intelligence X",           lambda: scan_intelx(term, api_keys.get("intelx"))),
@@ -235,7 +250,7 @@ def start_scan():
                                            "filerepos","aws","azure","gcloud",
                                            "ahmia","darksearch","onionsearch",
                                            "trufflehog","gitleaks",
-                                           "leakix","hibp","intelx"])
+                                           "socialanalyzer","leakix","hibp","intelx"])
     api_keys       = data.get("api_keys", {})
 
     t = threading.Thread(target=run_scan, args=(term, domain, active_modules, api_keys), daemon=True)
@@ -398,11 +413,12 @@ def misp_export():
 def health():
     return jsonify({
         "status": "ok",
-        "version": "2.4",
+        "version": "2.5",
         "client": "INE",
         "onionsearch": True,
         "trufflehog": True,
         "gitleaks": True,
+        "socialanalyzer": True,
         "ail": True,
         "misp": True,
     })
