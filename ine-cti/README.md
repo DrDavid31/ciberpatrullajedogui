@@ -59,6 +59,7 @@ ine-cti/
 | gcloud         | Google Cloud Storage      | Cloud Storage      | No      |
 | ahmia          | Ahmia.fi (Dark Web)       | Dark Web indexada  | No      |
 | darksearch     | DarkSearch.io             | Dark Web indexada  | No      |
+| onionsearch    | OnionSearch               | Motores .onion     | No      |
 | leakix         | LeakIX                    | Servicios expuestos| Opcional|
 | hibp           | HaveIBeenPwned            | Credenciales       | Opcional|
 | intelx         | Intelligence X            | Dark Web / Leaks   | Opcional|
@@ -98,12 +99,15 @@ POST /api/scan/start
 {
   "term": "INE",
   "domain": "ine.mx",
-  "modules": ["github", "pastebin", "aws", "ahmia", "darksearch"],
+  "modules": ["github", "pastebin", "aws", "ahmia", "darksearch", "onionsearch"],
   "api_keys": {
     "github": "ghp_xxxx",
     "intelx": "xxxx-xxxx",
     "hibp": "xxxx",
-    "leakix": "xxxx"
+    "leakix": "xxxx",
+    "onion_proxy": "127.0.0.1:9050",
+    "onion_engines": "ahmia darksearchio phobos",
+    "onion_limit": 1
   }
 }
 ```
@@ -138,6 +142,9 @@ POST /api/scan/start
   en la interfaz (cada 1h, 6h, 12h o 24h).
 - Los módulos de dark web (Ahmia, DarkSearch) buscan en índices públicos
   de contenido .onion sin necesidad de Tor.
+- OnionSearch amplía la cobertura consultando múltiples motores .onion.
+  Se instala con `pip install -r requirements.txt`; el proxy Tor local
+  `127.0.0.1:9050` es opcional y se configura desde la pestaña Configuración.
 
 ---
 

@@ -4,7 +4,12 @@ INE CTI Scanner — Módulos de búsqueda adaptados de SpiderFoot + DarkSearch
 Uso: monitoreo OSINT defensivo de información del INE expuesta públicamente
 """
 
+import csv
+import os
 import requests
+import shutil
+import subprocess
+import tempfile
 import time
 import json
 import re
@@ -18,6 +23,7 @@ HEADERS = {
 }
 
 TIMEOUT = 12
+ONIONSEARCH_TIMEOUT = 90
 
 
 def ts():
@@ -383,6 +389,112 @@ def scan_darksearch(term):
             results.append(_rate_limit_notice("DarkSearch.io"))
     except Exception as e:
         results.append(_error_notice("DarkSearch.io", str(e)))
+    return results
+
+
+# MÓDULO 9B — OnionSearch (múltiples motores .onion)
+def scan_onionsearch(term, proxy=None, limit=1, engines=None):
+    results = []
+    exe = shutil.which("onionsearch") or shutil.which("onionsearch.exe")
+    if not exe:
+        results.append({
+            "source": "OnionSearch",
+            "source_id": "onionsearch",
+            "title": "OnionSearch no está instalado",
+            "url": "https://github.com/megadose/OnionSearch",
+            "category": "Sistema",
+            "category_class": "cat-dark",
+            "risk": "INFO",
+            "risk_class": "risk-low",
+            "raw": "pip install onionsearch",
+            "detail": "Instala dependencias con: pip install -r requirements.txt",
+            "detected": ts(),
+            "is_system": True,
+        })
+        return results
+
+    try:
+        limit = max(1, min(int(limit or 1), 5))
+    except (TypeError, ValueError):
+        limit = 1
+
+    fd, output_path = tempfile.mkstemp(prefix="onionsearch_", suffix=".csv")
+    os.close(fd)
+
+    cmd = [
+        exe,
+        term,
+        "--output", output_path,
+        "--limit", str(limit),
+        "--fields", "engine", "name", "link", "domain",
+        "--mp_units", "1",
+    ]
+    if proxy:
+        cmd.extend(["--proxy", proxy])
+    if engines:
+        selected = [e.strip() for e in str(engines).replace(",", " ").split() if e.strip()]
+        if selected:
+            cmd.append("--engines")
+            cmd.extend(selected)
+
+    try:
+        subprocess.run(
+            cmd,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=ONIONSEARCH_TIMEOUT,
+        )
+
+        if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+            results.append({
+                "source": "OnionSearch",
+                "source_id": "onionsearch",
+                "title": f'OnionSearch: sin resultados para "{term}"',
+                "url": "https://github.com/megadose/OnionSearch",
+                "category": "Dark Web Indexada",
+                "category_class": "cat-dark",
+                "risk": "BAJO",
+                "risk_class": "risk-low",
+                "raw": "",
+                "detail": "No se generaron resultados en los motores consultados",
+                "detected": ts(),
+                "is_negative": True,
+            })
+            return results
+
+        with open(output_path, newline="", encoding="utf-8", errors="replace") as f:
+            reader = csv.DictReader(f)
+            for row in list(reader)[:20]:
+                link = (row.get("link") or row.get("url") or "").strip()
+                name = (row.get("name") or "Resultado OnionSearch").strip()
+                engine = (row.get("engine") or "OnionSearch").strip()
+                domain = (row.get("domain") or "").strip()
+                if not link:
+                    continue
+                results.append({
+                    "source": f"OnionSearch/{engine}",
+                    "source_id": "onionsearch",
+                    "title": name,
+                    "url": link,
+                    "category": "Dark Web Indexada",
+                    "category_class": "cat-dark",
+                    "risk": "CRÍTICO",
+                    "risk_class": "risk-critical",
+                    "raw": link,
+                    "detail": f"Motor: {engine}" + (f" | Dominio: {domain}" if domain else ""),
+                    "detected": ts(),
+                })
+    except subprocess.TimeoutExpired:
+        results.append(_error_notice("OnionSearch", "Tiempo máximo agotado; reduce motores o límite"))
+    except Exception as e:
+        results.append(_error_notice("OnionSearch", str(e)))
+    finally:
+        try:
+            os.remove(output_path)
+        except OSError:
+            pass
+
     return results
 
 

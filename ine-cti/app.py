@@ -20,7 +20,7 @@ from modules.scanner import (
     scan_github, scan_pastebin, scan_s3, scan_azure,
     scan_gcs, scan_googledrive, scan_file_repos,
     scan_ahmia, scan_darksearch, scan_leakix,
-    scan_hibp, scan_intelx
+    scan_hibp, scan_intelx, scan_onionsearch
 )
 
 app = Flask(__name__, static_folder="static")
@@ -101,6 +101,12 @@ def run_scan(term, domain, active_modules, api_keys):
         ("gcloud",      "Google Cloud Storage",     lambda: scan_gcs(term)),
         ("ahmia",       "Ahmia (Dark Web)",         lambda: scan_ahmia(term)),
         ("darksearch",  "DarkSearch.io",            lambda: scan_darksearch(term)),
+        ("onionsearch", "OnionSearch",              lambda: scan_onionsearch(
+            term,
+            api_keys.get("onion_proxy"),
+            api_keys.get("onion_limit", 1),
+            api_keys.get("onion_engines")
+        )),
         ("leakix",      "LeakIX",                   lambda: scan_leakix(term, api_keys.get("leakix"))),
         ("hibp",        "HaveIBeenPwned",           lambda: scan_hibp(domain, api_keys.get("hibp"))),
         ("intelx",      "Intelligence X",           lambda: scan_intelx(term, api_keys.get("intelx"))),
@@ -169,7 +175,8 @@ def start_scan():
     domain         = data.get("domain", "ine.mx").strip() or "ine.mx"
     active_modules = data.get("modules", ["github","pastebin","googledrive",
                                            "filerepos","aws","azure","gcloud",
-                                           "ahmia","darksearch","leakix","hibp","intelx"])
+                                           "ahmia","darksearch","onionsearch",
+                                           "leakix","hibp","intelx"])
     api_keys       = data.get("api_keys", {})
 
     t = threading.Thread(target=run_scan, args=(term, domain, active_modules, api_keys), daemon=True)
@@ -238,7 +245,7 @@ def export_csv():
 
 @app.route("/api/health")
 def health():
-    return jsonify({"status": "ok", "version": "2.0", "client": "INE"})
+    return jsonify({"status": "ok", "version": "2.1", "client": "INE", "onionsearch": True})
 
 
 if __name__ == "__main__":
