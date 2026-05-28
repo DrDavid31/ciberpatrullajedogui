@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INE CTI Monitor v2.4</title>
+<title>INE CTI Monitor v2.5</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -237,7 +237,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
     <div class="logo-icon">🛰️</div>
     <div class="logo-text">
       <h1>INE · CTI MONITOR</h1>
-      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.4</p>
+      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.5</p>
     </div>
   </div>
   <div class="h-right">
@@ -298,6 +298,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
       <label class="cbi on" data-val="onionsearch"><input type="checkbox" checked><div class="cbdot"></div><span>OnionSearch</span></label>
       <label class="cbi on" data-val="trufflehog"><input type="checkbox" checked><div class="cbdot"></div><span>TruffleHog</span></label>
       <label class="cbi on" data-val="gitleaks"><input type="checkbox" checked><div class="cbdot"></div><span>Gitleaks</span></label>
+      <label class="cbi on" data-val="socialanalyzer"><input type="checkbox" checked><div class="cbdot"></div><span>Social Analyzer</span></label>
       <label class="cbi on" data-val="leakix"><input type="checkbox" checked><div class="cbdot"></div><span>LeakIX</span></label>
       <label class="cbi on" data-val="hibp"><input type="checkbox" checked><div class="cbdot"></div><span>HaveIBeenPwned</span></label>
       <label class="cbi on" data-val="intelx"><input type="checkbox" checked><div class="cbdot"></div><span>Intelligence X</span></label>
@@ -503,6 +504,74 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
   </div>
 
   <div class="card">
+    <div class="card-title">Social Analyzer</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>Username(s)</label>
+        <input type="text" id="keySocialUsername" placeholder="usuario, otro_usuario" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Si está vacío usa el término principal de búsqueda</div>
+      </div>
+      <div class="api-row">
+        <label>Websites / países</label>
+        <input type="text" id="keySocialWebsites" placeholder="youtube tiktok github" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="text" id="keySocialCountries" placeholder="us mx br" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+      </div>
+      <div class="api-row">
+        <label>Modo / método</label>
+        <select id="keySocialMode" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+          <option value="fast">fast</option>
+          <option value="slow">slow</option>
+          <option value="special">special</option>
+        </select>
+        <select id="keySocialMethod" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="find">find</option>
+          <option value="get">get</option>
+          <option value="all">all</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>Filtro / profiles</label>
+        <select id="keySocialFilter" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+          <option value="good">good</option>
+          <option value="good,maybe">good + maybe</option>
+          <option value="all">all</option>
+        </select>
+        <select id="keySocialProfiles" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="detected">detected</option>
+          <option value="detected,unknown">detected + unknown</option>
+          <option value="all">all</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>Tipo / top</label>
+        <input type="text" id="keySocialType" placeholder="adult, music, etc." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keySocialTop" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="50">top 50</option>
+          <option value="100" selected>top 100</option>
+          <option value="250">top 250</option>
+          <option value="500">top 500</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>Límites / extras</label>
+        <select id="keySocialLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+          <option value="10">10 hallazgos</option>
+          <option value="30" selected>30 hallazgos</option>
+          <option value="50">50 hallazgos</option>
+          <option value="100">100 hallazgos</option>
+        </select>
+        <input type="number" id="keySocialTimeout" min="3" max="60" value="10" placeholder="Timeout" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+          <input type="checkbox" id="keySocialMetadata"> Metadata
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keySocialExtract"> Extract
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">AIL Framework</div>
     <div class="api-grid">
       <div class="api-row">
@@ -617,7 +686,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 
 <!-- FOOTER -->
 <footer>
-  <span>INE CTI MONITOR v2.4 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
+  <span>INE CTI MONITOR v2.5 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
   <div class="exp-btns">
     <button class="exp-btn" onclick="exportData('csv')">⬇ CSV</button>
     <button class="exp-btn" onclick="exportData('json')">⬇ JSON</button>
@@ -696,6 +765,19 @@ function getKeys(){
     gitleaks_limit: document.getElementById('keyGitleaksLimit').value,
     gitleaks_max_mb: document.getElementById('keyGitleaksMaxMb').value,
     gitleaks_log_opts: document.getElementById('keyGitleaksLogOpts').value.trim(),
+    social_username: document.getElementById('keySocialUsername').value.trim(),
+    social_websites: document.getElementById('keySocialWebsites').value.trim(),
+    social_countries: document.getElementById('keySocialCountries').value.trim(),
+    social_mode: document.getElementById('keySocialMode').value,
+    social_method: document.getElementById('keySocialMethod').value,
+    social_filter: document.getElementById('keySocialFilter').value,
+    social_profiles: document.getElementById('keySocialProfiles').value,
+    social_type: document.getElementById('keySocialType').value.trim(),
+    social_top: document.getElementById('keySocialTop').value,
+    social_limit: document.getElementById('keySocialLimit').value,
+    social_timeout: document.getElementById('keySocialTimeout').value,
+    social_metadata: document.getElementById('keySocialMetadata').checked,
+    social_extract: document.getElementById('keySocialExtract').checked,
     ail_url: document.getElementById('keyAilUrl').value.trim(),
     ail_key: document.getElementById('keyAilKey').value.trim(),
     ail_tags: document.getElementById('keyAilTags').value.trim(),
@@ -740,6 +822,19 @@ function loadKeys(){
     if(k.gitleaks_limit) document.getElementById('keyGitleaksLimit').value = k.gitleaks_limit;
     if(k.gitleaks_max_mb) document.getElementById('keyGitleaksMaxMb').value = k.gitleaks_max_mb;
     if(k.gitleaks_log_opts) document.getElementById('keyGitleaksLogOpts').value = k.gitleaks_log_opts;
+    if(k.social_username) document.getElementById('keySocialUsername').value = k.social_username;
+    if(k.social_websites) document.getElementById('keySocialWebsites').value = k.social_websites;
+    if(k.social_countries) document.getElementById('keySocialCountries').value = k.social_countries;
+    if(k.social_mode) document.getElementById('keySocialMode').value = k.social_mode;
+    if(k.social_method) document.getElementById('keySocialMethod').value = k.social_method;
+    if(k.social_filter) document.getElementById('keySocialFilter').value = k.social_filter;
+    if(k.social_profiles) document.getElementById('keySocialProfiles').value = k.social_profiles;
+    if(k.social_type) document.getElementById('keySocialType').value = k.social_type;
+    if(k.social_top) document.getElementById('keySocialTop').value = k.social_top;
+    if(k.social_limit) document.getElementById('keySocialLimit').value = k.social_limit;
+    if(k.social_timeout) document.getElementById('keySocialTimeout').value = k.social_timeout;
+    document.getElementById('keySocialMetadata').checked = !!k.social_metadata;
+    document.getElementById('keySocialExtract').checked = !!k.social_extract;
     if(k.ail_url) document.getElementById('keyAilUrl').value = k.ail_url;
     if(k.ail_key) document.getElementById('keyAilKey').value = k.ail_key;
     if(k.ail_tags) document.getElementById('keyAilTags').value = k.ail_tags;
@@ -1082,6 +1177,7 @@ const demoData = [
   {source:'OnionSearch/Ahmia',source_id:'onionsearch',title:'Resultado OnionSearch para "INE"',url:'http://exampleonionurl.onion/',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Motor: ahmia | Dominio: exampleonionurl.onion',detected:'',is_dork:false},
   {source:'trufflehog - git',source_id:'trufflehog',title:'TruffleHog: GitHub token (verificado)',url:'https://github.com/DrDavid31/ciberpatrullajedogui',category:'Credenciales Filtradas',category_class:'cat-leak',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Detector: GitHub | Decoder: PLAIN | Estado: verificado',detected:'',is_dork:false,is_secret:true},
   {source:'Gitleaks',source_id:'gitleaks',title:'Gitleaks: generic-api-key',url:'https://github.com/gitleaks/gitleaks',category:'Credenciales Filtradas',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:'Rule: generic-api-key | Ubicacion: config.env:12 | Fingerprint: demo',detected:'',is_dork:false,is_secret:true},
+  {source:'Social Analyzer',source_id:'socialanalyzer',title:'Perfil posible: INE en github',url:'https://github.com/INE',category:'Perfil Social',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Sitio: github | Rate: 60',detected:'',is_dork:false},
 ];
 
 async function runDemoScan(term, modules){

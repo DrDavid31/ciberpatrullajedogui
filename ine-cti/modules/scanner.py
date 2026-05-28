@@ -9,6 +9,7 @@ import os
 import requests
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import json
@@ -26,6 +27,7 @@ TIMEOUT = 12
 ONIONSEARCH_TIMEOUT = 90
 TRUFFLEHOG_TIMEOUT = 180
 GITLEAKS_TIMEOUT = 180
+SOCIAL_ANALYZER_TIMEOUT = 180
 
 
 def ts():
@@ -872,6 +874,215 @@ def _gitleaks_url(fallback_url, file_name, commit=None, line=None):
                 url += f"#L{line}"
         return url
     return fallback_url or "https://github.com/gitleaks/gitleaks"
+
+
+# MÓDULO 9E — Social Analyzer (perfiles sociales)
+def scan_social_analyzer(username, websites=None, top=100, mode="fast",
+                         method="find", filter_value="good", profiles="detected",
+                         metadata=False, extract=False, countries=None,
+                         site_type=None, timeout=10, max_findings=30):
+    results = []
+    username = (username or "").strip()
+    if not username:
+        results.append({
+            "source": "Social Analyzer",
+            "source_id": "socialanalyzer",
+            "title": "Social Analyzer sin usuario configurado",
+            "url": "https://github.com/qeeqbox/social-analyzer",
+            "category": "Sistema",
+            "category_class": "cat-repo",
+            "risk": "INFO",
+            "risk_class": "risk-low",
+            "raw": "",
+            "detail": "Configura uno o varios usernames separados por coma en Configuración",
+            "detected": ts(),
+            "is_system": True,
+        })
+        return results
+
+    try:
+        top = max(1, min(int(top or 100), 1000))
+    except (TypeError, ValueError):
+        top = 100
+    try:
+        timeout = max(3, min(int(timeout or 10), 60))
+    except (TypeError, ValueError):
+        timeout = 10
+    try:
+        max_findings = max(1, min(int(max_findings or 30), 100))
+    except (TypeError, ValueError):
+        max_findings = 30
+
+    mode = mode if mode in ("fast", "slow", "special") else "fast"
+    method = method if method in ("find", "get", "all") else "find"
+    filter_value = filter_value if filter_value else "good"
+    profiles = profiles if profiles else "detected"
+
+    exe = shutil.which("social-analyzer") or shutil.which("social-analyzer.exe")
+    cmd = [exe] if exe else [sys.executable, "-m", "social-analyzer"]
+    cmd.extend([
+        "--username", username,
+        "--mode", mode,
+        "--method", method,
+        "--filter", filter_value,
+        "--profiles", profiles,
+        "--top", str(top),
+        "--timeout", str(timeout),
+        "--output", "json",
+        "--silent",
+        "--trim",
+    ])
+    if websites:
+        cmd.extend(["--websites"])
+        cmd.extend(_split_cli_values(websites))
+    if countries:
+        cmd.extend(["--countries"])
+        cmd.extend(_split_cli_values(countries))
+    if site_type:
+        cmd.extend(["--type", str(site_type).strip()])
+    if metadata:
+        cmd.append("--metadata")
+    if extract:
+        cmd.append("--extract")
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=SOCIAL_ANALYZER_TIMEOUT,
+        )
+        data = _parse_social_analyzer_json(proc.stdout)
+        for item in _social_analyzer_items(data):
+            finding = _social_analyzer_finding(item, username)
+            if finding:
+                results.append(finding)
+            if len(results) >= max_findings:
+                break
+
+        if not results:
+            detail = "Sin perfiles detectados para el usuario configurado"
+            if proc.returncode not in (0, 1) and proc.stderr:
+                detail = f"Sin hallazgos parseables; stderr: {proc.stderr[:140]}"
+            results.append({
+                "source": "Social Analyzer",
+                "source_id": "socialanalyzer",
+                "title": f'Social Analyzer: sin perfiles para "{username}"',
+                "url": "https://github.com/qeeqbox/social-analyzer",
+                "category": "Perfil Social",
+                "category_class": "cat-repo",
+                "risk": "BAJO",
+                "risk_class": "risk-low",
+                "raw": username,
+                "detail": detail,
+                "detected": ts(),
+                "is_negative": True,
+            })
+    except subprocess.TimeoutExpired:
+        results.append(_error_notice("Social Analyzer", "Tiempo máximo agotado; reduce top/websites"))
+    except Exception as e:
+        results.append(_error_notice("Social Analyzer", str(e)))
+
+    return results
+
+
+def _split_cli_values(value):
+    if isinstance(value, list):
+        return [str(v).strip() for v in value if str(v).strip()]
+    return [v.strip() for v in str(value or "").replace(",", " ").split() if v.strip()]
+
+
+def _parse_social_analyzer_json(raw):
+    raw = (raw or "").strip()
+    if not raw:
+        return None
+    try:
+        return json.loads(raw)
+    except json.JSONDecodeError:
+        pass
+    start = raw.find("{")
+    end = raw.rfind("}")
+    if start >= 0 and end > start:
+        try:
+            return json.loads(raw[start:end + 1])
+        except json.JSONDecodeError:
+            pass
+    start = raw.find("[")
+    end = raw.rfind("]")
+    if start >= 0 and end > start:
+        try:
+            return json.loads(raw[start:end + 1])
+        except json.JSONDecodeError:
+            pass
+    return None
+
+
+def _social_analyzer_items(data):
+    items = []
+    if isinstance(data, list):
+        items.extend(data)
+    elif isinstance(data, dict):
+        for key in ("detected", "profiles", "results", "data", "items"):
+            value = data.get(key)
+            if isinstance(value, list):
+                items.extend(value)
+        if not items:
+            for value in data.values():
+                if isinstance(value, list):
+                    items.extend(value)
+                elif isinstance(value, dict):
+                    items.append(value)
+    return items
+
+
+def _social_analyzer_finding(item, fallback_username):
+    if not isinstance(item, dict):
+        return None
+    link = (
+        item.get("link") or item.get("url") or item.get("profile")
+        or item.get("profile_url") or item.get("website")
+    )
+    if not link or str(link).strip() in ("", "#"):
+        return None
+
+    site = item.get("name") or item.get("site") or item.get("website") or item.get("domain") or "Social"
+    username = item.get("username") or item.get("user") or fallback_username
+    rate = item.get("rate") or item.get("score") or item.get("rating") or item.get("probability")
+    title = item.get("title") or f"Perfil posible: {username} en {site}"
+    info = item.get("info") or item.get("text") or item.get("description") or ""
+    risk, risk_class = _social_analyzer_risk(rate)
+    detail = f"Sitio: {site}"
+    if rate not in (None, ""):
+        detail += f" | Rate: {rate}"
+    if info:
+        detail += f" | {str(info)[:120]}"
+
+    return {
+        "source": "Social Analyzer",
+        "source_id": "socialanalyzer",
+        "title": str(title)[:160],
+        "url": str(link),
+        "category": "Perfil Social",
+        "category_class": "cat-repo",
+        "risk": risk,
+        "risk_class": risk_class,
+        "raw": username,
+        "detail": detail,
+        "detected": ts(),
+    }
+
+
+def _social_analyzer_risk(rate):
+    try:
+        score = float(str(rate).replace("%", ""))
+    except (TypeError, ValueError):
+        score = 50
+    if score >= 80:
+        return "ALTO", "risk-high"
+    if score >= 50:
+        return "MEDIO", "risk-medium"
+    return "BAJO", "risk-low"
 
 
 # ─────────────────────────────────────────────
