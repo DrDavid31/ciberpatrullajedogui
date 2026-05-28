@@ -21,7 +21,7 @@ from modules.scanner import (
     scan_gcs, scan_googledrive, scan_file_repos,
     scan_ahmia, scan_darksearch, scan_leakix,
     scan_hibp, scan_intelx, scan_onionsearch,
-    scan_trufflehog
+    scan_trufflehog, scan_gitleaks
 )
 from modules.ail_client import (
     create_tracker as ail_create_tracker,
@@ -156,6 +156,15 @@ def run_scan(term, domain, active_modules, api_keys):
             as_bool(api_keys.get("trufflehog_comments")),
             api_keys.get("trufflehog_limit", 20),
         )),
+        ("gitleaks",    "Gitleaks",                 lambda: scan_gitleaks(
+            api_keys.get("gitleaks_target", "."),
+            api_keys.get("gitleaks_mode", "dir"),
+            api_keys.get("gitleaks_config"),
+            api_keys.get("gitleaks_baseline"),
+            api_keys.get("gitleaks_limit", 20),
+            api_keys.get("gitleaks_max_mb"),
+            api_keys.get("gitleaks_log_opts"),
+        )),
         ("leakix",      "LeakIX",                   lambda: scan_leakix(term, api_keys.get("leakix"))),
         ("hibp",        "HaveIBeenPwned",           lambda: scan_hibp(domain, api_keys.get("hibp"))),
         ("intelx",      "Intelligence X",           lambda: scan_intelx(term, api_keys.get("intelx"))),
@@ -225,7 +234,8 @@ def start_scan():
     active_modules = data.get("modules", ["github","pastebin","googledrive",
                                            "filerepos","aws","azure","gcloud",
                                            "ahmia","darksearch","onionsearch",
-                                           "trufflehog","leakix","hibp","intelx"])
+                                           "trufflehog","gitleaks",
+                                           "leakix","hibp","intelx"])
     api_keys       = data.get("api_keys", {})
 
     t = threading.Thread(target=run_scan, args=(term, domain, active_modules, api_keys), daemon=True)
@@ -388,10 +398,11 @@ def misp_export():
 def health():
     return jsonify({
         "status": "ok",
-        "version": "2.3",
+        "version": "2.4",
         "client": "INE",
         "onionsearch": True,
         "trufflehog": True,
+        "gitleaks": True,
         "ail": True,
         "misp": True,
     })

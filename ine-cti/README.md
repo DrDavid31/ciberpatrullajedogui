@@ -1,4 +1,4 @@
-# INE CTI Monitor v2.3
+# INE CTI Monitor v2.4
 ## Inteligencia de Amenazas Cibernéticas
 
 Sistema de monitoreo OSINT defensivo para detectar información del INE
@@ -61,6 +61,7 @@ ine-cti/
 | darksearch     | DarkSearch.io             | Dark Web indexada  | No      |
 | onionsearch    | OnionSearch               | Motores .onion     | No      |
 | trufflehog     | TruffleHog                | Secret scanning    | Opcional|
+| gitleaks       | Gitleaks                  | Secret scanning    | Opcional|
 | ail            | AIL Framework             | Correlacion/API    | Requerida|
 | misp           | MISP                      | Threat Intel       | Requerida|
 | leakix         | LeakIX                    | Servicios expuestos| Opcional|
@@ -82,6 +83,7 @@ Agrégalas en la pestaña **Configuración** del monitor:
 | AIL Framework    | Self-hosted| https://github.com/ail-project/ail-framework |
 | MISP             | Self-hosted| https://github.com/MISP/MISP          |
 | TruffleHog       | Binario local| https://github.com/trufflesecurity/trufflehog |
+| Gitleaks         | Binario local| https://github.com/gitleaks/gitleaks |
 
 *Plan gratuito con límite de consultas diarias.
 
@@ -110,7 +112,7 @@ POST /api/scan/start
 {
   "term": "INE",
   "domain": "ine.mx",
-  "modules": ["github", "pastebin", "aws", "ahmia", "darksearch", "onionsearch", "trufflehog"],
+  "modules": ["github", "pastebin", "aws", "ahmia", "darksearch", "onionsearch", "trufflehog", "gitleaks"],
   "api_keys": {
     "github": "ghp_xxxx",
     "intelx": "xxxx-xxxx",
@@ -124,6 +126,13 @@ POST /api/scan/start
     "trufflehog_results": "verified,unknown",
     "trufflehog_limit": 20,
     "trufflehog_comments": false,
+    "gitleaks_target": ".",
+    "gitleaks_mode": "dir",
+    "gitleaks_config": "",
+    "gitleaks_baseline": "",
+    "gitleaks_limit": 20,
+    "gitleaks_max_mb": "",
+    "gitleaks_log_opts": "",
     "ail_url": "https://localhost:7000",
     "ail_key": "AIL_API_KEY",
     "ail_tags": "ine-cti, osint",
@@ -177,6 +186,9 @@ POST /api/scan/start
 - TruffleHog se integra como escaner externo de secretos. Instala el binario
   `trufflehog` desde sus releases y configura un repositorio, organizacion o
   ruta local autorizada desde la pestaña Configuracion.
+- Gitleaks se integra como escaner externo de secretos para rutas locales o
+  repositorios git locales. Instala el binario `gitleaks` y usa modo `dir` o
+  `git`; los reportes se generan en JSON temporal y se importan como hallazgos.
 - AIL Framework se integra como plataforma externa. Desde Configuracion puedes
   probar la conexion, enviar hallazgos del monitor como items de texto y crear
   trackers para el termino activo.

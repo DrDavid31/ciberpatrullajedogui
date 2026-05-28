@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INE CTI Monitor v2.3</title>
+<title>INE CTI Monitor v2.4</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -237,7 +237,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
     <div class="logo-icon">🛰️</div>
     <div class="logo-text">
       <h1>INE · CTI MONITOR</h1>
-      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.3</p>
+      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.4</p>
     </div>
   </div>
   <div class="h-right">
@@ -297,6 +297,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
       <label class="cbi on" data-val="darksearch"><input type="checkbox" checked><div class="cbdot"></div><span>DarkSearch.io</span></label>
       <label class="cbi on" data-val="onionsearch"><input type="checkbox" checked><div class="cbdot"></div><span>OnionSearch</span></label>
       <label class="cbi on" data-val="trufflehog"><input type="checkbox" checked><div class="cbdot"></div><span>TruffleHog</span></label>
+      <label class="cbi on" data-val="gitleaks"><input type="checkbox" checked><div class="cbdot"></div><span>Gitleaks</span></label>
       <label class="cbi on" data-val="leakix"><input type="checkbox" checked><div class="cbdot"></div><span>LeakIX</span></label>
       <label class="cbi on" data-val="hibp"><input type="checkbox" checked><div class="cbdot"></div><span>HaveIBeenPwned</span></label>
       <label class="cbi on" data-val="intelx"><input type="checkbox" checked><div class="cbdot"></div><span>Intelligence X</span></label>
@@ -464,6 +465,44 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
   </div>
 
   <div class="card">
+    <div class="card-title">Gitleaks</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>Objetivo Gitleaks</label>
+        <input type="text" id="keyGitleaksTarget" value="." placeholder="C:\ruta\repo o C:\ruta\carpeta" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Ruta local autorizada; usa . para el proyecto actual</div>
+      </div>
+      <div class="api-row">
+        <label>Modo</label>
+        <select id="keyGitleaksMode" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="dir">dir</option>
+          <option value="git">git</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>Config / baseline</label>
+        <input type="text" id="keyGitleaksConfig" placeholder="C:\ruta\.gitleaks.toml" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="text" id="keyGitleaksBaseline" placeholder="C:\ruta\gitleaks-baseline.json" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+      </div>
+      <div class="api-row">
+        <label>Limites</label>
+        <select id="keyGitleaksLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+          <option value="10">10 hallazgos</option>
+          <option value="20" selected>20 hallazgos</option>
+          <option value="50">50 hallazgos</option>
+          <option value="100">100 hallazgos</option>
+        </select>
+        <input type="number" id="keyGitleaksMaxMb" min="1" max="200" placeholder="Max MB por archivo" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+      </div>
+      <div class="api-row">
+        <label>Git log opts</label>
+        <input type="text" id="keyGitleaksLogOpts" placeholder="--all" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Solo modo git; ejemplo: --all</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">AIL Framework</div>
     <div class="api-grid">
       <div class="api-row">
@@ -578,7 +617,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 
 <!-- FOOTER -->
 <footer>
-  <span>INE CTI MONITOR v2.3 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
+  <span>INE CTI MONITOR v2.4 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
   <div class="exp-btns">
     <button class="exp-btn" onclick="exportData('csv')">⬇ CSV</button>
     <button class="exp-btn" onclick="exportData('json')">⬇ JSON</button>
@@ -650,6 +689,13 @@ function getKeys(){
     trufflehog_results: document.getElementById('keyTrufflehogResults').value,
     trufflehog_limit: document.getElementById('keyTrufflehogLimit').value,
     trufflehog_comments: document.getElementById('keyTrufflehogComments').checked,
+    gitleaks_target: document.getElementById('keyGitleaksTarget').value.trim(),
+    gitleaks_mode: document.getElementById('keyGitleaksMode').value,
+    gitleaks_config: document.getElementById('keyGitleaksConfig').value.trim(),
+    gitleaks_baseline: document.getElementById('keyGitleaksBaseline').value.trim(),
+    gitleaks_limit: document.getElementById('keyGitleaksLimit').value,
+    gitleaks_max_mb: document.getElementById('keyGitleaksMaxMb').value,
+    gitleaks_log_opts: document.getElementById('keyGitleaksLogOpts').value.trim(),
     ail_url: document.getElementById('keyAilUrl').value.trim(),
     ail_key: document.getElementById('keyAilKey').value.trim(),
     ail_tags: document.getElementById('keyAilTags').value.trim(),
@@ -687,6 +733,13 @@ function loadKeys(){
     if(k.trufflehog_results) document.getElementById('keyTrufflehogResults').value = k.trufflehog_results;
     if(k.trufflehog_limit) document.getElementById('keyTrufflehogLimit').value = k.trufflehog_limit;
     document.getElementById('keyTrufflehogComments').checked = !!k.trufflehog_comments;
+    if(k.gitleaks_target) document.getElementById('keyGitleaksTarget').value = k.gitleaks_target;
+    if(k.gitleaks_mode) document.getElementById('keyGitleaksMode').value = k.gitleaks_mode;
+    if(k.gitleaks_config) document.getElementById('keyGitleaksConfig').value = k.gitleaks_config;
+    if(k.gitleaks_baseline) document.getElementById('keyGitleaksBaseline').value = k.gitleaks_baseline;
+    if(k.gitleaks_limit) document.getElementById('keyGitleaksLimit').value = k.gitleaks_limit;
+    if(k.gitleaks_max_mb) document.getElementById('keyGitleaksMaxMb').value = k.gitleaks_max_mb;
+    if(k.gitleaks_log_opts) document.getElementById('keyGitleaksLogOpts').value = k.gitleaks_log_opts;
     if(k.ail_url) document.getElementById('keyAilUrl').value = k.ail_url;
     if(k.ail_key) document.getElementById('keyAilKey').value = k.ail_key;
     if(k.ail_tags) document.getElementById('keyAilTags').value = k.ail_tags;
@@ -1028,6 +1081,7 @@ const demoData = [
   {source:'DarkSearch.io',source_id:'darksearch',title:'Resultado en DarkSearch para "INE"',url:'https://darksearch.io/search?q=INE',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Contenido dark web con referencia a INE',detected:'',is_dork:false},
   {source:'OnionSearch/Ahmia',source_id:'onionsearch',title:'Resultado OnionSearch para "INE"',url:'http://exampleonionurl.onion/',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Motor: ahmia | Dominio: exampleonionurl.onion',detected:'',is_dork:false},
   {source:'trufflehog - git',source_id:'trufflehog',title:'TruffleHog: GitHub token (verificado)',url:'https://github.com/DrDavid31/ciberpatrullajedogui',category:'Credenciales Filtradas',category_class:'cat-leak',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Detector: GitHub | Decoder: PLAIN | Estado: verificado',detected:'',is_dork:false,is_secret:true},
+  {source:'Gitleaks',source_id:'gitleaks',title:'Gitleaks: generic-api-key',url:'https://github.com/gitleaks/gitleaks',category:'Credenciales Filtradas',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:'Rule: generic-api-key | Ubicacion: config.env:12 | Fingerprint: demo',detected:'',is_dork:false,is_secret:true},
 ];
 
 async function runDemoScan(term, modules){
