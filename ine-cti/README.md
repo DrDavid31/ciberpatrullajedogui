@@ -1,4 +1,4 @@
-# INE CTI Monitor v2.2
+# INE CTI Monitor v2.3
 ## Inteligencia de Amenazas Cibernéticas
 
 Sistema de monitoreo OSINT defensivo para detectar información del INE
@@ -60,6 +60,7 @@ ine-cti/
 | ahmia          | Ahmia.fi (Dark Web)       | Dark Web indexada  | No      |
 | darksearch     | DarkSearch.io             | Dark Web indexada  | No      |
 | onionsearch    | OnionSearch               | Motores .onion     | No      |
+| trufflehog     | TruffleHog                | Secret scanning    | Opcional|
 | ail            | AIL Framework             | Correlacion/API    | Requerida|
 | misp           | MISP                      | Threat Intel       | Requerida|
 | leakix         | LeakIX                    | Servicios expuestos| Opcional|
@@ -80,6 +81,7 @@ Agrégalas en la pestaña **Configuración** del monitor:
 | LeakIX           | Gratis*  | https://leakix.net                     |
 | AIL Framework    | Self-hosted| https://github.com/ail-project/ail-framework |
 | MISP             | Self-hosted| https://github.com/MISP/MISP          |
+| TruffleHog       | Binario local| https://github.com/trufflesecurity/trufflehog |
 
 *Plan gratuito con límite de consultas diarias.
 
@@ -108,7 +110,7 @@ POST /api/scan/start
 {
   "term": "INE",
   "domain": "ine.mx",
-  "modules": ["github", "pastebin", "aws", "ahmia", "darksearch", "onionsearch"],
+  "modules": ["github", "pastebin", "aws", "ahmia", "darksearch", "onionsearch", "trufflehog"],
   "api_keys": {
     "github": "ghp_xxxx",
     "intelx": "xxxx-xxxx",
@@ -117,6 +119,11 @@ POST /api/scan/start
     "onion_proxy": "127.0.0.1:9050",
     "onion_engines": "ahmia darksearchio phobos",
     "onion_limit": 1,
+    "trufflehog_target": "https://github.com/DrDavid31/ciberpatrullajedogui",
+    "trufflehog_mode": "git",
+    "trufflehog_results": "verified,unknown",
+    "trufflehog_limit": 20,
+    "trufflehog_comments": false,
     "ail_url": "https://localhost:7000",
     "ail_key": "AIL_API_KEY",
     "ail_tags": "ine-cti, osint",
@@ -167,6 +174,9 @@ POST /api/scan/start
 - OnionSearch amplía la cobertura consultando múltiples motores .onion.
   Se instala con `pip install -r requirements.txt`; el proxy Tor local
   `127.0.0.1:9050` es opcional y se configura desde la pestaña Configuración.
+- TruffleHog se integra como escaner externo de secretos. Instala el binario
+  `trufflehog` desde sus releases y configura un repositorio, organizacion o
+  ruta local autorizada desde la pestaña Configuracion.
 - AIL Framework se integra como plataforma externa. Desde Configuracion puedes
   probar la conexion, enviar hallazgos del monitor como items de texto y crear
   trackers para el termino activo.
