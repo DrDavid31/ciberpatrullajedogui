@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INE CTI Monitor v2.2</title>
+<title>INE CTI Monitor v2.3</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -237,7 +237,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
     <div class="logo-icon">🛰️</div>
     <div class="logo-text">
       <h1>INE · CTI MONITOR</h1>
-      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.2</p>
+      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.3</p>
     </div>
   </div>
   <div class="h-right">
@@ -296,6 +296,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
       <label class="cbi on" data-val="ahmia"><input type="checkbox" checked><div class="cbdot"></div><span>Ahmia (Dark Web)</span></label>
       <label class="cbi on" data-val="darksearch"><input type="checkbox" checked><div class="cbdot"></div><span>DarkSearch.io</span></label>
       <label class="cbi on" data-val="onionsearch"><input type="checkbox" checked><div class="cbdot"></div><span>OnionSearch</span></label>
+      <label class="cbi on" data-val="trufflehog"><input type="checkbox" checked><div class="cbdot"></div><span>TruffleHog</span></label>
       <label class="cbi on" data-val="leakix"><input type="checkbox" checked><div class="cbdot"></div><span>LeakIX</span></label>
       <label class="cbi on" data-val="hibp"><input type="checkbox" checked><div class="cbdot"></div><span>HaveIBeenPwned</span></label>
       <label class="cbi on" data-val="intelx"><input type="checkbox" checked><div class="cbdot"></div><span>Intelligence X</span></label>
@@ -422,6 +423,47 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
   </div>
 
   <div class="card">
+    <div class="card-title">TruffleHog</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>Objetivo TruffleHog</label>
+        <input type="text" id="keyTrufflehogTarget" value="https://github.com/DrDavid31/ciberpatrullajedogui" placeholder="https://github.com/org/repo o C:\ruta\repo" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Repo, organizacion GitHub o ruta local autorizada</div>
+      </div>
+      <div class="api-row">
+        <label>Modo</label>
+        <select id="keyTrufflehogMode" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="git">git repo</option>
+          <option value="github-repo">github repo + metadata</option>
+          <option value="github-org">github org</option>
+          <option value="filesystem">filesystem</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>Resultados / limite</label>
+        <select id="keyTrufflehogResults" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+          <option value="verified,unknown">verified + unknown</option>
+          <option value="verified">solo verified</option>
+          <option value="verified,unverified,unknown">todos</option>
+        </select>
+        <select id="keyTrufflehogLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="10">10 hallazgos</option>
+          <option value="20" selected>20 hallazgos</option>
+          <option value="50">50 hallazgos</option>
+          <option value="100">100 hallazgos</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>GitHub extras</label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keyTrufflehogComments"> Issues y PR comments
+        </label>
+        <div class="api-note">Usa el GitHub Token si esta guardado</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">AIL Framework</div>
     <div class="api-grid">
       <div class="api-row">
@@ -536,7 +578,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 
 <!-- FOOTER -->
 <footer>
-  <span>INE CTI MONITOR v2.2 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
+  <span>INE CTI MONITOR v2.3 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
   <div class="exp-btns">
     <button class="exp-btn" onclick="exportData('csv')">⬇ CSV</button>
     <button class="exp-btn" onclick="exportData('json')">⬇ JSON</button>
@@ -603,6 +645,11 @@ function getKeys(){
     onion_proxy: document.getElementById('keyOnionProxy').value.trim(),
     onion_engines: document.getElementById('keyOnionEngines').value.trim(),
     onion_limit: document.getElementById('keyOnionLimit').value,
+    trufflehog_target: document.getElementById('keyTrufflehogTarget').value.trim(),
+    trufflehog_mode: document.getElementById('keyTrufflehogMode').value,
+    trufflehog_results: document.getElementById('keyTrufflehogResults').value,
+    trufflehog_limit: document.getElementById('keyTrufflehogLimit').value,
+    trufflehog_comments: document.getElementById('keyTrufflehogComments').checked,
     ail_url: document.getElementById('keyAilUrl').value.trim(),
     ail_key: document.getElementById('keyAilKey').value.trim(),
     ail_tags: document.getElementById('keyAilTags').value.trim(),
@@ -635,6 +682,11 @@ function loadKeys(){
     if(k.onion_proxy) document.getElementById('keyOnionProxy').value = k.onion_proxy;
     if(k.onion_engines) document.getElementById('keyOnionEngines').value = k.onion_engines;
     if(k.onion_limit) document.getElementById('keyOnionLimit').value = k.onion_limit;
+    if(k.trufflehog_target) document.getElementById('keyTrufflehogTarget').value = k.trufflehog_target;
+    if(k.trufflehog_mode) document.getElementById('keyTrufflehogMode').value = k.trufflehog_mode;
+    if(k.trufflehog_results) document.getElementById('keyTrufflehogResults').value = k.trufflehog_results;
+    if(k.trufflehog_limit) document.getElementById('keyTrufflehogLimit').value = k.trufflehog_limit;
+    document.getElementById('keyTrufflehogComments').checked = !!k.trufflehog_comments;
     if(k.ail_url) document.getElementById('keyAilUrl').value = k.ail_url;
     if(k.ail_key) document.getElementById('keyAilKey').value = k.ail_key;
     if(k.ail_tags) document.getElementById('keyAilTags').value = k.ail_tags;
@@ -975,6 +1027,7 @@ const demoData = [
   {source:'Google Drive/Docs',source_id:'googledrive',title:'Google Drive — archivos compartidos: "INE"',url:'https://www.google.com/search?q=site:drive.google.com+"INE"',category:'Repositorio Público',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:'Dork: site:drive.google.com "INE"',detected:'',is_dork:true},
   {source:'DarkSearch.io',source_id:'darksearch',title:'Resultado en DarkSearch para "INE"',url:'https://darksearch.io/search?q=INE',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Contenido dark web con referencia a INE',detected:'',is_dork:false},
   {source:'OnionSearch/Ahmia',source_id:'onionsearch',title:'Resultado OnionSearch para "INE"',url:'http://exampleonionurl.onion/',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Motor: ahmia | Dominio: exampleonionurl.onion',detected:'',is_dork:false},
+  {source:'trufflehog - git',source_id:'trufflehog',title:'TruffleHog: GitHub token (verificado)',url:'https://github.com/DrDavid31/ciberpatrullajedogui',category:'Credenciales Filtradas',category_class:'cat-leak',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Detector: GitHub | Decoder: PLAIN | Estado: verificado',detected:'',is_dork:false,is_secret:true},
 ];
 
 async function runDemoScan(term, modules){

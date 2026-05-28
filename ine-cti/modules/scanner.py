@@ -24,6 +24,7 @@ HEADERS = {
 
 TIMEOUT = 12
 ONIONSEARCH_TIMEOUT = 90
+TRUFFLEHOG_TIMEOUT = 180
 
 
 def ts():
@@ -496,6 +497,213 @@ def scan_onionsearch(term, proxy=None, limit=1, engines=None):
             pass
 
     return results
+
+
+# MÓDULO 9C — TruffleHog (detección de secretos)
+def scan_trufflehog(target, mode="git", results_filter="verified,unknown",
+                    github_token=None, include_comments=False, max_findings=20):
+    results = []
+    exe = shutil.which("trufflehog") or shutil.which("trufflehog.exe")
+    if not exe:
+        results.append({
+            "source": "TruffleHog",
+            "source_id": "trufflehog",
+            "title": "TruffleHog no está instalado",
+            "url": "https://github.com/trufflesecurity/trufflehog",
+            "category": "Sistema",
+            "category_class": "cat-leak",
+            "risk": "INFO",
+            "risk_class": "risk-low",
+            "raw": "trufflehog",
+            "detail": "Instala el binario de TruffleHog y asegúrate de que esté en PATH",
+            "detected": ts(),
+            "is_system": True,
+        })
+        return results
+
+    target = (target or "").strip()
+    if not target:
+        results.append({
+            "source": "TruffleHog",
+            "source_id": "trufflehog",
+            "title": "TruffleHog sin objetivo configurado",
+            "url": "https://github.com/trufflesecurity/trufflehog",
+            "category": "Sistema",
+            "category_class": "cat-leak",
+            "risk": "INFO",
+            "risk_class": "risk-low",
+            "raw": "",
+            "detail": "Configura un repositorio, organización o ruta local en Configuración",
+            "detected": ts(),
+            "is_system": True,
+        })
+        return results
+
+    mode = (mode or "git").strip().lower()
+    results_filter = (results_filter or "verified,unknown").strip()
+    if results_filter not in ("verified", "verified,unknown", "verified,unverified,unknown"):
+        results_filter = "verified,unknown"
+    try:
+        max_findings = max(1, min(int(max_findings or 20), 100))
+    except (TypeError, ValueError):
+        max_findings = 20
+
+    if mode == "github-org":
+        org = _github_org_from_target(target)
+        cmd = [exe, "github", f"--org={org}"]
+    elif mode == "github-repo":
+        repo = _github_repo_url(target)
+        cmd = [exe, "github", f"--repo={repo}"]
+    elif mode == "filesystem":
+        cmd = [exe, "filesystem", target]
+    else:
+        cmd = [exe, "git", target]
+
+    cmd.extend([f"--results={results_filter}", "--json", "--no-update"])
+    if include_comments and mode in ("github-repo", "github-org"):
+        cmd.extend(["--issue-comments", "--pr-comments"])
+
+    env = os.environ.copy()
+    if github_token and mode in ("github-repo", "github-org"):
+        env["GITHUB_TOKEN"] = github_token
+
+    try:
+        proc = subprocess.run(
+            cmd,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=TRUFFLEHOG_TIMEOUT,
+            env=env,
+        )
+        for line in proc.stdout.splitlines():
+            line = line.strip()
+            if not line.startswith("{"):
+                continue
+            try:
+                item = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            finding = _trufflehog_finding(item, target)
+            if finding:
+                results.append(finding)
+            if len(results) >= max_findings:
+                break
+
+        if not results:
+            detail = "Sin secretos encontrados en el objetivo configurado"
+            if proc.returncode not in (0, 183) and proc.stderr:
+                detail = f"Sin hallazgos parseables; stderr: {proc.stderr[:140]}"
+            results.append({
+                "source": "TruffleHog",
+                "source_id": "trufflehog",
+                "title": f"TruffleHog: sin secretos para {target[:60]}",
+                "url": target if target.startswith("http") else "https://github.com/trufflesecurity/trufflehog",
+                "category": "Credenciales Filtradas",
+                "category_class": "cat-leak",
+                "risk": "BAJO",
+                "risk_class": "risk-low",
+                "raw": "",
+                "detail": detail,
+                "detected": ts(),
+                "is_negative": True,
+            })
+    except subprocess.TimeoutExpired:
+        results.append(_error_notice("TruffleHog", "Tiempo máximo agotado; reduce alcance o objetivo"))
+    except Exception as e:
+        results.append(_error_notice("TruffleHog", str(e)))
+
+    return results
+
+
+def _github_repo_url(target):
+    target = target.strip()
+    if target.startswith(("http://", "https://", "ssh://", "git@")):
+        return target
+    if re.match(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$", target):
+        return f"https://github.com/{target}"
+    return target
+
+
+def _github_org_from_target(target):
+    target = target.strip().rstrip("/")
+    m = re.search(r"github\.com[:/]+([^/\s]+)", target)
+    if m:
+        return m.group(1)
+    if "/" in target and not target.startswith(("http://", "https://")):
+        return target.split("/", 1)[0]
+    return target
+
+
+def _trufflehog_finding(item, fallback_url):
+    detector = item.get("DetectorName") or item.get("DetectorType") or "Secreto"
+    decoder = item.get("DecoderName") or "PLAIN"
+    verified = bool(item.get("Verified"))
+    redacted = item.get("Redacted") or "[redacted]"
+    source_name = item.get("SourceName") or "TruffleHog"
+    metadata = item.get("SourceMetadata", {}).get("Data", {})
+    location = _trufflehog_location(metadata)
+    url = _trufflehog_url(metadata, fallback_url)
+    status = "verificado" if verified else "no verificado/unknown"
+    risk = "CRÍTICO" if verified else "ALTO"
+    risk_class = "risk-critical" if verified else "risk-high"
+    detail = f"Detector: {detector} | Decoder: {decoder} | Estado: {status}"
+    if location:
+        detail += f" | Ubicación: {location}"
+
+    return {
+        "source": source_name,
+        "source_id": "trufflehog",
+        "title": f"TruffleHog: {detector} ({status})",
+        "url": url or fallback_url or "https://github.com/trufflesecurity/trufflehog",
+        "category": "Credenciales Filtradas",
+        "category_class": "cat-leak",
+        "risk": risk,
+        "risk_class": risk_class,
+        "raw": redacted,
+        "detail": detail,
+        "detected": ts(),
+        "is_secret": True,
+    }
+
+
+def _trufflehog_location(metadata):
+    if not isinstance(metadata, dict):
+        return ""
+    git = metadata.get("Git") or metadata.get("Github") or {}
+    if isinstance(git, dict):
+        parts = []
+        if git.get("repository"):
+            parts.append(git.get("repository"))
+        if git.get("file"):
+            file_part = git.get("file")
+            if git.get("line"):
+                file_part += f":{git.get('line')}"
+            parts.append(file_part)
+        if git.get("commit"):
+            parts.append(str(git.get("commit"))[:12])
+        if parts:
+            return " | ".join(parts)
+    return ""
+
+
+def _trufflehog_url(metadata, fallback_url):
+    if not isinstance(metadata, dict):
+        return fallback_url
+    git = metadata.get("Git") or metadata.get("Github") or {}
+    if isinstance(git, dict):
+        repo = git.get("repository") or fallback_url
+        file_name = git.get("file")
+        commit = git.get("commit")
+        line = git.get("line")
+        if repo and file_name and commit and str(repo).startswith("http"):
+            url = f"{str(repo).rstrip('/')}/blob/{commit}/{file_name}"
+            if line:
+                url += f"#L{line}"
+            return url
+        if repo:
+            return repo
+    return fallback_url
 
 
 # ─────────────────────────────────────────────
