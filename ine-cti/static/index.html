@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INE CTI Monitor v2.0</title>
+<title>INE CTI Monitor v2.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -237,7 +237,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
     <div class="logo-icon">🛰️</div>
     <div class="logo-text">
       <h1>INE · CTI MONITOR</h1>
-      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.0</p>
+      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.2</p>
     </div>
   </div>
   <div class="h-right">
@@ -422,6 +422,104 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
   </div>
 
   <div class="card">
+    <div class="card-title">AIL Framework</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>AIL URL</label>
+        <input type="text" id="keyAilUrl" placeholder="https://localhost:7000" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Instancia externa AIL Framework</div>
+      </div>
+      <div class="api-row">
+        <label>AIL API Key</label>
+        <input type="password" id="keyAilKey" placeholder="AIL API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Se envia como header Authorization</div>
+      </div>
+      <div class="api-row">
+        <label>AIL Tags</label>
+        <input type="text" id="keyAilTags" placeholder="ine-cti, osint" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Opcional; separados por coma</div>
+      </div>
+      <div class="api-row">
+        <label>AIL Tracker</label>
+        <select id="keyAilTrackerType" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
+          <option value="word">word</option>
+          <option value="regex">regex</option>
+          <option value="set">set</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keyAilVerifyTls"> Verificar TLS
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testAil()" style="font-size:13px;padding:9px 18px;">PROBAR AIL</button>
+      <button class="btn-scan" onclick="exportToAil()" style="font-size:13px;padding:9px 18px;">ENVIAR HALLAZGOS</button>
+      <button class="btn-scan" onclick="createAilTracker()" style="font-size:13px;padding:9px 18px;">CREAR TRACKER</button>
+    </div>
+    <div id="ailStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">MISP</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>MISP URL</label>
+        <input type="text" id="keyMispUrl" placeholder="https://misp.local" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Instancia externa MISP</div>
+      </div>
+      <div class="api-row">
+        <label>MISP API Key</label>
+        <input type="password" id="keyMispKey" placeholder="MISP API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Se envia como header Authorization</div>
+      </div>
+      <div class="api-row">
+        <label>MISP Tags</label>
+        <input type="text" id="keyMispTags" placeholder="tlp:amber, osint, ine-cti" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Opcional; separados por coma</div>
+      </div>
+      <div class="api-row">
+        <label>MISP Sharing</label>
+        <select id="keyMispDistribution" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+          <option value="0">Your organisation only</option>
+          <option value="1">This community only</option>
+          <option value="2">Connected communities</option>
+          <option value="3">All communities</option>
+          <option value="5">Inherit event</option>
+        </select>
+        <select id="keyMispThreatLevel" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="">Auto threat level</option>
+          <option value="1">High</option>
+          <option value="2">Medium</option>
+          <option value="3">Low</option>
+          <option value="4">Undefined</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>MISP Analysis</label>
+        <select id="keyMispAnalysis" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="0">Initial</option>
+          <option value="1">Ongoing</option>
+          <option value="2">Completed</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>MISP Flags</label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+          <input type="checkbox" id="keyMispVerifyTls"> Verificar TLS
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keyMispPublish"> Publicar evento
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testMisp()" style="font-size:13px;padding:9px 18px;">PROBAR MISP</button>
+      <button class="btn-scan" onclick="exportToMisp()" style="font-size:13px;padding:9px 18px;">ENVIAR EVENTO</button>
+    </div>
+    <div id="mispStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
     <div class="card-title">Instrucciones de Instalación</div>
     <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:2;background:var(--bg-panel);padding:16px;border-radius:7px;border:1px solid var(--border);">
       <span style="color:var(--t3)"># 1. Requisitos</span><br>
@@ -438,7 +536,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 
 <!-- FOOTER -->
 <footer>
-  <span>INE CTI MONITOR v2.0 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
+  <span>INE CTI MONITOR v2.2 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
   <div class="exp-btns">
     <button class="exp-btn" onclick="exportData('csv')">⬇ CSV</button>
     <button class="exp-btn" onclick="exportData('json')">⬇ JSON</button>
@@ -505,6 +603,19 @@ function getKeys(){
     onion_proxy: document.getElementById('keyOnionProxy').value.trim(),
     onion_engines: document.getElementById('keyOnionEngines').value.trim(),
     onion_limit: document.getElementById('keyOnionLimit').value,
+    ail_url: document.getElementById('keyAilUrl').value.trim(),
+    ail_key: document.getElementById('keyAilKey').value.trim(),
+    ail_tags: document.getElementById('keyAilTags').value.trim(),
+    ail_tracker_type: document.getElementById('keyAilTrackerType').value,
+    ail_verify_tls: document.getElementById('keyAilVerifyTls').checked,
+    misp_url: document.getElementById('keyMispUrl').value.trim(),
+    misp_key: document.getElementById('keyMispKey').value.trim(),
+    misp_tags: document.getElementById('keyMispTags').value.trim(),
+    misp_distribution: document.getElementById('keyMispDistribution').value,
+    misp_threat_level: document.getElementById('keyMispThreatLevel').value,
+    misp_analysis: document.getElementById('keyMispAnalysis').value,
+    misp_verify_tls: document.getElementById('keyMispVerifyTls').checked,
+    misp_publish: document.getElementById('keyMispPublish').checked,
   };
 }
 
@@ -524,11 +635,111 @@ function loadKeys(){
     if(k.onion_proxy) document.getElementById('keyOnionProxy').value = k.onion_proxy;
     if(k.onion_engines) document.getElementById('keyOnionEngines').value = k.onion_engines;
     if(k.onion_limit) document.getElementById('keyOnionLimit').value = k.onion_limit;
+    if(k.ail_url) document.getElementById('keyAilUrl').value = k.ail_url;
+    if(k.ail_key) document.getElementById('keyAilKey').value = k.ail_key;
+    if(k.ail_tags) document.getElementById('keyAilTags').value = k.ail_tags;
+    if(k.ail_tracker_type) document.getElementById('keyAilTrackerType').value = k.ail_tracker_type;
+    document.getElementById('keyAilVerifyTls').checked = !!k.ail_verify_tls;
+    if(k.misp_url) document.getElementById('keyMispUrl').value = k.misp_url;
+    if(k.misp_key) document.getElementById('keyMispKey').value = k.misp_key;
+    if(k.misp_tags) document.getElementById('keyMispTags').value = k.misp_tags;
+    if(k.misp_distribution) document.getElementById('keyMispDistribution').value = k.misp_distribution;
+    if(k.misp_threat_level !== undefined) document.getElementById('keyMispThreatLevel').value = k.misp_threat_level;
+    if(k.misp_analysis) document.getElementById('keyMispAnalysis').value = k.misp_analysis;
+    document.getElementById('keyMispVerifyTls').checked = !!k.misp_verify_tls;
+    document.getElementById('keyMispPublish').checked = !!k.misp_publish;
   } catch(e){}
 }
 loadKeys();
 
+function setAilStatus(msg, color='cyan'){
+  const el = document.getElementById('ailStatus');
+  el.style.display = 'block';
+  el.style.borderColor = `var(--${color})`;
+  el.style.color = `var(--${color})`;
+  el.textContent = msg;
+}
+
+async function postJson(path, body){
+  const r = await fetch(API+path, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+  const data = await r.json().catch(()=>({error:'Respuesta invalida'}));
+  if(!r.ok) throw new Error(data.error || data.message || r.statusText);
+  return data;
+}
+
+async function testAil(){
+  try {
+    setAilStatus('Probando conexion AIL...', 'cyan');
+    const data = await postJson('/api/ail/test', { api_keys: getKeys() });
+    setAilStatus(`${data.message || 'Conexion AIL correcta'} | tags: ${data.tags_count || 0}`, 'green');
+  } catch(e){
+    setAilStatus('AIL error: '+e.message, 'red');
+  }
+}
+
+async function exportToAil(){
+  if(!findings.length){ showNotif('No hay hallazgos para enviar a AIL','amber'); return; }
+  try {
+    setAilStatus('Enviando hallazgos a AIL...', 'cyan');
+    const data = await postJson('/api/ail/export', { api_keys: getKeys(), findings });
+    const exported = (data.exported || []).length;
+    const errors = (data.errors || []).length;
+    setAilStatus(`AIL export: ${exported} enviado(s), ${errors} error(es)`, errors ? 'amber' : 'green');
+  } catch(e){
+    setAilStatus('AIL export error: '+e.message, 'red');
+  }
+}
+
+async function createAilTracker(){
+  const term = document.getElementById('searchTerm').value.trim() || 'INE';
+  try {
+    setAilStatus('Creando tracker AIL...', 'cyan');
+    const data = await postJson('/api/ail/tracker', { api_keys: getKeys(), term });
+    setAilStatus(`Tracker AIL creado: ${data.uuid || 'sin uuid'} (${data.term})`, 'green');
+  } catch(e){
+    setAilStatus('AIL tracker error: '+e.message, 'red');
+  }
+}
+
 // ─── SCAN ───
+function setMispStatus(msg, color='cyan'){
+  const el = document.getElementById('mispStatus');
+  el.style.display = 'block';
+  el.style.borderColor = `var(--${color})`;
+  el.style.color = `var(--${color})`;
+  el.textContent = msg;
+}
+
+async function testMisp(){
+  try {
+    setMispStatus('Probando conexion MISP...', 'cyan');
+    const data = await postJson('/api/misp/test', { api_keys: getKeys() });
+    setMispStatus(`${data.message || 'Conexion MISP correcta'} | version: ${data.version || 'desconocida'}`, 'green');
+  } catch(e){
+    setMispStatus('MISP error: '+e.message, 'red');
+  }
+}
+
+async function exportToMisp(){
+  if(!findings.length){ showNotif('No hay hallazgos para enviar a MISP','amber'); return; }
+  const term = document.getElementById('searchTerm').value.trim() || 'INE';
+  try {
+    setMispStatus('Creando evento MISP...', 'cyan');
+    const data = await postJson('/api/misp/export', {
+      api_keys: getKeys(),
+      findings,
+      info: `INE CTI Monitor - ${term}`
+    });
+    setMispStatus(`MISP evento ${data.event_id || data.event_uuid || 'creado'} | atributos: ${data.attributes || 0}`, 'green');
+  } catch(e){
+    setMispStatus('MISP export error: '+e.message, 'red');
+  }
+}
+
 async function startScan(){
   const term    = document.getElementById('searchTerm').value.trim() || 'INE';
   const domain  = document.getElementById('searchDomain').value.trim() || 'ine.mx';
