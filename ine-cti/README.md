@@ -1,9 +1,11 @@
-# INE CTI Monitor v2.9
+# INE CTI Monitor v3.0
 ## Inteligencia de Amenazas Cibernéticas
 
 Sistema de monitoreo OSINT defensivo para detectar información del INE
 expuesta públicamente en internet, repositorios en la nube y dark web indexada.
-La pantalla principal muestra los hallazgos en vivo durante el escaneo.
+La pantalla principal incluye dashboard ejecutivo, hallazgos en vivo,
+reportes, watchlist, typosquatting, analisis de archivos, deduplicacion y
+reglas de falsos positivos.
 
 ---
 
@@ -80,6 +82,12 @@ ine-cti/
 | urlscan        | urlscan.io                | Analisis de URLs   | API Key |
 | sigma          | SigmaHQ Sigma             | Reglas deteccion   | Ruta local|
 | yara           | VirusTotal YARA           | Analisis documentos| Ruta local|
+| dashboard      | KPIs ejecutivos           | Analitica          | No      |
+| reportes       | PDF/CSV/JSON/Excel/STIX   | Exportacion CTI    | No      |
+| watchlist      | Palabras clave vigiladas  | Priorizacion       | No      |
+| typosquatting  | Dominios similares        | Phishing           | No      |
+| file-analysis  | PDF/XLSX/CSV/SQL/TXT/ZIP  | Datos sensibles    | No      |
+| dedupe/fp      | Duplicados/falsos positivos| Calidad SOC       | No      |
 | leakix         | LeakIX                    | Servicios expuestos| Opcional|
 | hibp           | HaveIBeenPwned            | Credenciales       | Opcional|
 | intelx         | Intelligence X            | Dark Web / Leaks   | Opcional|
@@ -127,6 +135,16 @@ Agrégalas en la pestaña **Configuración** del monitor:
 | `/api/scan/stop`      | POST   | Detener escaneo en curso           |
 | `/api/export/json`    | GET    | Exportar hallazgos en JSON         |
 | `/api/export/csv`     | GET    | Exportar hallazgos en CSV          |
+| `/api/export/excel`   | GET/POST | Exportar hallazgos en Excel       |
+| `/api/export/stix`    | GET/POST | Exportar bundle STIX 2.1          |
+| `/api/report/pdf`     | POST   | Generar reporte ejecutivo PDF      |
+| `/api/intel/dashboard`| GET/POST | KPIs y graficas ejecutivas       |
+| `/api/intel/deduplicate` | POST | Deduplicar hallazgos              |
+| `/api/intel/false-positives/apply` | POST | Aplicar reglas FP      |
+| `/api/watchlist`      | GET/POST | Administrar watchlist             |
+| `/api/false-positive-rules` | GET/POST | Administrar reglas FP       |
+| `/api/typosquatting/analyze` | POST | Analizar dominios parecidos  |
+| `/api/files/analyze`  | POST   | Analizar archivo/ruta/texto        |
 | `/api/ail/test`       | POST   | Probar conexion con AIL Framework  |
 | `/api/ail/export`     | POST   | Enviar hallazgos a AIL             |
 | `/api/ail/tracker`    | POST   | Crear tracker en AIL               |
