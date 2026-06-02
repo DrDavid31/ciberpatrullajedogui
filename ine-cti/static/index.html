@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INE CTI Monitor v2.7</title>
+<title>INE CTI Monitor v2.9</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -248,7 +248,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
     <div class="logo-icon">🛰️</div>
     <div class="logo-text">
       <h1>INE · CTI MONITOR</h1>
-      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.7</p>
+      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.9</p>
     </div>
   </div>
   <div class="h-right">
@@ -310,6 +310,12 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
       <label class="cbi on" data-val="trufflehog"><input type="checkbox" checked><div class="cbdot"></div><span>TruffleHog</span></label>
       <label class="cbi on" data-val="gitleaks"><input type="checkbox" checked><div class="cbdot"></div><span>Gitleaks</span></label>
       <label class="cbi on" data-val="socialanalyzer"><input type="checkbox" checked><div class="cbdot"></div><span>Social Analyzer</span></label>
+      <label class="cbi on" data-val="changedetection"><input type="checkbox" checked><div class="cbdot"></div><span>changedetection.io</span></label>
+      <label class="cbi on" data-val="aleph"><input type="checkbox" checked><div class="cbdot"></div><span>Aleph</span></label>
+      <label class="cbi on" data-val="subfinder"><input type="checkbox" checked><div class="cbdot"></div><span>Subfinder</span></label>
+      <label class="cbi on" data-val="httpx"><input type="checkbox" checked><div class="cbdot"></div><span>httpx</span></label>
+      <label class="cbi on" data-val="naabu"><input type="checkbox" checked><div class="cbdot"></div><span>Naabu</span></label>
+      <label class="cbi on" data-val="nuclei"><input type="checkbox" checked><div class="cbdot"></div><span>Nuclei</span></label>
       <label class="cbi on" data-val="leakix"><input type="checkbox" checked><div class="cbdot"></div><span>LeakIX</span></label>
       <label class="cbi on" data-val="hibp"><input type="checkbox" checked><div class="cbdot"></div><span>HaveIBeenPwned</span></label>
       <label class="cbi on" data-val="intelx"><input type="checkbox" checked><div class="cbdot"></div><span>Intelligence X</span></label>
@@ -619,6 +625,292 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
   </div>
 
   <div class="card">
+    <div class="card-title">changedetection.io</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>changedetection URL</label>
+        <input type="text" id="keyChangedetectionUrl" placeholder="http://localhost:5000" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Instancia self-hosted; la API vive en /api/v1</div>
+      </div>
+      <div class="api-row">
+        <label>API key</label>
+        <input type="password" id="keyChangedetectionKey" placeholder="x-api-key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Settings > API en changedetection.io</div>
+      </div>
+      <div class="api-row">
+        <label>Tag / limite</label>
+        <input type="text" id="keyChangedetectionTag" value="ine-cti" placeholder="ine-cti" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyChangedetectionLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="10">10 watches</option>
+          <option value="20" selected>20 watches</option>
+          <option value="50">50 watches</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>Opciones</label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+          <input type="checkbox" id="keyChangedetectionRecheck"> Recheck al escanear
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keyChangedetectionVerifyTls" checked> Verificar TLS
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testChangedetection()" style="font-size:13px;padding:9px 18px;">PROBAR CHANGEDETECTION</button>
+      <button class="btn-scan" onclick="exportToChangedetection()" style="font-size:13px;padding:9px 18px;">CREAR WATCHES</button>
+    </div>
+    <div id="changedetectionStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Huginn</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>Webhook Agent URL</label>
+        <input type="text" id="keyHuginnWebhookUrl" placeholder="https://huginn.local/users/1/web_requests/1/secret" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">URL completa del Webhook Agent de Huginn</div>
+      </div>
+      <div class="api-row">
+        <label>Limite / TLS</label>
+        <select id="keyHuginnLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
+          <option value="10">10 eventos</option>
+          <option value="20" selected>20 eventos</option>
+          <option value="50">50 eventos</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keyHuginnVerifyTls" checked> Verificar TLS
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testHuginn()" style="font-size:13px;padding:9px 18px;">PROBAR HUGINN</button>
+      <button class="btn-scan" onclick="exportToHuginn()" style="font-size:13px;padding:9px 18px;">ENVIAR EVENTOS</button>
+    </div>
+    <div id="huginnStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Aleph</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>Aleph URL</label>
+        <input type="text" id="keyAlephUrl" value="https://aleph.occrp.org" placeholder="https://aleph.occrp.org" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Compatible con Aleph/OpenAleph</div>
+      </div>
+      <div class="api-row">
+        <label>Aleph API key</label>
+        <input type="password" id="keyAlephKey" placeholder="ApiKey opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Opcional para instancias con acceso privado</div>
+      </div>
+      <div class="api-row">
+        <label>Schemata / limite</label>
+        <input type="text" id="keyAlephSchemata" placeholder="Person,Company,Document" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyAlephLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="5">5 resultados</option>
+          <option value="10" selected>10 resultados</option>
+          <option value="25">25 resultados</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>TLS</label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keyAlephVerifyTls" checked> Verificar TLS
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testAleph()" style="font-size:13px;padding:9px 18px;">PROBAR ALEPH</button>
+      <button class="btn-scan" onclick="searchAlephNow()" style="font-size:13px;padding:9px 18px;">BUSCAR AHORA</button>
+    </div>
+    <div id="alephStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">FollowTheMoney</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>Dataset FtM</label>
+        <input type="text" id="keyFtmDataset" value="ine-cti-monitor" placeholder="ine-cti-monitor" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Nombre de dataset para entidades normalizadas</div>
+      </div>
+      <div class="api-row">
+        <label>Limite</label>
+        <select id="keyFtmLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="25">25 entidades</option>
+          <option value="100" selected>100 entidades</option>
+          <option value="250">250 entidades</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testFtm()" style="font-size:13px;padding:9px 18px;">PROBAR FTM</button>
+      <button class="btn-scan" onclick="exportToFtm()" style="font-size:13px;padding:9px 18px;">NORMALIZAR HALLAZGOS</button>
+    </div>
+    <div id="ftmStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">TheHive</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>TheHive URL</label>
+        <input type="text" id="keyThehiveUrl" placeholder="https://thehive.local" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">TheHive 4/5; se crean alertas desde hallazgos</div>
+      </div>
+      <div class="api-row">
+        <label>API key / org</label>
+        <input type="password" id="keyThehiveKey" placeholder="TheHive API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="text" id="keyThehiveOrg" placeholder="org opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+      </div>
+      <div class="api-row">
+        <label>Limite / TLS</label>
+        <select id="keyThehiveLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
+          <option value="10">10 alertas</option>
+          <option value="20" selected>20 alertas</option>
+          <option value="50">50 alertas</option>
+        </select>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keyThehiveVerifyTls" checked> Verificar TLS
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testThehive()" style="font-size:13px;padding:9px 18px;">PROBAR THEHIVE</button>
+      <button class="btn-scan" onclick="exportToThehive()" style="font-size:13px;padding:9px 18px;">CREAR ALERTAS</button>
+    </div>
+    <div id="thehiveStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Shuffle SOAR</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>Webhook URL</label>
+        <input type="text" id="keyShuffleWebhookUrl" placeholder="https://shuffler.io/api/v1/webhooks/webhook_xxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Webhook trigger de Shuffle</div>
+      </div>
+      <div class="api-row">
+        <label>Token / limite</label>
+        <input type="password" id="keyShuffleToken" placeholder="Bearer opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyShuffleLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="10">10 eventos</option>
+          <option value="20" selected>20 eventos</option>
+          <option value="50">50 eventos</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>TLS</label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keyShuffleVerifyTls" checked> Verificar TLS
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testShuffle()" style="font-size:13px;padding:9px 18px;">PROBAR SHUFFLE</button>
+      <button class="btn-scan" onclick="exportToShuffle()" style="font-size:13px;padding:9px 18px;">ENVIAR EVENTOS</button>
+    </div>
+    <div id="shuffleStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ProjectDiscovery</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>Objetivo autorizado</label>
+        <input type="text" id="keyPdTarget" placeholder="ine.mx o https://www.ine.mx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note">Si esta vacio usa Dominio objetivo del monitor</div>
+      </div>
+      <div class="api-row">
+        <label>Limite / timeout</label>
+        <select id="keyPdLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+          <option value="25">25 hallazgos</option>
+          <option value="50" selected>50 hallazgos</option>
+          <option value="100">100 hallazgos</option>
+        </select>
+        <input type="number" id="keyPdTimeout" value="240" min="30" max="900" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+      </div>
+      <div class="api-row">
+        <label>Naabu puertos</label>
+        <input type="text" id="keyPdPorts" placeholder="80,443,8080 o top-100" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+      </div>
+      <div class="api-row">
+        <label>Nuclei filtros</label>
+        <input type="text" id="keyNucleiTemplates" placeholder="templates opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="text" id="keyNucleiSeverity" placeholder="critical,high,medium" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="text" id="keyNucleiTags" placeholder="cve,exposure,misconfig" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">urlscan.io</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>API key</label>
+        <input type="password" id="keyUrlscanKey" placeholder="urlscan.io API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+      </div>
+      <div class="api-row">
+        <label>Visibilidad / tags</label>
+        <select id="keyUrlscanVisibility" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+          <option value="unlisted" selected>unlisted</option>
+          <option value="private">private</option>
+          <option value="public">public</option>
+        </select>
+        <input type="text" id="keyUrlscanTags" value="ine-cti" placeholder="ine-cti phishing" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+      </div>
+      <div class="api-row">
+        <label>Limite</label>
+        <select id="keyUrlscanLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="5">5 URLs</option>
+          <option value="10" selected>10 URLs</option>
+          <option value="20">20 URLs</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testUrlscan()" style="font-size:13px;padding:9px 18px;">PROBAR URLSCAN</button>
+      <button class="btn-scan" onclick="submitUrlscan()" style="font-size:13px;padding:9px 18px;">ANALIZAR URLS</button>
+    </div>
+    <div id="urlscanStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Sigma / YARA</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>Sigma rules path</label>
+        <input type="text" id="keySigmaRulesPath" placeholder="C:\ruta\sigma\rules" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keySigmaLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <option value="25">25 reglas</option>
+          <option value="50" selected>50 reglas</option>
+          <option value="100">100 reglas</option>
+        </select>
+      </div>
+      <div class="api-row">
+        <label>YARA rules path</label>
+        <input type="text" id="keyYaraRulesPath" placeholder="C:\ruta\rules.yar" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+      </div>
+      <div class="api-row">
+        <label>Documentos / limite</label>
+        <input type="text" id="keyYaraTargetPath" placeholder="C:\ruta\documentos" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="number" id="keyYaraMaxFiles" value="200" min="1" max="1000" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keyYaraRecursive" checked> Recursivo
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testSigma()" style="font-size:13px;padding:9px 18px;">PROBAR SIGMA</button>
+      <button class="btn-scan" onclick="loadSigmaRules()" style="font-size:13px;padding:9px 18px;">CARGAR REGLAS</button>
+      <button class="btn-scan" onclick="testYara()" style="font-size:13px;padding:9px 18px;">PROBAR YARA</button>
+      <button class="btn-scan" onclick="scanYaraDocs()" style="font-size:13px;padding:9px 18px;">ESCANEAR DOCS</button>
+    </div>
+    <div id="sigmaStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="yaraStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
     <div class="card-title">AIL Framework</div>
     <div class="api-grid">
       <div class="api-row">
@@ -733,7 +1025,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 
 <!-- FOOTER -->
 <footer>
-  <span>INE CTI MONITOR v2.7 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
+  <span>INE CTI MONITOR v2.9 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
   <div class="exp-btns">
     <button class="exp-btn" onclick="exportData('csv')">⬇ CSV</button>
     <button class="exp-btn" onclick="exportData('json')">⬇ JSON</button>
@@ -828,6 +1120,48 @@ function getKeys(){
     apprise_urls: document.getElementById('keyAppriseUrls').value.trim(),
     apprise_on_complete: document.getElementById('keyAppriseOnComplete').checked,
     apprise_on_high: document.getElementById('keyAppriseOnHigh').checked,
+    changedetection_url: document.getElementById('keyChangedetectionUrl').value.trim(),
+    changedetection_key: document.getElementById('keyChangedetectionKey').value.trim(),
+    changedetection_tag: document.getElementById('keyChangedetectionTag').value.trim(),
+    changedetection_limit: document.getElementById('keyChangedetectionLimit').value,
+    changedetection_recheck: document.getElementById('keyChangedetectionRecheck').checked,
+    changedetection_verify_tls: document.getElementById('keyChangedetectionVerifyTls').checked,
+    huginn_webhook_url: document.getElementById('keyHuginnWebhookUrl').value.trim(),
+    huginn_limit: document.getElementById('keyHuginnLimit').value,
+    huginn_verify_tls: document.getElementById('keyHuginnVerifyTls').checked,
+    aleph_url: document.getElementById('keyAlephUrl').value.trim(),
+    aleph_key: document.getElementById('keyAlephKey').value.trim(),
+    aleph_schemata: document.getElementById('keyAlephSchemata').value.trim(),
+    aleph_limit: document.getElementById('keyAlephLimit').value,
+    aleph_verify_tls: document.getElementById('keyAlephVerifyTls').checked,
+    ftm_dataset: document.getElementById('keyFtmDataset').value.trim(),
+    ftm_limit: document.getElementById('keyFtmLimit').value,
+    thehive_url: document.getElementById('keyThehiveUrl').value.trim(),
+    thehive_key: document.getElementById('keyThehiveKey').value.trim(),
+    thehive_org: document.getElementById('keyThehiveOrg').value.trim(),
+    thehive_limit: document.getElementById('keyThehiveLimit').value,
+    thehive_verify_tls: document.getElementById('keyThehiveVerifyTls').checked,
+    shuffle_webhook_url: document.getElementById('keyShuffleWebhookUrl').value.trim(),
+    shuffle_token: document.getElementById('keyShuffleToken').value.trim(),
+    shuffle_limit: document.getElementById('keyShuffleLimit').value,
+    shuffle_verify_tls: document.getElementById('keyShuffleVerifyTls').checked,
+    pd_target: document.getElementById('keyPdTarget').value.trim(),
+    pd_limit: document.getElementById('keyPdLimit').value,
+    pd_timeout: document.getElementById('keyPdTimeout').value,
+    pd_ports: document.getElementById('keyPdPorts').value.trim(),
+    nuclei_templates: document.getElementById('keyNucleiTemplates').value.trim(),
+    nuclei_severity: document.getElementById('keyNucleiSeverity').value.trim(),
+    nuclei_tags: document.getElementById('keyNucleiTags').value.trim(),
+    urlscan_key: document.getElementById('keyUrlscanKey').value.trim(),
+    urlscan_visibility: document.getElementById('keyUrlscanVisibility').value,
+    urlscan_tags: document.getElementById('keyUrlscanTags').value.trim(),
+    urlscan_limit: document.getElementById('keyUrlscanLimit').value,
+    sigma_rules_path: document.getElementById('keySigmaRulesPath').value.trim(),
+    sigma_limit: document.getElementById('keySigmaLimit').value,
+    yara_rules_path: document.getElementById('keyYaraRulesPath').value.trim(),
+    yara_target_path: document.getElementById('keyYaraTargetPath').value.trim(),
+    yara_max_files: document.getElementById('keyYaraMaxFiles').value,
+    yara_recursive: document.getElementById('keyYaraRecursive').checked,
     ail_url: document.getElementById('keyAilUrl').value.trim(),
     ail_key: document.getElementById('keyAilKey').value.trim(),
     ail_tags: document.getElementById('keyAilTags').value.trim(),
@@ -888,6 +1222,48 @@ function loadKeys(){
     if(k.apprise_urls) document.getElementById('keyAppriseUrls').value = k.apprise_urls;
     document.getElementById('keyAppriseOnComplete').checked = !!k.apprise_on_complete;
     document.getElementById('keyAppriseOnHigh').checked = k.apprise_on_high !== undefined ? !!k.apprise_on_high : true;
+    if(k.changedetection_url) document.getElementById('keyChangedetectionUrl').value = k.changedetection_url;
+    if(k.changedetection_key) document.getElementById('keyChangedetectionKey').value = k.changedetection_key;
+    if(k.changedetection_tag) document.getElementById('keyChangedetectionTag').value = k.changedetection_tag;
+    if(k.changedetection_limit) document.getElementById('keyChangedetectionLimit').value = k.changedetection_limit;
+    document.getElementById('keyChangedetectionRecheck').checked = !!k.changedetection_recheck;
+    document.getElementById('keyChangedetectionVerifyTls').checked = k.changedetection_verify_tls !== undefined ? !!k.changedetection_verify_tls : true;
+    if(k.huginn_webhook_url) document.getElementById('keyHuginnWebhookUrl').value = k.huginn_webhook_url;
+    if(k.huginn_limit) document.getElementById('keyHuginnLimit').value = k.huginn_limit;
+    document.getElementById('keyHuginnVerifyTls').checked = k.huginn_verify_tls !== undefined ? !!k.huginn_verify_tls : true;
+    if(k.aleph_url) document.getElementById('keyAlephUrl').value = k.aleph_url;
+    if(k.aleph_key) document.getElementById('keyAlephKey').value = k.aleph_key;
+    if(k.aleph_schemata) document.getElementById('keyAlephSchemata').value = k.aleph_schemata;
+    if(k.aleph_limit) document.getElementById('keyAlephLimit').value = k.aleph_limit;
+    document.getElementById('keyAlephVerifyTls').checked = k.aleph_verify_tls !== undefined ? !!k.aleph_verify_tls : true;
+    if(k.ftm_dataset) document.getElementById('keyFtmDataset').value = k.ftm_dataset;
+    if(k.ftm_limit) document.getElementById('keyFtmLimit').value = k.ftm_limit;
+    if(k.thehive_url) document.getElementById('keyThehiveUrl').value = k.thehive_url;
+    if(k.thehive_key) document.getElementById('keyThehiveKey').value = k.thehive_key;
+    if(k.thehive_org) document.getElementById('keyThehiveOrg').value = k.thehive_org;
+    if(k.thehive_limit) document.getElementById('keyThehiveLimit').value = k.thehive_limit;
+    document.getElementById('keyThehiveVerifyTls').checked = k.thehive_verify_tls !== undefined ? !!k.thehive_verify_tls : true;
+    if(k.shuffle_webhook_url) document.getElementById('keyShuffleWebhookUrl').value = k.shuffle_webhook_url;
+    if(k.shuffle_token) document.getElementById('keyShuffleToken').value = k.shuffle_token;
+    if(k.shuffle_limit) document.getElementById('keyShuffleLimit').value = k.shuffle_limit;
+    document.getElementById('keyShuffleVerifyTls').checked = k.shuffle_verify_tls !== undefined ? !!k.shuffle_verify_tls : true;
+    if(k.pd_target) document.getElementById('keyPdTarget').value = k.pd_target;
+    if(k.pd_limit) document.getElementById('keyPdLimit').value = k.pd_limit;
+    if(k.pd_timeout) document.getElementById('keyPdTimeout').value = k.pd_timeout;
+    if(k.pd_ports) document.getElementById('keyPdPorts').value = k.pd_ports;
+    if(k.nuclei_templates) document.getElementById('keyNucleiTemplates').value = k.nuclei_templates;
+    if(k.nuclei_severity) document.getElementById('keyNucleiSeverity').value = k.nuclei_severity;
+    if(k.nuclei_tags) document.getElementById('keyNucleiTags').value = k.nuclei_tags;
+    if(k.urlscan_key) document.getElementById('keyUrlscanKey').value = k.urlscan_key;
+    if(k.urlscan_visibility) document.getElementById('keyUrlscanVisibility').value = k.urlscan_visibility;
+    if(k.urlscan_tags) document.getElementById('keyUrlscanTags').value = k.urlscan_tags;
+    if(k.urlscan_limit) document.getElementById('keyUrlscanLimit').value = k.urlscan_limit;
+    if(k.sigma_rules_path) document.getElementById('keySigmaRulesPath').value = k.sigma_rules_path;
+    if(k.sigma_limit) document.getElementById('keySigmaLimit').value = k.sigma_limit;
+    if(k.yara_rules_path) document.getElementById('keyYaraRulesPath').value = k.yara_rules_path;
+    if(k.yara_target_path) document.getElementById('keyYaraTargetPath').value = k.yara_target_path;
+    if(k.yara_max_files) document.getElementById('keyYaraMaxFiles').value = k.yara_max_files;
+    document.getElementById('keyYaraRecursive').checked = k.yara_recursive !== undefined ? !!k.yara_recursive : true;
     if(k.ail_url) document.getElementById('keyAilUrl').value = k.ail_url;
     if(k.ail_key) document.getElementById('keyAilKey').value = k.ail_key;
     if(k.ail_tags) document.getElementById('keyAilTags').value = k.ail_tags;
@@ -922,6 +1298,22 @@ async function postJson(path, body){
   const data = await r.json().catch(()=>({error:'Respuesta invalida'}));
   if(!r.ok) throw new Error(data.error || data.message || r.statusText);
   return data;
+}
+
+function setIntegrationStatus(id, msg, color='cyan'){
+  const el = document.getElementById(id);
+  el.style.display = 'block';
+  el.style.borderColor = `var(--${color})`;
+  el.style.color = `var(--${color})`;
+  el.textContent = msg;
+}
+
+function refreshStatsFromFindings(){
+  document.getElementById('sF').textContent = findings.length;
+  document.getElementById('sH').textContent = findings.filter(x=>x.risk==='ALTO'||x.risk==='CRÍTICO').length;
+  document.getElementById('sR').textContent = findings.filter(x=>x.category_class==='cat-repo').length;
+  document.getElementById('sC').textContent = findings.filter(x=>x.category_class==='cat-cloud').length;
+  document.getElementById('sD').textContent = findings.filter(x=>x.category_class==='cat-dark').length;
 }
 
 async function testAil(){
@@ -1020,6 +1412,237 @@ async function notifyApprise(){
     setAppriseStatus(`Resumen enviado | destinos: ${data.targets || 0}`, data.sent ? 'green' : 'amber');
   } catch(e){
     setAppriseStatus('Apprise notify error: '+e.message, 'red');
+  }
+}
+
+async function testChangedetection(){
+  try {
+    setIntegrationStatus('changedetectionStatus','Probando changedetection.io...', 'cyan');
+    const data = await postJson('/api/changedetection/test', { api_keys: getKeys() });
+    setIntegrationStatus('changedetectionStatus', data.message || 'changedetection.io OK', 'green');
+  } catch(e){
+    setIntegrationStatus('changedetectionStatus','changedetection.io error: '+e.message, 'red');
+  }
+}
+
+async function exportToChangedetection(){
+  if(!findings.length){ showNotif('No hay hallazgos para crear watches','amber'); return; }
+  try {
+    setIntegrationStatus('changedetectionStatus','Creando watches...', 'cyan');
+    const data = await postJson('/api/changedetection/export', { api_keys: getKeys(), findings });
+    const exported = (data.exported || []).length;
+    const errors = (data.errors || []).length;
+    setIntegrationStatus('changedetectionStatus', `Watches creados: ${exported} | errores: ${errors}`, errors ? 'amber' : 'green');
+  } catch(e){
+    setIntegrationStatus('changedetectionStatus','changedetection.io export error: '+e.message, 'red');
+  }
+}
+
+async function testHuginn(){
+  try {
+    setIntegrationStatus('huginnStatus','Enviando prueba Huginn...', 'cyan');
+    const data = await postJson('/api/huginn/test', { api_keys: getKeys() });
+    setIntegrationStatus('huginnStatus', `${data.message || 'Huginn OK'} | HTTP ${data.status_code || ''}`, 'green');
+  } catch(e){
+    setIntegrationStatus('huginnStatus','Huginn error: '+e.message, 'red');
+  }
+}
+
+async function exportToHuginn(){
+  if(!findings.length){ showNotif('No hay hallazgos para enviar a Huginn','amber'); return; }
+  const term = document.getElementById('searchTerm').value.trim() || 'INE';
+  const domain = document.getElementById('searchDomain').value.trim() || 'ine.mx';
+  try {
+    setIntegrationStatus('huginnStatus','Enviando eventos Huginn...', 'cyan');
+    const data = await postJson('/api/huginn/export', { api_keys: getKeys(), findings, term, domain });
+    const sent = (data.sent || []).length;
+    const errors = (data.errors || []).length;
+    setIntegrationStatus('huginnStatus', `Eventos enviados: ${sent} | errores: ${errors}`, errors ? 'amber' : 'green');
+  } catch(e){
+    setIntegrationStatus('huginnStatus','Huginn export error: '+e.message, 'red');
+  }
+}
+
+async function testAleph(){
+  try {
+    setIntegrationStatus('alephStatus','Probando Aleph...', 'cyan');
+    const data = await postJson('/api/aleph/test', { api_keys: getKeys() });
+    setIntegrationStatus('alephStatus', `${data.message || 'Aleph OK'} | muestra: ${data.sample_results || 0}`, 'green');
+  } catch(e){
+    setIntegrationStatus('alephStatus','Aleph error: '+e.message, 'red');
+  }
+}
+
+async function searchAlephNow(){
+  const term = document.getElementById('searchTerm').value.trim() || 'INE';
+  try {
+    setIntegrationStatus('alephStatus','Buscando en Aleph...', 'cyan');
+    const data = await postJson('/api/aleph/search', { api_keys: getKeys(), term });
+    const incoming = data.findings || [];
+    findings = findings.concat(incoming);
+    refreshStatsFromFindings();
+    renderFindings();
+    syncValidationQueue();
+    updateVQBadge();
+    setIntegrationStatus('alephStatus', `Aleph agrego ${incoming.length} hallazgo(s)`, incoming.length ? 'green' : 'amber');
+  } catch(e){
+    setIntegrationStatus('alephStatus','Aleph search error: '+e.message, 'red');
+  }
+}
+
+async function testFtm(){
+  try {
+    setIntegrationStatus('ftmStatus','Probando FollowTheMoney...', 'cyan');
+    const data = await postJson('/api/followthemoney/test', { api_keys: getKeys() });
+    setIntegrationStatus('ftmStatus', data.message || 'FollowTheMoney OK', 'green');
+  } catch(e){
+    setIntegrationStatus('ftmStatus','FollowTheMoney error: '+e.message, 'red');
+  }
+}
+
+async function exportToFtm(){
+  if(!findings.length){ showNotif('No hay hallazgos para normalizar','amber'); return; }
+  try {
+    setIntegrationStatus('ftmStatus','Normalizando hallazgos...', 'cyan');
+    const data = await postJson('/api/followthemoney/export', { api_keys: getKeys(), findings });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'cti-findings-followthemoney.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    setIntegrationStatus('ftmStatus', `FollowTheMoney entidades: ${data.count || 0}`, 'green');
+  } catch(e){
+    setIntegrationStatus('ftmStatus','FollowTheMoney export error: '+e.message, 'red');
+  }
+}
+
+async function testThehive(){
+  try {
+    setIntegrationStatus('thehiveStatus','Probando TheHive...', 'cyan');
+    const data = await postJson('/api/thehive/test', { api_keys: getKeys() });
+    setIntegrationStatus('thehiveStatus', data.message || 'TheHive OK', 'green');
+  } catch(e){
+    setIntegrationStatus('thehiveStatus','TheHive error: '+e.message, 'red');
+  }
+}
+
+async function exportToThehive(){
+  if(!findings.length){ showNotif('No hay hallazgos para TheHive','amber'); return; }
+  try {
+    setIntegrationStatus('thehiveStatus','Creando alertas TheHive...', 'cyan');
+    const data = await postJson('/api/thehive/export', { api_keys: getKeys(), findings });
+    const exported = (data.exported || []).length;
+    const errors = (data.errors || []).length;
+    setIntegrationStatus('thehiveStatus', `Alertas creadas: ${exported} | errores: ${errors}`, errors ? 'amber' : 'green');
+  } catch(e){
+    setIntegrationStatus('thehiveStatus','TheHive export error: '+e.message, 'red');
+  }
+}
+
+async function testShuffle(){
+  try {
+    setIntegrationStatus('shuffleStatus','Probando Shuffle...', 'cyan');
+    const data = await postJson('/api/shuffle/test', { api_keys: getKeys() });
+    setIntegrationStatus('shuffleStatus', `Shuffle OK | HTTP ${data.status_code || ''}`, 'green');
+  } catch(e){
+    setIntegrationStatus('shuffleStatus','Shuffle error: '+e.message, 'red');
+  }
+}
+
+async function exportToShuffle(){
+  if(!findings.length){ showNotif('No hay hallazgos para Shuffle','amber'); return; }
+  try {
+    setIntegrationStatus('shuffleStatus','Enviando eventos Shuffle...', 'cyan');
+    const data = await postJson('/api/shuffle/export', { api_keys: getKeys(), findings });
+    const sent = (data.sent || []).length;
+    const errors = (data.errors || []).length;
+    setIntegrationStatus('shuffleStatus', `Eventos enviados: ${sent} | errores: ${errors}`, errors ? 'amber' : 'green');
+  } catch(e){
+    setIntegrationStatus('shuffleStatus','Shuffle export error: '+e.message, 'red');
+  }
+}
+
+async function testUrlscan(){
+  try {
+    setIntegrationStatus('urlscanStatus','Probando urlscan.io...', 'cyan');
+    const data = await postJson('/api/urlscan/test', { api_keys: getKeys() });
+    const remaining = data.quotas?.limits?.search?.day?.remaining ?? 'ok';
+    setIntegrationStatus('urlscanStatus', `urlscan.io OK | cuota: ${remaining}`, 'green');
+  } catch(e){
+    setIntegrationStatus('urlscanStatus','urlscan.io error: '+e.message, 'red');
+  }
+}
+
+async function submitUrlscan(){
+  if(!findings.length){ showNotif('No hay URLs para urlscan.io','amber'); return; }
+  try {
+    setIntegrationStatus('urlscanStatus','Enviando URLs a urlscan.io...', 'cyan');
+    const data = await postJson('/api/urlscan/submit', { api_keys: getKeys(), findings });
+    const submitted = (data.submitted || []).length;
+    const errors = (data.errors || []).length;
+    setIntegrationStatus('urlscanStatus', `URLs enviadas: ${submitted} | errores: ${errors}`, errors ? 'amber' : 'green');
+  } catch(e){
+    setIntegrationStatus('urlscanStatus','urlscan.io submit error: '+e.message, 'red');
+  }
+}
+
+async function testSigma(){
+  try {
+    setIntegrationStatus('sigmaStatus','Probando Sigma...', 'cyan');
+    const data = await postJson('/api/sigma/test', { api_keys: getKeys() });
+    setIntegrationStatus('sigmaStatus', `Sigma OK | reglas: ${data.count || 0} | errores: ${data.errors || 0}`, 'green');
+  } catch(e){
+    setIntegrationStatus('sigmaStatus','Sigma error: '+e.message, 'red');
+  }
+}
+
+async function loadSigmaRules(){
+  try {
+    setIntegrationStatus('sigmaStatus','Cargando reglas Sigma...', 'cyan');
+    const data = await postJson('/api/sigma/rules', { api_keys: getKeys() });
+    setIntegrationStatus('sigmaStatus', `Reglas cargadas: ${data.count || 0} | errores: ${(data.errors || []).length}`, (data.errors || []).length ? 'amber' : 'green');
+  } catch(e){
+    setIntegrationStatus('sigmaStatus','Sigma rules error: '+e.message, 'red');
+  }
+}
+
+async function testYara(){
+  try {
+    setIntegrationStatus('yaraStatus','Probando YARA...', 'cyan');
+    const data = await postJson('/api/yara/test', { api_keys: getKeys() });
+    setIntegrationStatus('yaraStatus', data.message || 'YARA OK', 'green');
+  } catch(e){
+    setIntegrationStatus('yaraStatus','YARA error: '+e.message, 'red');
+  }
+}
+
+async function scanYaraDocs(){
+  try {
+    setIntegrationStatus('yaraStatus','Escaneando documentos con YARA...', 'cyan');
+    const data = await postJson('/api/yara/scan', { api_keys: getKeys() });
+    const matches = data.matches || [];
+    const incoming = matches.map(m=>({
+      source:'YARA',
+      source_id:'yara',
+      title:`YARA match: ${m.rule}`,
+      url:m.file,
+      category:'Documento Sospechoso',
+      category_class:'cat-leak',
+      risk:'ALTO',
+      risk_class:'risk-high',
+      detail:`Engine: ${data.engine || 'yara'} | Tags: ${(m.tags || []).join(', ')}`,
+      detected:new Date().toLocaleTimeString('es-MX',{hour12:false}),
+      is_dork:false
+    }));
+    findings = findings.concat(incoming);
+    refreshStatsFromFindings();
+    renderFindings();
+    syncValidationQueue();
+    updateVQBadge();
+    setIntegrationStatus('yaraStatus', `YARA matches: ${data.count || 0}`, matches.length ? 'green' : 'amber');
+  } catch(e){
+    setIntegrationStatus('yaraStatus','YARA scan error: '+e.message, 'red');
   }
 }
 
@@ -1288,6 +1911,12 @@ const demoData = [
   {source:'trufflehog - git',source_id:'trufflehog',title:'TruffleHog: GitHub token (verificado)',url:'https://github.com/DrDavid31/ciberpatrullajedogui',category:'Credenciales Filtradas',category_class:'cat-leak',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Detector: GitHub | Decoder: PLAIN | Estado: verificado',detected:'',is_dork:false,is_secret:true},
   {source:'Gitleaks',source_id:'gitleaks',title:'Gitleaks: generic-api-key',url:'https://github.com/gitleaks/gitleaks',category:'Credenciales Filtradas',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:'Rule: generic-api-key | Ubicacion: config.env:12 | Fingerprint: demo',detected:'',is_dork:false,is_secret:true},
   {source:'Social Analyzer',source_id:'socialanalyzer',title:'Perfil posible: INE en github',url:'https://github.com/INE',category:'Perfil Social',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Sitio: github | Rate: 60',detected:'',is_dork:false},
+  {source:'changedetection.io',source_id:'changedetection',title:'Monitor web: portal INE con cambio reciente',url:'https://www.ine.mx/',category:'Monitoreo de Cambios',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Watch demo | Ultimo cambio detectado en contenido publico',detected:'',is_dork:false},
+  {source:'Aleph',source_id:'aleph',title:'Aleph: entidad/documento relacionado con INE',url:'https://aleph.occrp.org/search?q=INE',category:'Investigacion Documental',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Schema: Document | Dataset: demo Aleph',detected:'',is_dork:false},
+  {source:'subfinder',source_id:'subfinder',title:'Subdominio detectado: www.ine.mx',url:'https://www.ine.mx',category:'Superficie Expuesta',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Fuente: passive demo',detected:'',is_dork:false},
+  {source:'httpx',source_id:'httpx',title:'Servicio HTTP activo: Portal INE',url:'https://www.ine.mx',category:'Servicio Expuesto',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:'HTTP 200 | Tech: demo',detected:'',is_dork:false},
+  {source:'naabu',source_id:'naabu',title:'Puerto abierto: ine.mx:443',url:'ine.mx:443',category:'Servicio Expuesto',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:'Host: ine.mx | Puerto: 443',detected:'',is_dork:false},
+  {source:'nuclei',source_id:'nuclei',title:'Nuclei: exposicion informativa demo',url:'https://www.ine.mx',category:'Vulnerabilidad',category_class:'cat-leak',risk:'MEDIO',risk_class:'risk-medium',detail:'Template: demo | Severity: MEDIUM',detected:'',is_dork:false},
 ];
 
 async function runDemoScan(term, modules){
