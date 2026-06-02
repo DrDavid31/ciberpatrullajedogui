@@ -10,7 +10,7 @@ import os
 import threading
 import time
 from datetime import datetime
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request, send_from_directory, Response
 from flask_cors import CORS
 
 # Agregar path del proyecto
@@ -79,6 +79,23 @@ from analyzers.yara_document_scanner import (
     scan_documents as yara_scan_documents,
     test_scanner as yara_test_scanner,
 )
+from modules.intelligence import (
+    DEFAULT_FP_RULES,
+    DEFAULT_WATCHLIST,
+    analyze_file_text,
+    analyze_typosquatting,
+    apply_false_positive_rules,
+    build_dashboard,
+    deduplicate_findings,
+    export_stix,
+    export_xlsx,
+    finding_signature,
+    load_json,
+    read_file_for_analysis,
+    render_pdf,
+    report_lines,
+    save_json,
+)
 
 app = Flask(__name__, static_folder="static")
 CORS(app)
@@ -103,8 +120,11 @@ scan_state = {
     "finished_at": None,
 }
 
-RESULTS_FILE = os.path.join(os.path.dirname(__file__), "results", "findings.json")
-os.makedirs(os.path.dirname(RESULTS_FILE), exist_ok=True)
+RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
+RESULTS_FILE = os.path.join(RESULTS_DIR, "findings.json")
+WATCHLIST_FILE = os.path.join(RESULTS_DIR, "watchlist.json")
+FP_RULES_FILE = os.path.join(RESULTS_DIR, "false_positive_rules.json")
+os.makedirs(RESULTS_DIR, exist_ok=True)
 
 
 def as_bool(value):
@@ -307,6 +327,22 @@ def add_findings(new_findings, module_type="repo"):
     for f in new_findings:
         if f.get("is_system"):
             continue
+        key = f.get("dedupe_key") or finding_signature(f)
+        f["dedupe_key"] = key
+        existing = next((item for item in scan_state["findings"] if item.get("dedupe_key") == key), None)
+        if existing:
+            existing["duplicate_count"] = int(existing.get("duplicate_count") or 1) + 1
+            existing["last_detected"] = f.get("detected") or datetime.now().isoformat()
+            sources = set(existing.get("sources_seen") or [existing.get("source", "")])
+            if f.get("source"):
+                sources.add(f.get("source"))
+            existing["sources_seen"] = sorted(s for s in sources if s)
+            log("Hallazgo ya existente. Se actualizo ultima fecha de deteccion.", "info")
+            continue
+        f.setdefault("duplicate_count", 1)
+        f.setdefault("first_detected", f.get("detected") or datetime.now().isoformat())
+        f.setdefault("last_detected", f.get("detected") or f["first_detected"])
+        f.setdefault("sources_seen", [f.get("source", "")] if f.get("source") else [])
         scan_state["findings"].append(f)
         scan_state["stats"]["total_findings"] += 1
         if f.get("risk") in ("ALTO", "CRÍTICO"):
@@ -562,6 +598,117 @@ def export_csv():
                          f.get("url",""), f.get("detail",""), f.get("detected","")])
     return Response(output.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": "attachment;filename=cti-ine-findings.csv"})
+
+
+@app.route("/api/export/excel", methods=["GET", "POST"])
+def export_excel():
+    data = request.json or {} if request.method == "POST" else {}
+    findings = data.get("findings") or scan_state["findings"]
+    payload = export_xlsx(findings)
+    return Response(
+        payload,
+        mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment;filename=cti-ine-findings.xlsx"},
+    )
+
+
+@app.route("/api/export/stix", methods=["GET", "POST"])
+def export_stix_bundle():
+    data = request.json or {} if request.method == "POST" else {}
+    findings = data.get("findings") or scan_state["findings"]
+    payload = json.dumps(export_stix(findings), ensure_ascii=False, indent=2)
+    return Response(
+        payload,
+        mimetype="application/stix+json",
+        headers={"Content-Disposition": "attachment;filename=cti-ine-stix-bundle.json"},
+    )
+
+
+@app.route("/api/report/pdf", methods=["POST"])
+def report_pdf():
+    data = request.json or {}
+    if not data.get("findings"):
+        data["findings"] = scan_state["findings"]
+    if not data.get("stats"):
+        data["stats"] = scan_state["stats"]
+    payload = render_pdf(report_lines(data))
+    return Response(
+        payload,
+        mimetype="application/pdf",
+        headers={"Content-Disposition": "attachment;filename=cti-ine-reporte-ejecutivo.pdf"},
+    )
+
+
+@app.route("/api/intel/dashboard", methods=["GET", "POST"])
+def intel_dashboard():
+    data = request.json or {} if request.method == "POST" else {}
+    findings = data.get("findings") or scan_state["findings"]
+    stats = data.get("stats") or scan_state["stats"]
+    watchlist = data.get("watchlist") or load_json(WATCHLIST_FILE, DEFAULT_WATCHLIST)
+    rules = data.get("false_positive_rules") or load_json(FP_RULES_FILE, DEFAULT_FP_RULES)
+    reviewed = apply_false_positive_rules(findings, rules)
+    dashboard = build_dashboard(reviewed["findings"], stats, data.get("validated"), watchlist, rules)
+    dashboard["false_positives"] = {
+        "count": reviewed["count"],
+        "matches": reviewed["matches"],
+        "rules": rules,
+    }
+    return jsonify(dashboard)
+
+
+@app.route("/api/intel/deduplicate", methods=["POST"])
+def intel_deduplicate():
+    data = request.json or {}
+    findings = data.get("findings") or scan_state["findings"]
+    return jsonify(deduplicate_findings(findings))
+
+
+@app.route("/api/intel/false-positives/apply", methods=["POST"])
+def intel_false_positives():
+    data = request.json or {}
+    findings = data.get("findings") or scan_state["findings"]
+    rules = data.get("rules") or load_json(FP_RULES_FILE, DEFAULT_FP_RULES)
+    return jsonify(apply_false_positive_rules(findings, rules))
+
+
+@app.route("/api/watchlist", methods=["GET", "POST"])
+def watchlist_api():
+    if request.method == "POST":
+        data = request.json or {}
+        watchlist = data.get("watchlist") or DEFAULT_WATCHLIST
+        return jsonify({"status": "ok", "watchlist": save_json(WATCHLIST_FILE, watchlist)})
+    return jsonify({"watchlist": load_json(WATCHLIST_FILE, DEFAULT_WATCHLIST)})
+
+
+@app.route("/api/false-positive-rules", methods=["GET", "POST"])
+def false_positive_rules_api():
+    if request.method == "POST":
+        data = request.json or {}
+        rules = data.get("rules") or DEFAULT_FP_RULES
+        return jsonify({"status": "ok", "rules": save_json(FP_RULES_FILE, rules)})
+    return jsonify({"rules": load_json(FP_RULES_FILE, DEFAULT_FP_RULES)})
+
+
+@app.route("/api/typosquatting/analyze", methods=["POST"])
+def typosquatting_api():
+    data = request.json or {}
+    target = data.get("target") or "ine.mx"
+    candidates = data.get("domains") or []
+    if isinstance(candidates, str):
+        candidates = [x.strip() for x in candidates.replace("\r", "\n").split("\n") if x.strip()]
+    return jsonify({"target": target, "results": analyze_typosquatting(target, candidates)})
+
+
+@app.route("/api/files/analyze", methods=["POST"])
+def files_analyze_api():
+    data = request.json or {}
+    if data.get("path"):
+        text = read_file_for_analysis(data["path"])
+        result = analyze_file_text(os.path.basename(data["path"]), text)
+        return jsonify(result)
+    name = data.get("name") or "archivo.txt"
+    text = data.get("text") or ""
+    return jsonify(analyze_file_text(name, text))
 
 
 @app.route("/api/ail/test", methods=["POST"])
@@ -953,8 +1100,17 @@ def yara_scan():
 def health():
     return jsonify({
         "status": "ok",
-        "version": "2.9",
+        "version": "3.0",
         "client": "INE",
+        "executive_dashboard": True,
+        "report_generator": True,
+        "excel_export": True,
+        "stix_export": True,
+        "watchlist": True,
+        "typosquatting": True,
+        "file_analysis": True,
+        "deduplication": True,
+        "false_positive_rules": True,
         "onionsearch": True,
         "trufflehog": True,
         "gitleaks": True,
