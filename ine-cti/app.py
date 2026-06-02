@@ -36,6 +36,49 @@ from modules.apprise_client import (
     send_notification as apprise_send_notification,
     test_connection as apprise_test_connection,
 )
+from modules.changedetection_client import (
+    export_findings_as_watches as changedetection_export_findings,
+    scan_watches as changedetection_scan_watches,
+    test_connection as changedetection_test_connection,
+)
+from modules.huginn_client import (
+    export_findings as huginn_export_findings,
+    test_connection as huginn_test_connection,
+)
+from modules.aleph_client import (
+    search_entities as aleph_search_entities,
+    test_connection as aleph_test_connection,
+)
+from modules.followthemoney_client import (
+    normalize_findings as ftm_normalize_findings,
+    test_normalizer as ftm_test_normalizer,
+)
+from modules.thehive_client import (
+    export_findings as thehive_export_findings,
+    test_connection as thehive_test_connection,
+)
+from modules.shuffle_client import (
+    export_findings as shuffle_export_findings,
+    test_connection as shuffle_test_connection,
+)
+from modules.projectdiscovery_client import (
+    scan_httpx as pd_scan_httpx,
+    scan_naabu as pd_scan_naabu,
+    scan_nuclei as pd_scan_nuclei,
+    scan_subfinder as pd_scan_subfinder,
+)
+from modules.sigma_client import (
+    load_rules as sigma_load_rules,
+    test_rules as sigma_test_rules,
+)
+from analyzers.urlscan_analyzer import (
+    submit_many as urlscan_submit_many,
+    test_connection as urlscan_test_connection,
+)
+from analyzers.yara_document_scanner import (
+    scan_documents as yara_scan_documents,
+    test_scanner as yara_test_scanner,
+)
 
 app = Flask(__name__, static_folder="static")
 CORS(app)
@@ -101,6 +144,108 @@ def apprise_config(data):
         "urls": keys.get("apprise_urls", ""),
         "on_complete": as_bool(keys.get("apprise_on_complete")),
         "on_high": as_bool(keys.get("apprise_on_high")),
+    }
+
+
+def changedetection_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "base_url": keys.get("changedetection_url", ""),
+        "api_key": keys.get("changedetection_key", ""),
+        "tag": keys.get("changedetection_tag", "ine-cti"),
+        "limit": keys.get("changedetection_limit", 20),
+        "recheck": as_bool(keys.get("changedetection_recheck")),
+        "verify_tls": as_bool(keys.get("changedetection_verify_tls")),
+    }
+
+
+def huginn_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "webhook_url": keys.get("huginn_webhook_url", ""),
+        "limit": keys.get("huginn_limit", 20),
+        "verify_tls": as_bool(keys.get("huginn_verify_tls")),
+    }
+
+
+def aleph_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "base_url": keys.get("aleph_url", "https://aleph.occrp.org"),
+        "api_key": keys.get("aleph_key", ""),
+        "schemata": keys.get("aleph_schemata", ""),
+        "limit": keys.get("aleph_limit", 10),
+        "verify_tls": as_bool(keys.get("aleph_verify_tls")),
+    }
+
+
+def ftm_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "dataset": keys.get("ftm_dataset", "ine-cti-monitor"),
+        "limit": keys.get("ftm_limit", 100),
+    }
+
+
+def thehive_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "base_url": keys.get("thehive_url", ""),
+        "api_key": keys.get("thehive_key", ""),
+        "org": keys.get("thehive_org", ""),
+        "limit": keys.get("thehive_limit", 20),
+        "verify_tls": as_bool(keys.get("thehive_verify_tls")),
+    }
+
+
+def shuffle_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "webhook_url": keys.get("shuffle_webhook_url", ""),
+        "token": keys.get("shuffle_token", ""),
+        "limit": keys.get("shuffle_limit", 20),
+        "verify_tls": as_bool(keys.get("shuffle_verify_tls")),
+    }
+
+
+def projectdiscovery_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "target": keys.get("pd_target", ""),
+        "limit": keys.get("pd_limit", 50),
+        "ports": keys.get("pd_ports", ""),
+        "nuclei_templates": keys.get("nuclei_templates", ""),
+        "nuclei_severity": keys.get("nuclei_severity", ""),
+        "nuclei_tags": keys.get("nuclei_tags", ""),
+        "timeout": keys.get("pd_timeout", 240),
+    }
+
+
+def urlscan_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "api_key": keys.get("urlscan_key", ""),
+        "visibility": keys.get("urlscan_visibility", "unlisted"),
+        "tags": keys.get("urlscan_tags", "ine-cti"),
+        "limit": keys.get("urlscan_limit", 10),
+    }
+
+
+def sigma_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "rules_path": keys.get("sigma_rules_path", ""),
+        "limit": keys.get("sigma_limit", 50),
+    }
+
+
+def yara_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "rules_path": keys.get("yara_rules_path", ""),
+        "target_path": keys.get("yara_target_path", ""),
+        "recursive": as_bool(keys.get("yara_recursive")),
+        "max_files": keys.get("yara_max_files", 200),
     }
 
 
@@ -238,6 +383,46 @@ def run_scan(term, domain, active_modules, api_keys):
             api_keys.get("social_timeout", 10),
             api_keys.get("social_limit", 30),
         )),
+        ("changedetection", "changedetection.io",   lambda: changedetection_scan_watches(
+            changedetection_config(api_keys)["base_url"],
+            changedetection_config(api_keys)["api_key"],
+            changedetection_config(api_keys)["tag"],
+            changedetection_config(api_keys)["recheck"],
+            changedetection_config(api_keys)["limit"],
+            changedetection_config(api_keys)["verify_tls"],
+        )),
+        ("aleph",       "Aleph",                    lambda: aleph_search_entities(
+            aleph_config(api_keys)["base_url"],
+            term,
+            aleph_config(api_keys)["api_key"],
+            aleph_config(api_keys)["schemata"],
+            aleph_config(api_keys)["limit"],
+            aleph_config(api_keys)["verify_tls"],
+        )),
+        ("subfinder",   "ProjectDiscovery subfinder", lambda: pd_scan_subfinder(
+            projectdiscovery_config(api_keys)["target"] or domain,
+            projectdiscovery_config(api_keys)["limit"],
+            projectdiscovery_config(api_keys)["timeout"],
+        )),
+        ("httpx",       "ProjectDiscovery httpx", lambda: pd_scan_httpx(
+            projectdiscovery_config(api_keys)["target"] or domain,
+            projectdiscovery_config(api_keys)["limit"],
+            projectdiscovery_config(api_keys)["timeout"],
+        )),
+        ("naabu",       "ProjectDiscovery naabu", lambda: pd_scan_naabu(
+            projectdiscovery_config(api_keys)["target"] or domain,
+            projectdiscovery_config(api_keys)["ports"],
+            projectdiscovery_config(api_keys)["limit"],
+            projectdiscovery_config(api_keys)["timeout"],
+        )),
+        ("nuclei",      "ProjectDiscovery nuclei", lambda: pd_scan_nuclei(
+            projectdiscovery_config(api_keys)["target"] or domain,
+            projectdiscovery_config(api_keys)["nuclei_templates"],
+            projectdiscovery_config(api_keys)["nuclei_severity"],
+            projectdiscovery_config(api_keys)["nuclei_tags"],
+            projectdiscovery_config(api_keys)["limit"],
+            projectdiscovery_config(api_keys)["timeout"],
+        )),
         ("leakix",      "LeakIX",                   lambda: scan_leakix(term, api_keys.get("leakix"))),
         ("hibp",        "HaveIBeenPwned",           lambda: scan_hibp(domain, api_keys.get("hibp"))),
         ("intelx",      "Intelligence X",           lambda: scan_intelx(term, api_keys.get("intelx"))),
@@ -310,7 +495,9 @@ def start_scan():
                                            "filerepos","aws","azure","gcloud",
                                            "ahmia","darksearch","onionsearch",
                                            "trufflehog","gitleaks",
-                                           "socialanalyzer","leakix","hibp","intelx"])
+                                           "socialanalyzer","changedetection",
+                                           "aleph","subfinder","httpx",
+                                           "naabu","nuclei","leakix","hibp","intelx"])
     api_keys       = data.get("api_keys", {})
 
     t = threading.Thread(target=run_scan, args=(term, domain, active_modules, api_keys), daemon=True)
@@ -501,17 +688,291 @@ def apprise_notify():
         return jsonify({"status": "error", "error": str(e)}), 400
 
 
+@app.route("/api/changedetection/test", methods=["POST"])
+def changedetection_test():
+    data = request.json or {}
+    cfg = changedetection_config(data)
+    try:
+        result = changedetection_test_connection(cfg["base_url"], cfg["api_key"], cfg["verify_tls"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/changedetection/export", methods=["POST"])
+def changedetection_export():
+    data = request.json or {}
+    cfg = changedetection_config(data)
+    findings = data.get("findings") or scan_state["findings"]
+    try:
+        result = changedetection_export_findings(
+            cfg["base_url"],
+            cfg["api_key"],
+            findings,
+            cfg["tag"],
+            cfg["limit"],
+            cfg["verify_tls"],
+        )
+        log(f"changedetection.io export: {len(result.get('exported', []))} watch(es)", "ok")
+        return jsonify(result)
+    except Exception as e:
+        log(f"changedetection.io export error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/huginn/test", methods=["POST"])
+def huginn_test():
+    data = request.json or {}
+    cfg = huginn_config(data)
+    try:
+        result = huginn_test_connection(cfg["webhook_url"], cfg["verify_tls"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/huginn/export", methods=["POST"])
+def huginn_export():
+    data = request.json or {}
+    cfg = huginn_config(data)
+    findings = data.get("findings") or scan_state["findings"]
+    try:
+        result = huginn_export_findings(
+            cfg["webhook_url"],
+            findings,
+            data.get("term", "INE"),
+            data.get("domain", "ine.mx"),
+            cfg["limit"],
+            cfg["verify_tls"],
+        )
+        log(f"Huginn export: {len(result.get('sent', []))} evento(s)", "ok")
+        return jsonify(result)
+    except Exception as e:
+        log(f"Huginn export error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/aleph/test", methods=["POST"])
+def aleph_test():
+    data = request.json or {}
+    cfg = aleph_config(data)
+    try:
+        result = aleph_test_connection(cfg["base_url"], cfg["api_key"], cfg["verify_tls"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/aleph/search", methods=["POST"])
+def aleph_search():
+    data = request.json or {}
+    cfg = aleph_config(data)
+    query = data.get("term") or data.get("query") or "INE"
+    try:
+        findings = aleph_search_entities(
+            cfg["base_url"],
+            query,
+            cfg["api_key"],
+            cfg["schemata"],
+            cfg["limit"],
+            cfg["verify_tls"],
+        )
+        return jsonify({"status": "ok", "findings": findings, "total": len(findings)})
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/followthemoney/test", methods=["POST"])
+def followthemoney_test():
+    try:
+        return jsonify(ftm_test_normalizer())
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/followthemoney/export", methods=["POST"])
+def followthemoney_export():
+    data = request.json or {}
+    cfg = ftm_config(data)
+    findings = data.get("findings") or scan_state["findings"]
+    try:
+        result = ftm_normalize_findings(findings, cfg["dataset"], cfg["limit"])
+        log(f"FollowTheMoney export: {result.get('count', 0)} entidad(es)", "ok")
+        return jsonify(result)
+    except Exception as e:
+        log(f"FollowTheMoney export error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/thehive/test", methods=["POST"])
+def thehive_test():
+    data = request.json or {}
+    cfg = thehive_config(data)
+    try:
+        result = thehive_test_connection(cfg["base_url"], cfg["api_key"], cfg["org"], cfg["verify_tls"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/thehive/export", methods=["POST"])
+def thehive_export():
+    data = request.json or {}
+    cfg = thehive_config(data)
+    findings = data.get("findings") or scan_state["findings"]
+    try:
+        result = thehive_export_findings(
+            cfg["base_url"],
+            cfg["api_key"],
+            findings,
+            cfg["org"],
+            cfg["limit"],
+            cfg["verify_tls"],
+        )
+        log(f"TheHive export: {len(result.get('exported', []))} alerta(s)", "ok")
+        return jsonify(result)
+    except Exception as e:
+        log(f"TheHive export error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/shuffle/test", methods=["POST"])
+def shuffle_test():
+    data = request.json or {}
+    cfg = shuffle_config(data)
+    try:
+        result = shuffle_test_connection(cfg["webhook_url"], cfg["token"], cfg["verify_tls"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/shuffle/export", methods=["POST"])
+def shuffle_export():
+    data = request.json or {}
+    cfg = shuffle_config(data)
+    findings = data.get("findings") or scan_state["findings"]
+    try:
+        result = shuffle_export_findings(
+            cfg["webhook_url"],
+            findings,
+            cfg["token"],
+            cfg["limit"],
+            cfg["verify_tls"],
+        )
+        log(f"Shuffle export: {len(result.get('sent', []))} evento(s)", "ok")
+        return jsonify(result)
+    except Exception as e:
+        log(f"Shuffle export error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/urlscan/test", methods=["POST"])
+def urlscan_test():
+    data = request.json or {}
+    cfg = urlscan_config(data)
+    try:
+        result = urlscan_test_connection(cfg["api_key"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/urlscan/submit", methods=["POST"])
+def urlscan_submit():
+    data = request.json or {}
+    cfg = urlscan_config(data)
+    findings = data.get("findings") or scan_state["findings"]
+    try:
+        result = urlscan_submit_many(
+            cfg["api_key"],
+            findings,
+            cfg["visibility"],
+            cfg["tags"],
+            cfg["limit"],
+        )
+        log(f"urlscan.io submit: {len(result.get('submitted', []))} URL(s)", "ok")
+        return jsonify(result)
+    except Exception as e:
+        log(f"urlscan.io submit error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/sigma/test", methods=["POST"])
+def sigma_test():
+    data = request.json or {}
+    cfg = sigma_config(data)
+    try:
+        result = sigma_test_rules(cfg["rules_path"], min(int(cfg["limit"] or 5), 5))
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/sigma/rules", methods=["POST"])
+def sigma_rules():
+    data = request.json or {}
+    cfg = sigma_config(data)
+    try:
+        result = sigma_load_rules(cfg["rules_path"], cfg["limit"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/yara/test", methods=["POST"])
+def yara_test():
+    data = request.json or {}
+    cfg = yara_config(data)
+    try:
+        result = yara_test_scanner(cfg["rules_path"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/yara/scan", methods=["POST"])
+def yara_scan():
+    data = request.json or {}
+    cfg = yara_config(data)
+    try:
+        result = yara_scan_documents(
+            cfg["rules_path"],
+            cfg["target_path"],
+            cfg["recursive"],
+            cfg["max_files"],
+        )
+        log(f"YARA scan: {result.get('count', 0)} match(es)", "ok")
+        return jsonify(result)
+    except Exception as e:
+        log(f"YARA scan error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
 @app.route("/api/health")
 def health():
     return jsonify({
         "status": "ok",
-        "version": "2.6",
+        "version": "2.9",
         "client": "INE",
         "onionsearch": True,
         "trufflehog": True,
         "gitleaks": True,
         "socialanalyzer": True,
         "apprise": True,
+        "changedetection": True,
+        "huginn": True,
+        "aleph": True,
+        "followthemoney": True,
+        "thehive": True,
+        "shuffle": True,
+        "subfinder": True,
+        "httpx": True,
+        "naabu": True,
+        "nuclei": True,
+        "urlscan": True,
+        "sigma": True,
+        "yara": True,
         "ail": True,
         "misp": True,
     })
