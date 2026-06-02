@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INE CTI Monitor v2.9</title>
+<title>INE CTI Monitor v3.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -115,6 +115,34 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 .stat.c5 .stat-val{color:var(--blue);}
 .stat.c6 .stat-val{color:var(--purple);}
 .stat-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;}
+
+/* EXECUTIVE DASHBOARD */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px;}
+@media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:700px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
+.kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 15px;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;}
+.kpi strong{font-family:'Rajdhani',sans-serif;font-size:28px;line-height:1;color:var(--cyan);}
+.kpi span{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);}
+.kpi small{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t2);}
+.dash-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:18px;}
+@media(max-width:900px){.dash-grid{grid-template-columns:1fr;}}
+.chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;min-height:230px;}
+.chart-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:12px;}
+.bar-row{display:grid;grid-template-columns:minmax(90px,150px) 1fr 42px;gap:10px;align-items:center;margin:8px 0;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t2);}
+.bar-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{height:9px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.08);border-radius:99px;overflow:hidden;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:99px;min-width:3px;}
+.bar-value{text-align:right;color:var(--t1);}
+.mini-table{width:100%;border-collapse:collapse;}
+.mini-table th,.mini-table td{padding:8px 10px;font-size:11px;border-bottom:1px solid rgba(0,229,255,.06);}
+.mini-table th{font-family:'Share Tech Mono',monospace;color:var(--t3);letter-spacing:1px;text-transform:uppercase;background:rgba(0,229,255,.03);}
+.tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
+@media(max-width:900px){.tool-grid{grid-template-columns:1fr;}}
+.textarea{background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;width:100%;min-height:130px;resize:vertical;}
+.pill-list{display:flex;flex-wrap:wrap;gap:7px;}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:rgba(0,229,255,.05);border-radius:5px;padding:6px 9px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t2);}
+.pill button{border:0;background:transparent;color:var(--red);cursor:pointer;font-family:'Share Tech Mono',monospace;}
+.status-box{display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);white-space:pre-wrap;}
 
 /* SCAN STATUS */
 .scan-box{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:none;}
@@ -248,7 +276,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
     <div class="logo-icon">🛰️</div>
     <div class="logo-text">
       <h1>INE · CTI MONITOR</h1>
-      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.9</p>
+      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v3.0</p>
     </div>
   </div>
   <div class="h-right">
@@ -259,14 +287,42 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 
 <!-- TABS -->
 <div class="tabs">
-  <button class="tab active" onclick="showTab('monitor',this)">📡 MONITOR</button>
+  <button class="tab active" onclick="showTab('dashboard',this)">📊 DASHBOARD</button>
+  <button class="tab" onclick="showTab('monitor',this)">📡 MONITOR</button>
   <button class="tab" onclick="showTab('hallazgos',this)">🔍 HALLAZGOS</button>
   <button class="tab" onclick="showTab('validacion',this)">✅ VALIDACIÓN <span id="vqBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></button>
+  <button class="tab" onclick="showTab('reportes',this)">📄 REPORTES</button>
+  <button class="tab" onclick="showTab('watchlist',this)">🎯 WATCHLIST</button>
+  <button class="tab" onclick="showTab('analisis',this)">🧪 ANÁLISIS</button>
   <button class="tab" onclick="showTab('config',this)">⚙️ CONFIGURACIÓN</button>
 </div>
 
+<!-- ══════════ TAB: DASHBOARD ══════════ -->
+<div id="tab-dashboard" class="tab-content active">
+  <div class="kpi-grid">
+    <div class="kpi"><span>Hallazgos totales</span><strong id="kpiTotal">0</strong><small>deduplicados</small></div>
+    <div class="kpi"><span>Hallazgos críticos</span><strong id="kpiCritical">0</strong><small>prioridad inmediata</small></div>
+    <div class="kpi"><span>Nuevos hoy</span><strong id="kpiToday">0</strong><small>últimas detecciones</small></div>
+    <div class="kpi"><span>Fuentes monitoreadas</span><strong id="kpiSources">0</strong><small>módulos activos</small></div>
+    <div class="kpi"><span>Dominios sospechosos</span><strong id="kpiDomains">0</strong><small>posible suplantación</small></div>
+    <div class="kpi"><span>Credenciales detectadas</span><strong id="kpiCreds">0</strong><small>tokens, claves, secretos</small></div>
+    <div class="kpi"><span>Casos abiertos</span><strong id="kpiOpen">0</strong><small>pendientes SOC</small></div>
+    <div class="kpi"><span>Casos cerrados</span><strong id="kpiClosed">0</strong><small>validados o descartados</small></div>
+    <div class="kpi"><span>Tiempo promedio</span><strong id="kpiReview">N/D</strong><small>revisión</small></div>
+    <div class="kpi"><span>Duplicados</span><strong id="kpiDupes">0</strong><small>colapsados</small></div>
+  </div>
+
+  <div class="dash-grid">
+    <div class="chart-card"><div class="chart-title">Hallazgos por fuente</div><div id="chartSource"></div></div>
+    <div class="chart-card"><div class="chart-title">Hallazgos por severidad</div><div id="chartSeverity"></div></div>
+    <div class="chart-card"><div class="chart-title">Hallazgos por día</div><div id="chartDay"></div></div>
+    <div class="chart-card"><div class="chart-title">Top keywords detectadas</div><div id="chartKeywords"></div></div>
+    <div class="chart-card" style="grid-column:1/-1;"><div class="chart-title">Top dominios relacionados</div><div id="chartDomains"></div></div>
+  </div>
+</div>
+
 <!-- ══════════ TAB: MONITOR ══════════ -->
-<div id="tab-monitor" class="tab-content active">
+<div id="tab-monitor" class="tab-content">
 
   <!-- Configuración rápida -->
   <div class="card">
@@ -402,6 +458,164 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
           <div class="vq-empty">Sin validaciones realizadas aún</div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: REPORTES ══════════ -->
+<div id="tab-reportes" class="tab-content">
+  <div class="card">
+    <div class="card-title">Generador de reportes</div>
+    <div class="tool-grid">
+      <div>
+        <div class="api-grid">
+          <div class="api-row">
+            <label>Resumen ejecutivo</label>
+            <input type="text" id="reportTitle" value="Reporte ejecutivo CTI - INE" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          </div>
+          <div class="api-row">
+            <label>Clasificación</label>
+            <select id="reportClassification" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+              <option>Uso oficial exclusivo</option>
+              <option>TLP:AMBER</option>
+              <option>TLP:RED</option>
+              <option>TLP:CLEAR</option>
+            </select>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+          <button class="btn-scan" onclick="generateReportPdf()" style="font-size:13px;padding:9px 18px;">GENERAR REPORTE PDF</button>
+          <button class="btn-scan" onclick="exportData('csv')" style="font-size:13px;padding:9px 18px;">CSV</button>
+          <button class="btn-scan" onclick="exportData('json')" style="font-size:13px;padding:9px 18px;">JSON</button>
+          <button class="btn-scan" onclick="exportData('excel')" style="font-size:13px;padding:9px 18px;">EXCEL</button>
+          <button class="btn-scan" onclick="exportData('stix')" style="font-size:13px;padding:9px 18px;">STIX/TAXII</button>
+        </div>
+        <div id="reportStatus" class="status-box"></div>
+      </div>
+      <div>
+        <table class="mini-table">
+          <thead><tr><th>Sección</th><th>Incluida</th></tr></thead>
+          <tbody>
+            <tr><td>Resumen ejecutivo</td><td>Si</td></tr>
+            <tr><td>Alcance del monitoreo</td><td>Si</td></tr>
+            <tr><td>Fuentes analizadas</td><td>Si</td></tr>
+            <tr><td>Hallazgos críticos</td><td>Si</td></tr>
+            <tr><td>Evidencia</td><td>Si</td></tr>
+            <tr><td>Análisis técnico</td><td>Si</td></tr>
+            <tr><td>Riesgo y recomendaciones</td><td>Si</td></tr>
+            <tr><td>Anexos</td><td>Si</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: WATCHLIST ══════════ -->
+<div id="tab-watchlist" class="tab-content">
+  <div class="tool-grid">
+    <div class="card">
+      <div class="card-title">Palabras clave vigiladas</div>
+      <div class="api-grid">
+        <div class="api-row">
+          <label>Categoría</label>
+          <input type="text" id="watchCategory" value="Identidad" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        </div>
+        <div class="api-row">
+          <label>Término</label>
+          <input type="text" id="watchTerm" placeholder="CURP, RFC, OCR, lista nominal..." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+        <button class="btn-scan" onclick="addWatchTerm()" style="font-size:13px;padding:9px 18px;">AGREGAR</button>
+        <button class="btn-scan" onclick="saveWatchlist()" style="font-size:13px;padding:9px 18px;">GUARDAR WATCHLIST</button>
+        <button class="btn-scan" onclick="resetWatchlist()" style="font-size:13px;padding:9px 18px;">RESTABLECER</button>
+      </div>
+      <div id="watchStatus" class="status-box"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Categorías activas</div>
+      <div id="watchlistView"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ TAB: ANÁLISIS ══════════ -->
+<div id="tab-analisis" class="tab-content">
+  <div class="tool-grid">
+    <div class="card">
+      <div class="card-title">Detección de typosquatting</div>
+      <div class="api-grid">
+        <div class="api-row">
+          <label>Dominio base</label>
+          <input type="text" id="typoTarget" value="ine.mx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        </div>
+      </div>
+      <textarea id="typoCandidates" class="textarea" style="margin-top:12px;">lne.mx
+ine-gob.mx
+ine-mx.com
+institutonacionalelectoral.com
+inecredencial.com
+credencial-ine.com</textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+        <button class="btn-scan" onclick="analyzeTypos()" style="font-size:13px;padding:9px 18px;">ANALIZAR DOMINIOS</button>
+      </div>
+      <div id="typoResults" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Análisis de archivos encontrados</div>
+      <div class="api-grid">
+        <div class="api-row">
+          <label>Archivo local</label>
+          <input type="file" id="fileInput" multiple accept=".pdf,.xlsx,.csv,.sql,.txt,.zip,.json,.log" style="color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:11px;">
+        </div>
+        <div class="api-row">
+          <label>Ruta backend opcional</label>
+          <input type="text" id="filePath" placeholder="C:\ruta\datos_usuarios.csv" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        </div>
+      </div>
+      <textarea id="fileText" class="textarea" style="margin-top:12px;" placeholder="También puedes pegar aquí texto de un CSV, SQL, TXT o PDF extraído..."></textarea>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+        <button class="btn-scan" onclick="analyzeFiles()" style="font-size:13px;padding:9px 18px;">ANALIZAR ARCHIVOS</button>
+        <button class="btn-scan" onclick="addFileFindings()" style="font-size:13px;padding:9px 18px;">AGREGAR HALLAZGOS</button>
+      </div>
+      <div id="fileResults" style="margin-top:14px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Deduplicación de hallazgos</div>
+      <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="kpi"><span>Antes</span><strong id="dedupeBefore">0</strong><small>hallazgos</small></div>
+        <div class="kpi"><span>Después</span><strong id="dedupeAfter">0</strong><small>únicos</small></div>
+        <div class="kpi"><span>Colapsados</span><strong id="dedupeCollapsed">0</strong><small>duplicados</small></div>
+      </div>
+      <button class="btn-scan" onclick="applyDedupe()" style="font-size:13px;padding:9px 18px;">DEDUPLICAR AHORA</button>
+      <div id="dedupeStatus" class="status-box"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Reglas de falsos positivos</div>
+      <div class="api-grid">
+        <div class="api-row">
+          <label>Tipo</label>
+          <select id="fpType" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+            <option value="domain">Dominio</option>
+            <option value="keyword">Keyword</option>
+            <option value="source">Fuente</option>
+          </select>
+        </div>
+        <div class="api-row">
+          <label>Valor</label>
+          <input type="text" id="fpValue" placeholder="ine.mx, noticia, comunicado oficial..." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+        <button class="btn-scan" onclick="addFpRule()" style="font-size:13px;padding:9px 18px;">AGREGAR REGLA</button>
+        <button class="btn-scan" onclick="applyFpRules()" style="font-size:13px;padding:9px 18px;">APLICAR REGLAS</button>
+      </div>
+      <div id="fpRulesView" style="margin-top:14px;"></div>
+      <div id="fpStatus" class="status-box"></div>
     </div>
   </div>
 </div>
@@ -1025,10 +1239,12 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 
 <!-- FOOTER -->
 <footer>
-  <span>INE CTI MONITOR v2.9 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
+  <span>INE CTI MONITOR v3.0 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
   <div class="exp-btns">
     <button class="exp-btn" onclick="exportData('csv')">⬇ CSV</button>
     <button class="exp-btn" onclick="exportData('json')">⬇ JSON</button>
+    <button class="exp-btn" onclick="exportData('excel')">⬇ EXCEL</button>
+    <button class="exp-btn" onclick="exportData('stix')">⬇ STIX</button>
   </div>
 </footer>
 
@@ -1054,10 +1270,25 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 let findings = [];
 let validated = [];
 let pendingValidation = [];
+let lastStats = {};
+let lastFileAnalysis = [];
 let currentFindingFilter = 'all';
 let autoTimer = null;
 let pollTimer = null;
 const API = ''; // mismo origen
+const DEFAULT_WATCHLIST = {
+  'Identidad': ['CURP','RFC','INE','OCR','CIC'],
+  'Electoral': ['Instituto Nacional Electoral','credencial para votar','lista nominal','padrón electoral','clave de elector','sección electoral','casilla'],
+  'Riesgo digital': ['database','dump','sql','password','api key','token','credenciales']
+};
+let watchlist = loadJsonLocal('cti_watchlist', DEFAULT_WATCHLIST);
+const DEFAULT_FP_RULES = [
+  {type:'domain', value:'ine.mx', reason:'Dominio oficial del INE', enabled:true},
+  {type:'keyword', value:'comunicado oficial', reason:'Documento publico oficial', enabled:true},
+  {type:'keyword', value:'noticia', reason:'Mencion periodistica legitima', enabled:false},
+  {type:'keyword', value:'periodistico', reason:'Mencion periodistica legitima', enabled:false}
+];
+let fpRules = loadJsonLocal('cti_fp_rules', DEFAULT_FP_RULES);
 
 // ─── CLOCK ───
 setInterval(()=>{
@@ -1072,6 +1303,9 @@ function showTab(id, btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.getElementById('tab-'+id).classList.add('active');
   btn.classList.add('active');
+  if(id === 'dashboard') renderDashboard();
+  if(id === 'watchlist') renderWatchlist();
+  if(id === 'analisis') { renderFpRules(); updateDedupePanel(); }
 }
 
 // ─── CHECKBOXES ───
@@ -1280,6 +1514,10 @@ function loadKeys(){
   } catch(e){}
 }
 loadKeys();
+renderWatchlist();
+renderFpRules();
+renderDashboard();
+updateDedupePanel();
 
 function setAilStatus(msg, color='cyan'){
   const el = document.getElementById('ailStatus');
@@ -1310,10 +1548,12 @@ function setIntegrationStatus(id, msg, color='cyan'){
 
 function refreshStatsFromFindings(){
   document.getElementById('sF').textContent = findings.length;
-  document.getElementById('sH').textContent = findings.filter(x=>x.risk==='ALTO'||x.risk==='CRÍTICO').length;
+  document.getElementById('sH').textContent = findings.filter(x=>severityRank(x.risk)>=3).length;
   document.getElementById('sR').textContent = findings.filter(x=>x.category_class==='cat-repo').length;
   document.getElementById('sC').textContent = findings.filter(x=>x.category_class==='cat-cloud').length;
   document.getElementById('sD').textContent = findings.filter(x=>x.category_class==='cat-dark').length;
+  renderDashboard();
+  updateDedupePanel();
 }
 
 async function testAil(){
@@ -1670,8 +1910,11 @@ async function startScan(){
     document.getElementById('scanLog').innerHTML = '';
     findings = [];
     pendingValidation = [];
+    lastStats = {};
     renderFindings();
     renderValidationQueue();
+    renderDashboard();
+    updateDedupePanel();
 
     startPolling();
   } catch(e){
@@ -1716,6 +1959,7 @@ async function pollStatus(){
 
     // Update stats
     const s = status.stats || {};
+    lastStats = s;
     document.getElementById('sS').textContent = s.sources_scanned || 0;
     document.getElementById('sF').textContent = s.total_findings  || 0;
     document.getElementById('sH').textContent = s.high_critical   || 0;
@@ -1736,9 +1980,12 @@ async function pollStatus(){
 
     // Update findings
     findings = findData.findings || [];
+    findings = dedupeFindings(findings).findings;
     renderFindings();
     syncValidationQueue();
     updateVQBadge();
+    renderDashboard();
+    updateDedupePanel();
 
     if(!status.running){
       stopPolling();
@@ -1754,7 +2001,7 @@ async function pollStatus(){
 function renderFindings(){
   const filtered = currentFindingFilter === 'all'
     ? findings
-    : findings.filter(f=>f.risk === currentFindingFilter);
+    : findings.filter(f=>normalizeRisk(f.risk) === normalizeRisk(currentFindingFilter));
 
   document.getElementById('countBadge').textContent = filtered.length;
   renderMonitorFindings(filtered);
@@ -1821,7 +2068,7 @@ function syncValidationQueue(){
     ...pendingValidation.map(f=>f.url),
     ...validated.map(v=>v.url)
   ]);
-  findings.filter(f=> f.risk === 'CRÍTICO' || f.risk === 'ALTO')
+  findings.filter(f=> severityRank(f.risk) >= 3)
           .filter(f=> !knownUrls.has(f.url) && !f.is_dork && !f.is_system)
           .forEach(f=> pendingValidation.push(f));
   renderValidationQueue();
@@ -1856,11 +2103,26 @@ function validateItem(idx, decision){
   if(!item) return;
   item.validation = decision;
   item.validated_at = new Date().toLocaleTimeString('es-MX',{hour12:false});
+  if(decision === 'FALSO POSITIVO') learnFalsePositiveRule(item);
   validated.unshift(item);
   pendingValidation.splice(idx,1);
   renderValidationQueue();
   renderValidationLog();
   updateVQBadge();
+  renderDashboard();
+}
+
+function learnFalsePositiveRule(item){
+  const domain = extractDomain(item.url);
+  const value = domain || item.source || item.title;
+  const type = domain ? 'domain' : item.source ? 'source' : 'keyword';
+  if(!value) return;
+  const exists = fpRules.some(r=>r.type===type && String(r.value).toLowerCase()===String(value).toLowerCase());
+  if(!exists){
+    fpRules.push({type, value, reason:'Aprendida desde validación', enabled:true});
+    saveJsonLocal('cti_fp_rules', fpRules);
+    renderFpRules();
+  }
 }
 
 function renderValidationLog(){
@@ -1917,6 +2179,9 @@ const demoData = [
   {source:'httpx',source_id:'httpx',title:'Servicio HTTP activo: Portal INE',url:'https://www.ine.mx',category:'Servicio Expuesto',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:'HTTP 200 | Tech: demo',detected:'',is_dork:false},
   {source:'naabu',source_id:'naabu',title:'Puerto abierto: ine.mx:443',url:'ine.mx:443',category:'Servicio Expuesto',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:'Host: ine.mx | Puerto: 443',detected:'',is_dork:false},
   {source:'nuclei',source_id:'nuclei',title:'Nuclei: exposicion informativa demo',url:'https://www.ine.mx',category:'Vulnerabilidad',category_class:'cat-leak',risk:'MEDIO',risk_class:'risk-medium',detail:'Template: demo | Severity: MEDIUM',detected:'',is_dork:false},
+  {source:'Typosquatting',source_id:'typosquatting',title:'Dominio similar detectado: ine-mx.com',url:'https://ine-mx.com',category:'Dominio Sospechoso',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:'Similitud alta | Posible phishing o suplantacion',detected:'',is_dork:false},
+  {source:'Analisis de archivos',source_id:'file-analysis',title:'Archivo sensible: datos_usuarios.csv',url:'datos_usuarios.csv',category:'Archivo sensible',category_class:'cat-leak',risk:'CRÍTICO',risk_class:'risk-critical',detail:'143 posibles CURP, 87 correos, 12 menciones de INE',detected:'',is_dork:false},
+  {source:'GitHub',source_id:'github',title:'Archivo config.env en repo público — referencia a INE',url:'https://github.com/search?q=INE&type=code',category:'Código/Repositorio',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:'Duplicado demo de la misma URL',detected:'',is_dork:false},
 ];
 
 async function runDemoScan(term, modules){
@@ -1953,8 +2218,9 @@ async function runDemoScan(term, modules){
     if(hit){
       const f = {...hit, detected: ts()};
       findings.push(f);
+      findings = dedupeFindings(findings).findings;
       document.getElementById('sF').textContent = findings.length;
-      document.getElementById('sH').textContent = findings.filter(x=>x.risk==='ALTO'||x.risk==='CRÍTICO').length;
+      document.getElementById('sH').textContent = findings.filter(x=>severityRank(x.risk)>=3).length;
       document.getElementById('sR').textContent = findings.filter(x=>x.category_class==='cat-repo').length;
       document.getElementById('sC').textContent = findings.filter(x=>x.category_class==='cat-cloud').length;
       document.getElementById('sD').textContent = findings.filter(x=>x.category_class==='cat-dark').length;
@@ -1962,6 +2228,8 @@ async function runDemoScan(term, modules){
       renderFindings();
       syncValidationQueue();
       updateVQBadge();
+      renderDashboard();
+      updateDedupePanel();
     } else {
       addLog(`✔ ${mod}: sin hallazgos`, 'ok');
     }
@@ -1972,6 +2240,8 @@ async function runDemoScan(term, modules){
   document.getElementById('sysStatus').textContent = 'DEMO COMPLETADO';
   document.getElementById('btnScan').disabled = false;
   document.getElementById('btnStop').classList.remove('show');
+  renderDashboard();
+  updateDedupePanel();
 }
 
 const sleep = ms=>new Promise(r=>setTimeout(r,ms));
@@ -1995,22 +2265,610 @@ function openModal(idx){
 
 function closeModal(e){ if(e.target.id==='modalOv') document.getElementById('modalOv').classList.remove('open'); }
 
+// ─── EXECUTIVE INTELLIGENCE ───
+function normalizeRisk(r){
+  const raw = String(r||'').toUpperCase();
+  if(raw.includes('CRIT')) return 'CRITICO';
+  if(raw.includes('ALTO') || raw.includes('HIGH')) return 'ALTO';
+  if(raw.includes('MEDIO') || raw.includes('MEDIUM')) return 'MEDIO';
+  if(raw.includes('BAJO') || raw.includes('LOW')) return 'BAJO';
+  return raw || 'BAJO';
+}
+
+function severityRank(r){
+  return {CRITICO:4, ALTO:3, MEDIO:2, BAJO:1}[normalizeRisk(r)] || 0;
+}
+
+function extractDomain(value){
+  const raw = String(value||'').trim();
+  if(!raw) return '';
+  try {
+    const url = raw.includes('://') ? new URL(raw) : new URL('https://'+raw);
+    return url.hostname.toLowerCase().replace(/^www\./,'');
+  } catch(e){
+    return raw.split('/')[0].split(':')[0].toLowerCase().replace(/^www\./,'');
+  }
+}
+
+function rootDomain(domain){
+  const parts = String(domain||'').toLowerCase().replace(/^www\./,'').split('.').filter(Boolean);
+  return parts.length <= 2 ? parts.join('.') : parts.slice(-2).join('.');
+}
+
+function isOfficialDomain(domain, official='ine.mx'){
+  const d = String(domain||'').toLowerCase();
+  const o = String(official||'').toLowerCase();
+  return d === o || d.endsWith('.'+o);
+}
+
+function hashString(text){
+  let h = 0;
+  for(let i=0;i<text.length;i++) h = Math.imul(31,h) + text.charCodeAt(i) | 0;
+  return Math.abs(h).toString(16);
+}
+
+function findingKey(f){
+  const hash = f.hash || f.file_hash || '';
+  if(hash) return 'hash:'+String(hash).toLowerCase();
+  if(f.url) return 'url:'+String(f.url).toLowerCase().replace(/\/$/,'');
+  if(f.repository || f.repo) return 'repo:'+String(f.repository || f.repo).toLowerCase();
+  return 'text:'+hashString([f.source,f.title,f.detail].join('|').toLowerCase());
+}
+
+function dedupeFindings(list){
+  const map = new Map();
+  const out = [];
+  let collapsed = 0;
+  (list||[]).forEach(f=>{
+    if(f.is_system) return;
+    const key = f.dedupe_key || findingKey(f);
+    if(map.has(key)){
+      const existing = map.get(key);
+      existing.duplicate_count = (Number(existing.duplicate_count)||1) + 1;
+      existing.last_detected = f.detected || new Date().toISOString();
+      existing.sources_seen = Array.from(new Set([...(existing.sources_seen||[existing.source]), f.source].filter(Boolean)));
+      if(severityRank(f.risk) > severityRank(existing.risk)) existing.risk = f.risk;
+      collapsed++;
+    } else {
+      const item = {...f, dedupe_key:key, duplicate_count:Number(f.duplicate_count)||1};
+      item.first_detected = item.first_detected || item.detected || new Date().toISOString();
+      item.last_detected = item.last_detected || item.detected || item.first_detected;
+      item.sources_seen = item.sources_seen || (item.source ? [item.source] : []);
+      map.set(key, item);
+      out.push(item);
+    }
+  });
+  collapsed += out.reduce((sum,f)=>sum+Math.max((Number(f.duplicate_count)||1)-1,0),0);
+  return {findings:out, collapsed};
+}
+
+function dashboardModel(){
+  const deduped = dedupeFindings(findings);
+  const rows = deduped.findings;
+  const today = new Date().toISOString().slice(0,10);
+  const bySource = countBy(rows, f=>f.source || 'Desconocida');
+  const bySeverity = ['CRITICO','ALTO','MEDIO','BAJO'].map(k=>({label:k, value:rows.filter(f=>normalizeRisk(f.risk)===k).length}));
+  const byDay = countBy(rows, f=>dateKey(f.detected || f.first_detected));
+  const domains = rows.map(f=>extractDomain(f.url)).filter(Boolean);
+  const suspicious = Array.from(new Set(domains.filter(d=>!isOfficialDomain(d,'ine.mx') && d.includes('.'))));
+  const closed = validated.filter(v=>['CONFIRMADO','FALSO POSITIVO'].includes(String(v.validation||'').toUpperCase())).length;
+  const open = Math.max(rows.filter(f=>severityRank(f.risk)>=3 && !f.false_positive).length - closed, 0);
+  return {
+    rows,
+    deduped,
+    kpis:{
+      total: rows.length,
+      critical: rows.filter(f=>normalizeRisk(f.risk)==='CRITICO').length,
+      today: rows.filter(f=>dateKey(f.detected || f.first_detected)===today).length,
+      sources: Number(lastStats.sources_scanned)||Object.keys(bySource.raw).length,
+      domains: suspicious.length,
+      creds: rows.filter(isCredentialFinding).length,
+      open,
+      closed,
+      review:'N/D',
+      dupes:deduped.collapsed
+    },
+    charts:{
+      source: bySource.rows.slice(0,10),
+      severity: bySeverity,
+      day: byDay.rows.slice(-14),
+      keywords: keywordCounts(rows).slice(0,10),
+      domains: countBy(domains, x=>x).rows.slice(0,10)
+    }
+  };
+}
+
+function renderDashboard(){
+  const model = dashboardModel();
+  setText('kpiTotal', model.kpis.total);
+  setText('kpiCritical', model.kpis.critical);
+  setText('kpiToday', model.kpis.today);
+  setText('kpiSources', model.kpis.sources);
+  setText('kpiDomains', model.kpis.domains);
+  setText('kpiCreds', model.kpis.creds);
+  setText('kpiOpen', model.kpis.open);
+  setText('kpiClosed', model.kpis.closed);
+  setText('kpiReview', model.kpis.review);
+  setText('kpiDupes', model.kpis.dupes);
+  renderBars('chartSource', model.charts.source);
+  renderBars('chartSeverity', model.charts.severity);
+  renderBars('chartDay', model.charts.day);
+  renderBars('chartKeywords', model.charts.keywords);
+  renderBars('chartDomains', model.charts.domains);
+}
+
+function renderBars(id, rows){
+  const el = document.getElementById(id);
+  if(!el) return;
+  if(!rows || !rows.length){
+    el.innerHTML = '<div class="vq-empty" style="padding:28px;">Sin datos</div>';
+    return;
+  }
+  const max = Math.max(...rows.map(r=>Number(r.value)||0),1);
+  el.innerHTML = rows.map(r=>`
+    <div class="bar-row">
+      <div class="bar-label" title="${esc(r.label)}">${esc(r.label)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${Math.max(4, (Number(r.value)||0)/max*100)}%"></div></div>
+      <div class="bar-value">${Number(r.value)||0}</div>
+    </div>
+  `).join('');
+}
+
+function countBy(items, fn){
+  const raw = {};
+  (items||[]).forEach(item=>{
+    const key = fn(item) || 'N/D';
+    raw[key] = (raw[key]||0)+1;
+  });
+  const rows = Object.entries(raw).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value);
+  return {raw, rows};
+}
+
+function dateKey(value){
+  const raw = String(value||'');
+  if(/^\d{4}-\d{2}-\d{2}/.test(raw)) return raw.slice(0,10);
+  return new Date().toISOString().slice(0,10);
+}
+
+function isCredentialFinding(f){
+  const text = [f.title,f.detail,f.category].join(' ').toLowerCase();
+  return !!f.is_secret || ['api key','apikey','token','password','secret','credencial','credential','clave'].some(x=>text.includes(x));
+}
+
+function keywordCounts(rows){
+  const terms = Object.values(watchlist).flat();
+  const counts = {};
+  rows.forEach(f=>{
+    const text = [f.title,f.detail,f.url,f.category].join(' ').toLowerCase();
+    terms.forEach(term=>{
+      if(text.includes(String(term).toLowerCase())) counts[term] = (counts[term]||0)+1;
+    });
+  });
+  if(!Object.keys(counts).length){
+    rows.forEach(f=>{
+      [f.title,f.detail].join(' ').toLowerCase().match(/[a-z0-9_]{4,}/g)?.forEach(t=>{
+        if(!['https','http','demo','para','with','desde','site'].includes(t)) counts[t]=(counts[t]||0)+1;
+      });
+    });
+  }
+  return Object.entries(counts).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value);
+}
+
+function reportPayload(){
+  return {
+    title: document.getElementById('reportTitle')?.value || 'Reporte ejecutivo CTI - INE',
+    classification: document.getElementById('reportClassification')?.value || 'Uso oficial exclusivo',
+    term: document.getElementById('searchTerm')?.value || 'INE',
+    domain: document.getElementById('searchDomain')?.value || 'ine.mx',
+    generated_at: new Date().toISOString(),
+    findings,
+    validated,
+    watchlist,
+    stats: lastStats,
+    dashboard: dashboardModel()
+  };
+}
+
+async function generateReportPdf(){
+  const payload = reportPayload();
+  try {
+    const r = await fetch(API+'/api/report/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(r.ok){
+      const blob = await r.blob();
+      downloadBlob(blob, 'cti-ine-reporte-ejecutivo.pdf');
+      setStatus('reportStatus','Reporte PDF generado desde backend','green');
+      return;
+    }
+  } catch(e){}
+  const w = window.open('', '_blank');
+  w.document.write(reportHtml(payload));
+  w.document.close();
+  setTimeout(()=>w.print(), 300);
+  setStatus('reportStatus','Reporte listo en vista imprimible. Usa Guardar como PDF.','green');
+}
+
+function reportHtml(payload){
+  const m = payload.dashboard;
+  const critical = payload.findings.filter(f=>severityRank(f.risk)>=3).slice(0,20);
+  const sourceRows = m.charts.source.map(r=>`<li>${esc(r.label)}: ${r.value}</li>`).join('');
+  const criticalRows = critical.length ? critical.map(f=>`
+    <tr><td>${esc(f.risk)}</td><td>${esc(f.source)}</td><td>${esc(f.title)}</td><td>${esc(f.url)}</td><td>${esc(f.detail||'')}</td></tr>
+  `).join('') : '<tr><td colspan="5">Sin hallazgos críticos.</td></tr>';
+  return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(payload.title)}</title>
+  <style>body{font-family:Arial,sans-serif;color:#111;margin:34px;line-height:1.45}h1{font-size:24px}h2{font-size:16px;margin-top:22px;border-bottom:1px solid #ccc;padding-bottom:5px}table{width:100%;border-collapse:collapse;font-size:11px}td,th{border:1px solid #ccc;padding:6px;vertical-align:top}.k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.k div{border:1px solid #ccc;padding:10px}.muted{color:#555;font-size:12px}</style>
+  </head><body>
+  <h1>${esc(payload.title)}</h1><div class="muted">${esc(payload.classification)} | Generado: ${new Date().toLocaleString('es-MX')}</div>
+  <h2>Resumen ejecutivo</h2><div class="k">
+  <div><b>${m.kpis.total}</b><br>Hallazgos totales</div><div><b>${m.kpis.critical}</b><br>Críticos</div><div><b>${m.kpis.creds}</b><br>Credenciales</div><div><b>${m.kpis.domains}</b><br>Dominios sospechosos</div>
+  </div>
+  <h2>Alcance del monitoreo</h2><p>Término: ${esc(payload.term)}. Dominio: ${esc(payload.domain)}. Fuentes OSINT, repositorios, nube pública, dark web indexada, CTI y análisis local.</p>
+  <h2>Fuentes analizadas</h2><ul>${sourceRows || '<li>Sin fuentes registradas</li>'}</ul>
+  <h2>Hallazgos críticos y evidencia</h2><table><thead><tr><th>Riesgo</th><th>Fuente</th><th>Hallazgo</th><th>Evidencia</th><th>Detalle</th></tr></thead><tbody>${criticalRows}</tbody></table>
+  <h2>Análisis técnico</h2><p>Duplicados colapsados: ${m.kpis.dupes}. Casos abiertos: ${m.kpis.open}. Casos cerrados: ${m.kpis.closed}.</p>
+  <h2>Riesgo</h2><p>Los hallazgos críticos o altos deben validarse, documentarse y escalarse como caso SOC cuando impliquen credenciales, datos personales, infraestructura expuesta o suplantación.</p>
+  <h2>Recomendaciones</h2><ul><li>Validar evidencia y prioridad.</li><li>Rotar secretos expuestos.</li><li>Solicitar baja de dominios de phishing.</li><li>Ajustar reglas de falsos positivos y watchlist.</li></ul>
+  <h2>Anexos</h2><p>Exportaciones disponibles: PDF, CSV, JSON, Excel y STIX 2.1 compatible con flujos TAXII.</p>
+  </body></html>`;
+}
+
+// ─── WATCHLIST ───
+function renderWatchlist(){
+  const el = document.getElementById('watchlistView');
+  if(!el) return;
+  el.innerHTML = Object.entries(watchlist).map(([cat,terms])=>`
+    <div style="margin-bottom:16px;">
+      <div class="chart-title">${esc(cat)}</div>
+      <div class="pill-list">${terms.map(term=>`<span class="pill">${esc(term)} <button onclick="removeWatchTerm('${escAttr(cat)}','${escAttr(term)}')">x</button></span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+function addWatchTerm(){
+  const cat = document.getElementById('watchCategory').value.trim() || 'General';
+  const term = document.getElementById('watchTerm').value.trim();
+  if(!term){ showNotif('Escribe un término','amber'); return; }
+  watchlist[cat] = watchlist[cat] || [];
+  if(!watchlist[cat].some(x=>x.toLowerCase()===term.toLowerCase())) watchlist[cat].push(term);
+  document.getElementById('watchTerm').value = '';
+  saveJsonLocal('cti_watchlist', watchlist);
+  renderWatchlist();
+  renderDashboard();
+}
+
+function removeWatchTerm(cat, term){
+  watchlist[cat] = (watchlist[cat]||[]).filter(x=>x!==term);
+  if(!watchlist[cat].length) delete watchlist[cat];
+  saveJsonLocal('cti_watchlist', watchlist);
+  renderWatchlist();
+  renderDashboard();
+}
+
+async function saveWatchlist(){
+  saveJsonLocal('cti_watchlist', watchlist);
+  try { await postJson('/api/watchlist', {watchlist}); } catch(e){}
+  setStatus('watchStatus','Watchlist guardada','green');
+}
+
+function resetWatchlist(){
+  watchlist = JSON.parse(JSON.stringify(DEFAULT_WATCHLIST));
+  saveJsonLocal('cti_watchlist', watchlist);
+  renderWatchlist();
+  renderDashboard();
+}
+
+// ─── TYPOSQUATTING ───
+function analyzeTypos(){
+  const target = document.getElementById('typoTarget').value.trim() || 'ine.mx';
+  const domains = document.getElementById('typoCandidates').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const riskWeight = {Alto:3, Medio:2, Bajo:1};
+  const results = domains.map(d=>typoScore(target,d)).sort((a,b)=>(riskWeight[b.risk]||0)-(riskWeight[a.risk]||0) || b.score-a.score);
+  document.getElementById('typoResults').innerHTML = miniTable(['Dominio','Similitud','Riesgo','Posible uso'], results.map(r=>[r.domain,r.similarity,r.risk,r.possible_use]));
+  const newFindings = results.filter(r=>r.risk==='Alto').map(r=>({
+    source:'Typosquatting',
+    source_id:'typosquatting',
+    title:`Dominio similar detectado: ${r.domain}`,
+    url:'https://'+r.domain,
+    category:'Dominio Sospechoso',
+    category_class:'cat-leak',
+    risk:'ALTO',
+    risk_class:'risk-high',
+    detail:`Similitud: ${r.similarity} | Score: ${r.score} | Posible uso: ${r.possible_use}`,
+    detected:new Date().toLocaleTimeString('es-MX',{hour12:false}),
+    is_dork:false
+  }));
+  if(newFindings.length){
+    findings = dedupeFindings(findings.concat(newFindings)).findings;
+    refreshStatsFromFindings(); renderFindings(); syncValidationQueue(); updateVQBadge();
+  }
+}
+
+function typoScore(target, candidate){
+  const t = rootDomain(target);
+  const d = rootDomain(extractDomain(candidate) || candidate);
+  const tl = t.split('.')[0], dl = d.split('.')[0];
+  const score = Math.max(similarity(t,d), similarity(tl,dl));
+  const distance = levenshtein(t,d);
+  const brand = dl.includes(tl) || tl.includes(dl) || d.includes(tl+'-') || d.includes('-'+tl);
+  let similarityLabel = 'Baja', risk = 'Bajo', use = 'relacion debil; revisar contexto';
+  if(d===t || isOfficialDomain(d,t)){ similarityLabel='Oficial'; risk='Bajo'; use='dominio oficial o subdominio autorizado'; }
+  else if(score>=0.78 || distance<=2 || brand){ similarityLabel='Alta'; risk='Alto'; use='phishing o suplantación'; }
+  else if(score>=0.55){ similarityLabel='Media'; risk='Medio'; use='campaña de confusión o landing no autorizada'; }
+  return {domain:d, similarity:similarityLabel, risk, score:Number(score.toFixed(3)), distance, possible_use:use};
+}
+
+function similarity(a,b){
+  const longer = a.length >= b.length ? a : b;
+  if(!longer.length) return 1;
+  return (longer.length - levenshtein(a,b)) / longer.length;
+}
+
+function levenshtein(a,b){
+  const dp = Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+  for(let i=0;i<=a.length;i++) dp[i][0]=i;
+  for(let j=0;j<=b.length;j++) dp[0][j]=j;
+  for(let i=1;i<=a.length;i++) for(let j=1;j<=b.length;j++){
+    dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  }
+  return dp[a.length][b.length];
+}
+
+// ─── FILE ANALYSIS ───
+const FILE_REGEX = {
+  CURP:/\b[A-Z][AEIOUX][A-Z]{2}\d{6}[HM][A-Z]{5}[A-Z0-9]\d\b/gi,
+  RFC:/\b[A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3}\b/gi,
+  correos:/\b[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}\b/gi,
+  telefonos:/(?:\+?52[\s\-\.]?)?(?:\(?\d{2,3}\)?[\s\-\.]?)?\d{3,4}[\s\-\.]?\d{4}\b/g,
+  clave_elector:/\b[A-Z]{6}\d{8}[HM]\d{3}\b/gi,
+  OCR:/\bOCR\b|ocr[\s:_-]*\d{6,}/gi,
+  CIC:/\bCIC\b|cic[\s:_-]*\d{6,}/gi,
+  direcciones:/\b(calle|avenida|av\.|colonia|col\.|municipio|cp|codigo postal)\b/gi,
+  seccion_electoral:/\bsecci[oó]n\s+electoral\b|\bsecci[oó]n[\s:_-]*\d{3,5}\b/gi,
+  INE:/\bINE\b|Instituto Nacional Electoral|credencial para votar/gi
+};
+
+async function analyzeFiles(){
+  lastFileAnalysis = [];
+  const files = Array.from(document.getElementById('fileInput').files || []);
+  for(const file of files){
+    const text = await readBrowserFile(file);
+    lastFileAnalysis.push(analyzeFileText(file.name, text));
+  }
+  const pasted = document.getElementById('fileText').value;
+  if(pasted.trim()) lastFileAnalysis.push(analyzeFileText('texto_pegado.txt', pasted));
+  const path = document.getElementById('filePath').value.trim();
+  if(path){
+    try {
+      const data = await postJson('/api/files/analyze', {path});
+      lastFileAnalysis.push(normalizeFileBackendResult(data));
+    } catch(e){
+      lastFileAnalysis.push({file:path, summary:'Backend no disponible para leer ruta local', risk:'MEDIO', total_matches:0, matches:{}});
+    }
+  }
+  document.getElementById('fileResults').innerHTML = miniTable(['Archivo','Coincidencias','Riesgo'], lastFileAnalysis.map(r=>[r.file,r.summary,r.risk]));
+}
+
+function readBrowserFile(file){
+  return new Promise(resolve=>{
+    const reader = new FileReader();
+    reader.onload = ()=>resolve(String(reader.result||''));
+    reader.onerror = ()=>resolve('');
+    reader.readAsText(file);
+  });
+}
+
+function analyzeFileText(name, text){
+  const matches = {};
+  Object.entries(FILE_REGEX).forEach(([k,re])=>{
+    re.lastIndex = 0;
+    matches[k] = (text.match(re)||[]).length;
+  });
+  const total = Object.values(matches).reduce((a,b)=>a+b,0);
+  const risk = total>=100 || matches.CURP>=25 || matches.correos>=50 ? 'CRÍTICO' : total>=25 ? 'ALTO' : total ? 'MEDIO' : 'BAJO';
+  const summary = Object.entries(matches).filter(([,v])=>v).map(([k,v])=>`${v} ${k}`).join(', ') || 'Sin coincidencias sensibles';
+  return {file:name, matches, total_matches:total, risk, summary, finding:fileFinding(name, summary, risk)};
+}
+
+function normalizeFileBackendResult(data){
+  const risk = data.risk === 'CRITICO' ? 'CRÍTICO' : data.risk;
+  return {...data, risk, finding:data.finding || fileFinding(data.file, data.summary, risk)};
+}
+
+function fileFinding(name, summary, risk){
+  return {
+    source:'Analisis de archivos',
+    source_id:'file-analysis',
+    title:`Archivo analizado: ${name}`,
+    url:name,
+    category:'Archivo sensible',
+    category_class:severityRank(risk)>=3?'cat-leak':'cat-repo',
+    risk,
+    risk_class:severityRank(risk)>=4?'risk-critical':severityRank(risk)>=3?'risk-high':'risk-medium',
+    detail:summary,
+    detected:new Date().toLocaleTimeString('es-MX',{hour12:false}),
+    is_dork:false
+  };
+}
+
+function addFileFindings(){
+  const incoming = lastFileAnalysis.filter(r=>severityRank(r.risk)>=2).map(r=>r.finding || fileFinding(r.file,r.summary,r.risk));
+  if(!incoming.length){ showNotif('No hay coincidencias para agregar','amber'); return; }
+  findings = dedupeFindings(findings.concat(incoming)).findings;
+  refreshStatsFromFindings(); renderFindings(); syncValidationQueue(); updateVQBadge();
+  showNotif(`${incoming.length} hallazgo(s) de archivo agregados`, 'green');
+}
+
+// ─── DEDUPE / FALSE POSITIVES ───
+function updateDedupePanel(){
+  const d = dedupeFindings(findings);
+  setText('dedupeBefore', findings.length + d.collapsed);
+  setText('dedupeAfter', d.findings.length);
+  setText('dedupeCollapsed', d.collapsed);
+}
+
+function applyDedupe(){
+  const before = findings.length;
+  const d = dedupeFindings(findings);
+  findings = d.findings;
+  refreshStatsFromFindings(); renderFindings(); syncValidationQueue(); updateVQBadge();
+  setStatus('dedupeStatus', `Hallazgo ya existente. Se actualizó última fecha de detección. Antes: ${before} | únicos: ${findings.length} | colapsados: ${d.collapsed}`, 'green');
+}
+
+function renderFpRules(){
+  const el = document.getElementById('fpRulesView');
+  if(!el) return;
+  el.innerHTML = `<div class="pill-list">${fpRules.map((r,i)=>`
+    <span class="pill">${r.enabled?'ON':'OFF'} ${esc(r.type)}:${esc(r.value)} <button onclick="toggleFpRule(${i})">${r.enabled?'off':'on'}</button><button onclick="removeFpRule(${i})">x</button></span>
+  `).join('')}</div>`;
+}
+
+function addFpRule(){
+  const type = document.getElementById('fpType').value;
+  const value = document.getElementById('fpValue').value.trim();
+  if(!value){ showNotif('Escribe valor de regla','amber'); return; }
+  fpRules.push({type,value,reason:'Regla aprendida manualmente',enabled:true});
+  document.getElementById('fpValue').value = '';
+  saveJsonLocal('cti_fp_rules', fpRules);
+  renderFpRules();
+}
+
+function toggleFpRule(i){ fpRules[i].enabled = !fpRules[i].enabled; saveJsonLocal('cti_fp_rules', fpRules); renderFpRules(); }
+function removeFpRule(i){ fpRules.splice(i,1); saveJsonLocal('cti_fp_rules', fpRules); renderFpRules(); }
+
+function applyFpRules(){
+  let count = 0;
+  findings = findings.map(f=>{
+    const reason = fpReason(f);
+    if(reason){ count++; return {...f,false_positive:true,fp_reason:reason,risk:'BAJO'}; }
+    return f;
+  });
+  pendingValidation = pendingValidation.filter(f=>!fpReason(f));
+  refreshStatsFromFindings(); renderFindings(); renderValidationQueue(); updateVQBadge(); renderFpRules();
+  setStatus('fpStatus', `${count} hallazgo(s) marcados como falso positivo`, count?'green':'amber');
+}
+
+function fpReason(f){
+  const domain = extractDomain(f.url);
+  const text = [f.title,f.detail,f.url,f.category,f.source].join(' ').toLowerCase();
+  for(const r of fpRules){
+    if(!r.enabled || !r.value) continue;
+    const v = String(r.value).toLowerCase();
+    if(r.type==='domain' && isOfficialDomain(domain,v)) return r.reason || 'Regla de dominio';
+    if(r.type==='keyword' && text.includes(v)) return r.reason || 'Regla de keyword';
+    if(r.type==='source' && String(f.source||'').toLowerCase()===v) return r.reason || 'Regla de fuente';
+  }
+  return '';
+}
+
 // ─── EXPORT ───
-function exportData(type){
-  window.open(API+'/api/export/'+type, '_blank');
+async function exportData(type){
+  const payload = reportPayload();
+  if(type==='json'){ downloadBlob(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}), exportFilename(type)); return; }
+  if(type==='csv'){ downloadBlob(new Blob([toCsv(payload.findings)],{type:'text/csv;charset=utf-8'}), exportFilename(type)); return; }
+  try {
+    const endpoint = type === 'excel' ? '/api/export/excel' : type === 'stix' ? '/api/export/stix' : '/api/export/'+type;
+    const r = await fetch(API+endpoint, {
+      method: type === 'csv' || type === 'json' ? 'GET' : 'POST',
+      headers:{'Content-Type':'application/json'},
+      body: type === 'csv' || type === 'json' ? undefined : JSON.stringify(payload)
+    });
+    if(r.ok && !location.hostname.includes('github.io')){
+      const blob = await r.blob();
+      downloadBlob(blob, exportFilename(type));
+      return;
+    }
+  } catch(e){}
+  if(type==='json') downloadBlob(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}), exportFilename(type));
+  else if(type==='csv') downloadBlob(new Blob([toCsv(payload.findings)],{type:'text/csv;charset=utf-8'}), exportFilename(type));
+  else if(type==='excel') downloadBlob(new Blob([toExcelHtml(payload.findings)],{type:'application/vnd.ms-excel'}), exportFilename(type).replace('.xlsx','.xls'));
+  else if(type==='stix') downloadBlob(new Blob([JSON.stringify(toStix(payload.findings),null,2)],{type:'application/stix+json'}), exportFilename(type));
+}
+
+function exportFilename(type){
+  return {csv:'cti-ine-findings.csv',json:'cti-ine-findings.json',excel:'cti-ine-findings.xlsx',stix:'cti-ine-stix-bundle.json'}[type] || 'cti-export.dat';
+}
+
+function toCsv(rows){
+  const header = ['#','Fuente','Titulo','Categoria','Riesgo','URL','Detalle','Detectado','Duplicados'];
+  const lines = [header].concat((rows||[]).map((f,i)=>[i+1,f.source,f.title,f.category,f.risk,f.url,f.detail,f.detected,f.duplicate_count||1]));
+  return lines.map(row=>row.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+}
+
+function toExcelHtml(rows){
+  return `<table><tr><th>#</th><th>Fuente</th><th>Titulo</th><th>Categoria</th><th>Riesgo</th><th>URL</th><th>Detalle</th><th>Detectado</th></tr>${(rows||[]).map((f,i)=>`<tr><td>${i+1}</td><td>${esc(f.source)}</td><td>${esc(f.title)}</td><td>${esc(f.category)}</td><td>${esc(f.risk)}</td><td>${esc(f.url)}</td><td>${esc(f.detail)}</td><td>${esc(f.detected)}</td></tr>`).join('')}</table>`;
+}
+
+function toStix(rows){
+  const now = new Date().toISOString();
+  return {
+    type:'bundle',
+    id:'bundle--'+cryptoId(),
+    objects:(rows||[]).filter(f=>f.url||f.title).map(f=>{
+      const domain = extractDomain(f.url);
+      return {
+        type:'indicator',
+        spec_version:'2.1',
+        id:'indicator--'+cryptoId(f.url||f.title),
+        created:now,
+        modified:now,
+        name:String(f.title||'INE CTI finding').slice(0,250),
+        description:String(f.detail||''),
+        pattern:domain ? `[domain-name:value = '${domain}']` : `[url:value = '${String(f.url||'').replace(/'/g,'')}']`,
+        pattern_type:'stix',
+        valid_from:now,
+        labels:['ine-cti', normalizeRisk(f.risk).toLowerCase()],
+        external_references:[{source_name:f.source||'INE CTI Monitor', url:f.url||''}]
+      };
+    })
+  };
+}
+
+function downloadBlob(blob, name){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
 }
 
 // ─── HELPERS ───
+function setText(id, value){ const el=document.getElementById(id); if(el) el.textContent=value; }
+function setStatus(id, msg, color='cyan'){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.style.display = 'block';
+  el.style.borderColor = `var(--${color})`;
+  el.style.color = `var(--${color})`;
+  el.textContent = msg;
+}
+function loadJsonLocal(key, fallback){
+  try { return JSON.parse(localStorage.getItem(key) || '') || JSON.parse(JSON.stringify(fallback)); }
+  catch(e){ return JSON.parse(JSON.stringify(fallback)); }
+}
+function saveJsonLocal(key, value){ try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){} }
+function escAttr(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function miniTable(headers, rows){
+  if(!rows.length) return '<div class="vq-empty">Sin resultados</div>';
+  return `<table class="mini-table"><thead><tr>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(c=>`<td>${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+function cryptoId(seed=''){
+  if(window.crypto && crypto.randomUUID && !seed) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{
+    const r = (Math.random()*16)|0, v = c==='x'?r:(r&0x3)|0x8;
+    return v.toString(16);
+  });
+}
 function riskClass(r){
-  if(r==='CRÍTICO') return 'rC';
-  if(r==='ALTO')    return 'rH';
-  if(r==='MEDIO')   return 'rM';
+  const nr = normalizeRisk(r);
+  if(nr==='CRITICO') return 'rC';
+  if(nr==='ALTO')    return 'rH';
+  if(nr==='MEDIO')   return 'rM';
   return 'rL';
 }
 function riskIcon(r){
-  if(r==='CRÍTICO') return '🔴';
-  if(r==='ALTO')    return '🟠';
-  if(r==='MEDIO')   return '🟡';
+  const nr = normalizeRisk(r);
+  if(nr==='CRITICO') return '🔴';
+  if(nr==='ALTO')    return '🟠';
+  if(nr==='MEDIO')   return '🟡';
   return '🟢';
 }
 function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
