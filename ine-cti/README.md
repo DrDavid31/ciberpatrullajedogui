@@ -1,4 +1,4 @@
-# INE CTI Monitor v2.5
+# INE CTI Monitor v2.6
 ## Inteligencia de Amenazas Cibernéticas
 
 Sistema de monitoreo OSINT defensivo para detectar información del INE
@@ -63,6 +63,7 @@ ine-cti/
 | trufflehog     | TruffleHog                | Secret scanning    | Opcional|
 | gitleaks       | Gitleaks                  | Secret scanning    | Opcional|
 | socialanalyzer | Social Analyzer           | Perfiles sociales  | Opcional|
+| apprise        | Apprise                   | Notificaciones     | Opcional|
 | ail            | AIL Framework             | Correlacion/API    | Requerida|
 | misp           | MISP                      | Threat Intel       | Requerida|
 | leakix         | LeakIX                    | Servicios expuestos| Opcional|
@@ -86,6 +87,7 @@ Agrégalas en la pestaña **Configuración** del monitor:
 | TruffleHog       | Binario local| https://github.com/trufflesecurity/trufflehog |
 | Gitleaks         | Binario local| https://github.com/gitleaks/gitleaks |
 | Social Analyzer  | Python package| https://github.com/qeeqbox/social-analyzer |
+| Apprise          | Python package| https://github.com/caronc/apprise |
 
 *Plan gratuito con límite de consultas diarias.
 
@@ -106,6 +108,8 @@ Agrégalas en la pestaña **Configuración** del monitor:
 | `/api/ail/tracker`    | POST   | Crear tracker en AIL               |
 | `/api/misp/test`      | POST   | Probar conexion con MISP           |
 | `/api/misp/export`    | POST   | Crear evento MISP desde hallazgos  |
+| `/api/apprise/test`   | POST   | Enviar notificacion de prueba      |
+| `/api/apprise/notify` | POST   | Enviar resumen por Apprise         |
 | `/api/health`         | GET    | Estado del sistema                 |
 
 ### Ejemplo de llamada a /api/scan/start
@@ -148,6 +152,9 @@ POST /api/scan/start
     "social_timeout": 10,
     "social_metadata": false,
     "social_extract": false,
+    "apprise_urls": "discord://webhook_id/webhook_token",
+    "apprise_on_complete": false,
+    "apprise_on_high": true,
     "ail_url": "https://localhost:7000",
     "ail_key": "AIL_API_KEY",
     "ail_tags": "ine-cti, osint",
@@ -207,6 +214,9 @@ POST /api/scan/start
 - Social Analyzer se integra como paquete Python externo. Busca perfiles
   asociados a usernames en sitios sociales usando salida JSON y normaliza
   resultados como hallazgos de "Perfil Social".
+- Apprise se integra como canal de notificaciones. Configura una o varias URLs
+  Apprise para probar envio, mandar resúmenes manuales y notificar
+  automáticamente al finalizar escaneos o al detectar hallazgos alto/critico.
 - AIL Framework se integra como plataforma externa. Desde Configuracion puedes
   probar la conexion, enviar hallazgos del monitor como items de texto y crear
   trackers para el termino activo.

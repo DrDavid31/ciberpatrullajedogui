@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INE CTI Monitor v2.5</title>
+<title>INE CTI Monitor v2.6</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -237,7 +237,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
     <div class="logo-icon">🛰️</div>
     <div class="logo-text">
       <h1>INE · CTI MONITOR</h1>
-      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.5</p>
+      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v2.6</p>
     </div>
   </div>
   <div class="h-right">
@@ -572,6 +572,31 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
   </div>
 
   <div class="card">
+    <div class="card-title">Apprise</div>
+    <div class="api-grid">
+      <div class="api-row">
+        <label>Apprise URLs</label>
+        <textarea id="keyAppriseUrls" placeholder="discord://webhook_id/webhook_token&#10;tgram://bot_token/chat_id" rows="5" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;resize:vertical;"></textarea>
+        <div class="api-note">Una URL por linea; soporta Telegram, Discord, Slack, email y más</div>
+      </div>
+      <div class="api-row">
+        <label>Automatización</label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+          <input type="checkbox" id="keyAppriseOnComplete"> Notificar al finalizar
+        </label>
+        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+          <input type="checkbox" id="keyAppriseOnHigh" checked> Notificar si hay alto/critico
+        </label>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+      <button class="btn-scan" onclick="testApprise()" style="font-size:13px;padding:9px 18px;">PROBAR APPRISE</button>
+      <button class="btn-scan" onclick="notifyApprise()" style="font-size:13px;padding:9px 18px;">ENVIAR RESUMEN</button>
+    </div>
+    <div id="appriseStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+  </div>
+
+  <div class="card">
     <div class="card-title">AIL Framework</div>
     <div class="api-grid">
       <div class="api-row">
@@ -686,7 +711,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 
 <!-- FOOTER -->
 <footer>
-  <span>INE CTI MONITOR v2.5 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
+  <span>INE CTI MONITOR v2.6 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
   <div class="exp-btns">
     <button class="exp-btn" onclick="exportData('csv')">⬇ CSV</button>
     <button class="exp-btn" onclick="exportData('json')">⬇ JSON</button>
@@ -778,6 +803,9 @@ function getKeys(){
     social_timeout: document.getElementById('keySocialTimeout').value,
     social_metadata: document.getElementById('keySocialMetadata').checked,
     social_extract: document.getElementById('keySocialExtract').checked,
+    apprise_urls: document.getElementById('keyAppriseUrls').value.trim(),
+    apprise_on_complete: document.getElementById('keyAppriseOnComplete').checked,
+    apprise_on_high: document.getElementById('keyAppriseOnHigh').checked,
     ail_url: document.getElementById('keyAilUrl').value.trim(),
     ail_key: document.getElementById('keyAilKey').value.trim(),
     ail_tags: document.getElementById('keyAilTags').value.trim(),
@@ -835,6 +863,9 @@ function loadKeys(){
     if(k.social_timeout) document.getElementById('keySocialTimeout').value = k.social_timeout;
     document.getElementById('keySocialMetadata').checked = !!k.social_metadata;
     document.getElementById('keySocialExtract').checked = !!k.social_extract;
+    if(k.apprise_urls) document.getElementById('keyAppriseUrls').value = k.apprise_urls;
+    document.getElementById('keyAppriseOnComplete').checked = !!k.apprise_on_complete;
+    document.getElementById('keyAppriseOnHigh').checked = k.apprise_on_high !== undefined ? !!k.apprise_on_high : true;
     if(k.ail_url) document.getElementById('keyAilUrl').value = k.ail_url;
     if(k.ail_key) document.getElementById('keyAilKey').value = k.ail_key;
     if(k.ail_tags) document.getElementById('keyAilTags').value = k.ail_tags;
@@ -937,6 +968,36 @@ async function exportToMisp(){
     setMispStatus(`MISP evento ${data.event_id || data.event_uuid || 'creado'} | atributos: ${data.attributes || 0}`, 'green');
   } catch(e){
     setMispStatus('MISP export error: '+e.message, 'red');
+  }
+}
+
+function setAppriseStatus(msg, color='cyan'){
+  const el = document.getElementById('appriseStatus');
+  el.style.display = 'block';
+  el.style.borderColor = `var(--${color})`;
+  el.style.color = `var(--${color})`;
+  el.textContent = msg;
+}
+
+async function testApprise(){
+  try {
+    setAppriseStatus('Enviando prueba Apprise...', 'cyan');
+    const data = await postJson('/api/apprise/test', { api_keys: getKeys() });
+    setAppriseStatus(`Apprise OK | destinos: ${data.targets || 0}`, data.sent ? 'green' : 'amber');
+  } catch(e){
+    setAppriseStatus('Apprise error: '+e.message, 'red');
+  }
+}
+
+async function notifyApprise(){
+  const term = document.getElementById('searchTerm').value.trim() || 'INE';
+  const domain = document.getElementById('searchDomain').value.trim() || 'ine.mx';
+  try {
+    setAppriseStatus('Enviando resumen Apprise...', 'cyan');
+    const data = await postJson('/api/apprise/notify', { api_keys: getKeys(), term, domain });
+    setAppriseStatus(`Resumen enviado | destinos: ${data.targets || 0}`, data.sent ? 'green' : 'amber');
+  } catch(e){
+    setAppriseStatus('Apprise notify error: '+e.message, 'red');
   }
 }
 
