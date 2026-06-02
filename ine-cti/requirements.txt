@@ -9,3 +9,4 @@ apprise>=1.8.0
 followthemoney>=4.5.0
 PyYAML>=6.0.0
 yara-python>=4.5.0
+pypdf>=4.0.0
