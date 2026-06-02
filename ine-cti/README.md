@@ -1,8 +1,9 @@
-# INE CTI Monitor v2.6
+# INE CTI Monitor v2.7
 ## Inteligencia de Amenazas Cibernéticas
 
 Sistema de monitoreo OSINT defensivo para detectar información del INE
 expuesta públicamente en internet, repositorios en la nube y dark web indexada.
+La pantalla principal muestra los hallazgos en vivo durante el escaneo.
 
 ---
 
