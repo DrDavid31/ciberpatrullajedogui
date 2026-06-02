@@ -5,3 +5,4 @@ beautifulsoup4>=4.12.0
 lxml>=4.9.0
 onionsearch>=1.3.0
 social-analyzer>=0.45
+apprise>=1.8.0

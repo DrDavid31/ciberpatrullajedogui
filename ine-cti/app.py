@@ -32,6 +32,10 @@ from modules.misp_client import (
     export_findings as misp_export_findings,
     test_connection as misp_test_connection,
 )
+from modules.apprise_client import (
+    send_notification as apprise_send_notification,
+    test_connection as apprise_test_connection,
+)
 
 app = Flask(__name__, static_folder="static")
 CORS(app)
@@ -89,6 +93,60 @@ def misp_config(data):
         "publish": as_bool(keys.get("misp_publish")),
         "verify_tls": as_bool(keys.get("misp_verify_tls")),
     }
+
+
+def apprise_config(data):
+    keys = data.get("api_keys", data)
+    return {
+        "urls": keys.get("apprise_urls", ""),
+        "on_complete": as_bool(keys.get("apprise_on_complete")),
+        "on_high": as_bool(keys.get("apprise_on_high")),
+    }
+
+
+def scan_summary_text(term="INE", domain="ine.mx"):
+    stats = scan_state.get("stats", {})
+    lines = [
+        f"Termino: {term}",
+        f"Dominio: {domain}",
+        f"Fuentes escaneadas: {stats.get('sources_scanned', 0)}",
+        f"Hallazgos totales: {stats.get('total_findings', 0)}",
+        f"Alto/Critico: {stats.get('high_critical', 0)}",
+        f"Repositorios: {stats.get('repos', 0)}",
+        f"Cloud: {stats.get('cloud', 0)}",
+        f"Dark Web: {stats.get('darkweb', 0)}",
+        f"Leaks: {stats.get('leaks', 0)}",
+    ]
+    top = [
+        finding for finding in scan_state.get("findings", [])
+        if finding.get("risk") in ("CRÍTICO", "CRITICO", "ALTO")
+        and not finding.get("is_system")
+        and not finding.get("is_negative")
+    ][:5]
+    if top:
+        lines.append("")
+        lines.append("Top hallazgos:")
+        for finding in top:
+            lines.append(f"- [{finding.get('risk')}] {finding.get('source')}: {finding.get('title')}")
+    return "\n".join(lines)
+
+
+def maybe_send_apprise_summary(term, domain, api_keys):
+    cfg = apprise_config(api_keys)
+    if not cfg["urls"]:
+        return
+    high_count = scan_state["stats"].get("high_critical", 0)
+    should_send = cfg["on_complete"] or (cfg["on_high"] and high_count > 0)
+    if not should_send:
+        return
+
+    notify_type = "warning" if high_count > 0 else "success"
+    title = f"INE CTI Monitor - {scan_state['stats'].get('total_findings', 0)} hallazgo(s)"
+    try:
+        result = apprise_send_notification(cfg["urls"], title, scan_summary_text(term, domain), notify_type)
+        log(f"Apprise notificacion enviada a {result.get('targets')} destino(s)", "ok")
+    except Exception as e:
+        log(f"Apprise error: {e}", "error")
 
 
 def log(msg, level="info"):
@@ -229,6 +287,8 @@ def run_scan(term, domain, active_modules, api_keys):
         log("Resultados guardados en results/findings.json", "info")
     except Exception as e:
         log(f"Error guardando resultados: {e}", "error")
+
+    maybe_send_apprise_summary(term, domain, api_keys)
 
 
 # ── API ROUTES ──
@@ -409,16 +469,49 @@ def misp_export():
         return jsonify({"status": "error", "error": str(e)}), 400
 
 
+@app.route("/api/apprise/test", methods=["POST"])
+def apprise_test():
+    data = request.json or {}
+    cfg = apprise_config(data)
+    try:
+        result = apprise_test_connection(cfg["urls"])
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
+@app.route("/api/apprise/notify", methods=["POST"])
+def apprise_notify():
+    data = request.json or {}
+    cfg = apprise_config(data)
+    title = data.get("title") or "INE CTI Monitor - resumen"
+    body = data.get("body") or scan_summary_text(
+        data.get("term", "INE"),
+        data.get("domain", "ine.mx"),
+    )
+    notify_type = data.get("type") or (
+        "warning" if scan_state["stats"].get("high_critical", 0) else "info"
+    )
+    try:
+        result = apprise_send_notification(cfg["urls"], title, body, notify_type)
+        log(f"Apprise notificacion manual enviada a {result.get('targets')} destino(s)", "ok")
+        return jsonify(result)
+    except Exception as e:
+        log(f"Apprise notify error: {e}", "error")
+        return jsonify({"status": "error", "error": str(e)}), 400
+
+
 @app.route("/api/health")
 def health():
     return jsonify({
         "status": "ok",
-        "version": "2.5",
+        "version": "2.6",
         "client": "INE",
         "onionsearch": True,
         "trufflehog": True,
         "gitleaks": True,
         "socialanalyzer": True,
+        "apprise": True,
         "ail": True,
         "misp": True,
     })
