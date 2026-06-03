@@ -1,17 +1,12 @@
 #!/bin/bash
 # ═══════════════════════════════════════════════
-#  INE CTI Monitor — Script de instalación
+#  Dogui Ciberpatrullaje — Script de instalación
 # ═══════════════════════════════════════════════
 
 echo ""
-echo "  ██████╗████████╗██╗    ███╗   ███╗ ██████╗ ███╗  ██╗██╗████████╗ ██████╗ ██████╗ "
-echo "  ██╔════╝╚══██╔══╝██║    ████╗ ████║██╔═══██╗████╗ ██║██║╚══██╔══╝██╔═══██╗██╔══██╗"
-echo "  ██║        ██║   ██║    ██╔████╔██║██║   ██║██╔██╗██║██║   ██║   ██║   ██║██████╔╝"
-echo "  ██║        ██║   ██║    ██║╚██╔╝██║██║   ██║██║╚████║██║   ██║   ██║   ██║██╔══██╗"
-echo "  ╚██████╗   ██║   ██║    ██║ ╚═╝ ██║╚██████╔╝██║ ╚███║██║   ██║   ╚██████╔╝██║  ██║"
-echo "   ╚═════╝   ╚═╝   ╚═╝    ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚══╝╚═╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝"
+echo "  DOGUI CIBERPATRULLAJE"
 echo ""
-echo "  INE CTI MONITOR v2.0 — Inteligencia de Amenazas Cibernéticas"
+echo "  v3.1 — Centro de inteligencia, monitoreo y respuesta digital"
 echo "═══════════════════════════════════════════════════════════════"
 echo ""
 
@@ -43,7 +38,7 @@ fi
 echo "[OK] Dependencias instaladas"
 echo ""
 echo "═══════════════════════════════════════════════════════════════"
-echo "  Iniciando servidor CTI..."
+echo "  Iniciando servidor Dogui Ciberpatrullaje..."
 echo "  URL: http://localhost:5000"
 echo "  Presiona Ctrl+C para detener"
 echo "═══════════════════════════════════════════════════════════════"
