@@ -1,7 +1,7 @@
-# INE CTI Monitor v3.0
-## Inteligencia de Amenazas Cibernéticas
+# Dogui Ciberpatrullaje v3.1
+## Centro de inteligencia, monitoreo y respuesta digital
 
-Sistema de monitoreo OSINT defensivo para detectar información del INE
+Sistema de ciberpatrullaje OSINT defensivo para detectar información sensible
 expuesta públicamente en internet, repositorios en la nube y dark web indexada.
 La pantalla principal incluye dashboard ejecutivo, hallazgos en vivo,
 reportes, watchlist, typosquatting, analisis de archivos, deduplicacion y

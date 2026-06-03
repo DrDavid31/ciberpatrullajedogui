@@ -1,70 +1,72 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>INE CTI Monitor v3.0</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;800&display=swap" rel="stylesheet">
+<title>DOGUI Ciberpatrullaje v3.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:       #030810;
-  --bg-card:  #060f1e;
-  --bg-panel: #091525;
-  --cyan:     #00e5ff;
-  --green:    #00ff88;
-  --red:      #ff2d55;
-  --amber:    #ffb800;
-  --blue:     #3d7fff;
-  --purple:   #b060ff;
-  --border:   rgba(0,229,255,0.13);
-  --border-h: rgba(0,229,255,0.4);
-  --t1: #e0f4ff;
-  --t2: #8ab8d4;
-  --t3: #3a6478;
-  --gcyan:  0 0 18px rgba(0,229,255,0.3);
-  --gred:   0 0 18px rgba(255,45,85,0.4);
-  --ggreen: 0 0 18px rgba(0,255,136,0.3);
+  --bg:       #07090d;
+  --bg-card:  #0d121a;
+  --bg-panel: #111827;
+  --bg-elev:  #151d2a;
+  --cyan:     #2dd4bf;
+  --green:    #34d399;
+  --red:      #f43f5e;
+  --amber:    #f59e0b;
+  --blue:     #60a5fa;
+  --purple:   #a78bfa;
+  --border:   rgba(148,163,184,0.18);
+  --border-h: rgba(45,212,191,0.46);
+  --t1: #f8fafc;
+  --t2: #b6c2d2;
+  --t3: #64748b;
+  --gcyan:  0 12px 36px rgba(45,212,191,0.16);
+  --gred:   0 12px 36px rgba(244,63,94,0.16);
+  --ggreen: 0 12px 36px rgba(52,211,153,0.14);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--bg);color:var(--t1);font-family:'Exo 2',sans-serif;min-height:100vh;overflow-x:hidden;}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0;}
+body{background:var(--bg);color:var(--t1);font-family:'Inter',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:radial-gradient(circle at 18% 8%,rgba(45,212,191,.14),transparent 28%),radial-gradient(circle at 82% 0%,rgba(96,165,250,.11),transparent 28%),linear-gradient(180deg,rgba(255,255,255,.025),transparent 260px);pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(148,163,184,0.035) 1px,transparent 1px),linear-gradient(90deg,rgba(148,163,184,0.028) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(to bottom,rgba(0,0,0,.75),transparent 70%);pointer-events:none;z-index:0;}
 
-.wrap{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:0 20px 50px;}
+.wrap{position:relative;z-index:1;max-width:1500px;margin:0 auto;padding:0 22px 52px;}
 
 /* HEADER */
-header{display:flex;align-items:center;justify-content:space-between;padding:16px 0 14px;border-bottom:1px solid var(--border);margin-bottom:22px;flex-wrap:wrap;gap:12px;}
-.h-left{display:flex;align-items:center;gap:14px;}
-.logo-icon{width:44px;height:44px;border:2px solid var(--cyan);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;animation:pb 3s ease-in-out infinite;}
-@keyframes pb{0%,100%{box-shadow:0 0 10px rgba(0,229,255,0.25)}50%{box-shadow:0 0 28px rgba(0,229,255,0.6)}}
-.logo-text h1{font-family:'Rajdhani',sans-serif;font-size:19px;font-weight:700;letter-spacing:3px;color:var(--cyan);line-height:1;text-shadow:var(--gcyan);}
-.logo-text p{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;margin-top:3px;}
+header{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border:1px solid var(--border);border-radius:14px;margin:18px 0 16px;flex-wrap:wrap;gap:14px;background:linear-gradient(135deg,rgba(21,29,42,.92),rgba(10,14,20,.74));box-shadow:0 18px 48px rgba(0,0,0,.28);}
+.h-left{display:flex;align-items:center;gap:15px;min-width:260px;}
+.logo-icon{width:50px;height:50px;border:1px solid rgba(45,212,191,.7);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-size:25px;font-weight:800;color:#061016;background:linear-gradient(135deg,var(--cyan),var(--blue));box-shadow:0 14px 34px rgba(45,212,191,.18);}
+.logo-icon::before{content:'D';}
+.logo-text h1{font-family:'Inter',sans-serif;font-size:23px;font-weight:800;letter-spacing:3px;color:var(--t1);line-height:1;text-shadow:none;}
+.logo-text p{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1.8px;margin-top:5px;}
 .h-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
-.live-badge{display:flex;align-items:center;gap:7px;background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.28);border-radius:4px;padding:5px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green);}
+.live-badge{display:flex;align-items:center;gap:8px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.32);border-radius:999px;padding:7px 13px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);}
 .ldot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 1.2s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0.15}}
-.clock{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--t2);}
+.clock{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--t2);}
 
 /* TABS */
-.tabs{display:flex;gap:4px;margin-bottom:20px;border-bottom:1px solid var(--border);}
-.tab{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;padding:9px 20px;border:none;background:transparent;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;text-transform:uppercase;}
-.tab:hover{color:var(--t2);}
-.tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+.tabs{position:sticky;top:0;z-index:20;display:flex;gap:6px;margin-bottom:18px;border:1px solid var(--border);border-radius:12px;background:rgba(7,9,13,.9);backdrop-filter:blur(14px);padding:7px;overflow-x:auto;}
+.tab{font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:1.4px;padding:10px 15px;border:1px solid transparent;background:transparent;color:var(--t3);cursor:pointer;border-radius:8px;transition:all 0.2s;text-transform:uppercase;white-space:nowrap;}
+.tab:hover{color:var(--t1);background:rgba(148,163,184,.08);}
+.tab.active{color:var(--cyan);border-color:rgba(45,212,191,.3);background:rgba(45,212,191,.1);}
 
 .tab-content{display:none;}
 .tab-content.active{display:block;}
 
 /* CARDS */
-.card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin-bottom:18px;}
-.card-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:3px;color:var(--t3);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-.card-title::before{content:'//';color:var(--cyan);}
+.card{background:linear-gradient(180deg,rgba(13,18,26,.96),rgba(10,14,20,.96));border:1px solid var(--border);border-radius:10px;padding:20px 22px;margin-bottom:18px;box-shadow:0 14px 34px rgba(0,0,0,.18);}
+.card-title{font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:2.2px;color:var(--t2);text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.card-title::before{content:'';width:8px;height:8px;border-radius:2px;background:var(--cyan);box-shadow:0 0 16px rgba(45,212,191,.45);}
 
 /* CONFIG GRID */
 .cfg-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end;}
 @media(max-width:900px){.cfg-grid{grid-template-columns:1fr 1fr;}}
 @media(max-width:600px){.cfg-grid{grid-template-columns:1fr;}}
 .fg{display:flex;flex-direction:column;gap:6px;}
-.fg label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;}
-.fg input,.fg select{background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:10px 13px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
+.fg label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;}
+.fg input,.fg select{background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:10px 13px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;transition:border-color .2s,box-shadow .2s;width:100%;}
 .fg input:focus,.fg select:focus{border-color:var(--cyan);box-shadow:0 0 0 3px rgba(0,229,255,0.07);}
 .fg select option{background:var(--bg-panel);}
 
@@ -76,21 +78,21 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 .cbi input{display:none;}
 .cbdot{width:10px;height:10px;border-radius:2px;border:1.5px solid var(--t3);transition:all .2s;}
 .cbi.on .cbdot{background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 8px rgba(0,229,255,0.5);}
-.cbi span{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);}
+.cbi span{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);}
 
 /* API KEYS */
 .api-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 @media(max-width:700px){.api-grid{grid-template-columns:1fr;}}
 .api-row{display:flex;flex-direction:column;gap:5px;}
-.api-row label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;}
-.api-row .api-note{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;}
+.api-row label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;}
+.api-row .api-note{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;}
 .api-row .api-note a{color:var(--cyan);text-decoration:none;}
 
 /* BUTTONS */
-.btn-scan{background:linear-gradient(135deg,rgba(0,229,255,.15),rgba(0,229,255,.04));border:1px solid var(--cyan);border-radius:7px;padding:11px 30px;color:var(--cyan);font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;white-space:nowrap;box-shadow:var(--gcyan);}
-.btn-scan:hover{background:rgba(0,229,255,.2);box-shadow:0 0 30px rgba(0,229,255,.4);transform:translateY(-1px);}
+.btn-scan{background:linear-gradient(135deg,rgba(45,212,191,.18),rgba(96,165,250,.10));border:1px solid rgba(45,212,191,.62);border-radius:8px;padding:11px 30px;color:var(--t1);font-family:'Inter',sans-serif;font-size:15px;font-weight:800;letter-spacing:1.7px;cursor:pointer;transition:all .2s;text-transform:uppercase;white-space:nowrap;box-shadow:var(--gcyan);}
+.btn-scan:hover{background:linear-gradient(135deg,rgba(45,212,191,.28),rgba(96,165,250,.14));box-shadow:0 18px 38px rgba(45,212,191,.18);transform:translateY(-1px);}
 .btn-scan:disabled{opacity:.4;cursor:not-allowed;transform:none;}
-.btn-stop{background:rgba(255,45,85,.1);border:1px solid var(--red);border-radius:7px;padding:11px 24px;color:var(--red);font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;display:none;}
+.btn-stop{background:rgba(255,45,85,.1);border:1px solid var(--red);border-radius:7px;padding:11px 24px;color:var(--red);font-family:'Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:2px;cursor:pointer;transition:all .2s;display:none;}
 .btn-stop:hover{background:rgba(255,45,85,.2);}
 .btn-stop.show{display:inline-block;}
 
@@ -98,7 +100,7 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 .stats-bar{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:20px;}
 @media(max-width:1100px){.stats-bar{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:600px){.stats-bar{grid-template-columns:repeat(2,1fr);}}
-.stat{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:15px 17px;position:relative;overflow:hidden;}
+.stat{background:linear-gradient(180deg,rgba(13,18,26,.98),rgba(17,24,39,.82));border:1px solid var(--border);border-radius:10px;padding:15px 17px;position:relative;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.16);}
 .stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
 .stat.c1::before{background:linear-gradient(90deg,transparent,var(--cyan),transparent);}
 .stat.c2::before{background:linear-gradient(90deg,transparent,var(--red),transparent);}
@@ -106,74 +108,80 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 .stat.c4::before{background:linear-gradient(90deg,transparent,var(--green),transparent);}
 .stat.c5::before{background:linear-gradient(90deg,transparent,var(--blue),transparent);}
 .stat.c6::before{background:linear-gradient(90deg,transparent,var(--purple),transparent);}
-.stat-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;margin-bottom:7px;}
-.stat-val{font-family:'Rajdhani',sans-serif;font-size:30px;font-weight:700;line-height:1;}
+.stat-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;margin-bottom:7px;}
+.stat-val{font-family:'Inter',sans-serif;font-size:30px;font-weight:700;line-height:1;}
 .stat.c1 .stat-val{color:var(--cyan);text-shadow:var(--gcyan);}
 .stat.c2 .stat-val{color:var(--red);text-shadow:var(--gred);}
 .stat.c3 .stat-val{color:var(--amber);}
 .stat.c4 .stat-val{color:var(--green);text-shadow:var(--ggreen);}
 .stat.c5 .stat-val{color:var(--blue);}
 .stat.c6 .stat-val{color:var(--purple);}
-.stat-sub{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;}
+.stat-sub{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;}
 
 /* EXECUTIVE DASHBOARD */
 .kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px;}
 @media(max-width:1200px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:700px){.kpi-grid{grid-template-columns:repeat(2,1fr);}}
-.kpi{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:14px 15px;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;}
-.kpi strong{font-family:'Rajdhani',sans-serif;font-size:28px;line-height:1;color:var(--cyan);}
-.kpi span{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);}
-.kpi small{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t2);}
+.kpi{background:linear-gradient(180deg,rgba(13,18,26,.98),rgba(17,24,39,.82));border:1px solid var(--border);border-radius:8px;padding:14px 15px;min-height:96px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 12px 30px rgba(0,0,0,.16);position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:0 99px 99px 0;background:linear-gradient(180deg,var(--cyan),var(--blue));}
+.kpi strong{font-family:'Inter',sans-serif;font-size:28px;line-height:1;color:var(--cyan);}
+.kpi span{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:var(--t3);}
+.kpi small{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t2);}
 .dash-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-bottom:18px;}
 @media(max-width:900px){.dash-grid{grid-template-columns:1fr;}}
-.chart-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;min-height:230px;}
-.chart-title{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:12px;}
-.bar-row{display:grid;grid-template-columns:minmax(90px,150px) 1fr 42px;gap:10px;align-items:center;margin:8px 0;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t2);}
+.chart-card{background:linear-gradient(180deg,rgba(13,18,26,.98),rgba(10,14,20,.94));border:1px solid var(--border);border-radius:8px;padding:16px;min-height:230px;box-shadow:0 12px 30px rgba(0,0,0,.14);}
+.chart-title{font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;margin-bottom:12px;}
+.bar-row{display:grid;grid-template-columns:minmax(90px,150px) 1fr 42px;gap:10px;align-items:center;margin:8px 0;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t2);}
 .bar-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{height:9px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.08);border-radius:99px;overflow:hidden;}
 .bar-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:99px;min-width:3px;}
 .bar-value{text-align:right;color:var(--t1);}
 .mini-table{width:100%;border-collapse:collapse;}
 .mini-table th,.mini-table td{padding:8px 10px;font-size:11px;border-bottom:1px solid rgba(0,229,255,.06);}
-.mini-table th{font-family:'Share Tech Mono',monospace;color:var(--t3);letter-spacing:1px;text-transform:uppercase;background:rgba(0,229,255,.03);}
+.mini-table th{font-family:'JetBrains Mono',monospace;color:var(--t3);letter-spacing:1px;text-transform:uppercase;background:rgba(0,229,255,.03);}
 .tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;}
 @media(max-width:900px){.tool-grid{grid-template-columns:1fr;}}
-.textarea{background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:11px;outline:none;width:100%;min-height:130px;resize:vertical;}
+.textarea{background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;width:100%;min-height:130px;resize:vertical;}
 .pill-list{display:flex;flex-wrap:wrap;gap:7px;}
-.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:rgba(0,229,255,.05);border-radius:5px;padding:6px 9px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t2);}
-.pill button{border:0;background:transparent;color:var(--red);cursor:pointer;font-family:'Share Tech Mono',monospace;}
-.status-box{display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);white-space:pre-wrap;}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border);background:rgba(0,229,255,.05);border-radius:5px;padding:6px 9px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t2);}
+.pill button{border:0;background:transparent;color:var(--red);cursor:pointer;font-family:'JetBrains Mono',monospace;}
+.status-box{display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);white-space:pre-wrap;}
+.dash-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:linear-gradient(135deg,rgba(13,18,26,.96),rgba(17,24,39,.82));box-shadow:0 12px 30px rgba(0,0,0,.14);}
+.dash-actions-copy{font-size:13px;color:var(--t2);line-height:1.45;}
+.dash-actions-copy strong{display:block;color:var(--t1);font-size:14px;margin-bottom:2px;}
+.dash-actions-buttons{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;}
+@media(max-width:800px){.dash-actions{align-items:flex-start;flex-direction:column}.dash-actions-buttons{justify-content:flex-start}}
 
 /* SCAN STATUS */
 .scan-box{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin-bottom:20px;display:none;}
 .scan-box.on{display:block;}
 .scan-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-.scan-lbl{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:1px;}
-.scan-pct{font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;color:var(--cyan);}
+.scan-lbl{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--cyan);letter-spacing:1px;}
+.scan-pct{font-family:'Inter',sans-serif;font-size:18px;font-weight:700;color:var(--cyan);}
 .prog-track{background:var(--bg-panel);border-radius:3px;height:5px;overflow:hidden;margin-bottom:10px;}
 .prog-fill{height:100%;background:linear-gradient(90deg,var(--cyan),var(--green));border-radius:3px;width:0%;transition:width .4s ease;box-shadow:0 0 10px rgba(0,229,255,.4);}
 .scan-body{display:grid;grid-template-columns:minmax(260px,.8fr) minmax(360px,1.2fr);gap:12px;align-items:stretch;}
-.scan-log{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);height:170px;overflow-y:auto;padding:8px;background:var(--bg-panel);border-radius:5px;border:1px solid rgba(0,229,255,.07);}
+.scan-log{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);height:170px;overflow-y:auto;padding:8px;background:var(--bg-panel);border-radius:5px;border:1px solid rgba(0,229,255,.07);}
 .scan-log::-webkit-scrollbar{width:3px;}
 .scan-log::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 .ll{padding:1px 0;}.ll.ok{color:var(--green);}.ll.warn{color:var(--amber);}.ll.error{color:var(--red);}.ll.info{color:var(--t2);}
 .live-findings{height:170px;background:var(--bg-panel);border:1px solid rgba(0,229,255,.11);border-radius:5px;overflow:hidden;display:flex;flex-direction:column;}
-.live-findings-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-bottom:1px solid rgba(0,229,255,.08);font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:1px;text-transform:uppercase;}
+.live-findings-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 10px;border-bottom:1px solid rgba(0,229,255,.08);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);letter-spacing:1px;text-transform:uppercase;}
 .live-findings-list{overflow-y:auto;padding:7px;display:flex;flex-direction:column;gap:7px;min-height:0;}
 .live-finding{appearance:none;border:1px solid rgba(0,229,255,.11);background:rgba(3,8,16,.52);border-radius:6px;padding:8px 10px;text-align:left;cursor:pointer;transition:border-color .2s,background .2s;font:inherit;color:inherit;}
 .live-finding:hover{border-color:rgba(0,229,255,.38);background:rgba(0,229,255,.05);}
 .live-finding-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:5px;}
 .live-finding-title{display:block;color:var(--t1);font-size:12px;line-height:1.35;margin-bottom:4px;}
-.live-finding-detail{display:block;color:var(--t3);font-family:'Share Tech Mono',monospace;font-size:9px;line-height:1.35;word-break:break-word;}
-.live-empty{height:100%;display:grid;place-items:center;text-align:center;color:var(--t3);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;padding:18px;}
+.live-finding-detail{display:block;color:var(--t3);font-family:'JetBrains Mono',monospace;font-size:9px;line-height:1.35;word-break:break-word;}
+.live-empty{height:100%;display:grid;place-items:center;text-align:center;color:var(--t3);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:1px;padding:18px;}
 @media(max-width:900px){.scan-body{grid-template-columns:1fr}.scan-log,.live-findings{height:180px}}
 
 /* RESULTS */
 .res-hdr{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:10px;}
-.res-title{font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;display:flex;align-items:center;gap:10px;}
-.count-badge{font-size:11px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.2);border-radius:3px;padding:2px 9px;color:var(--cyan);font-family:'Share Tech Mono',monospace;}
+.res-title{font-family:'Inter',sans-serif;font-size:14px;font-weight:700;letter-spacing:3px;text-transform:uppercase;display:flex;align-items:center;gap:10px;}
+.count-badge{font-size:11px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.2);border-radius:3px;padding:2px 9px;color:var(--cyan);font-family:'JetBrains Mono',monospace;}
 .filters{display:flex;gap:7px;flex-wrap:wrap;}
-.fbtn{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;padding:5px 12px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer;transition:all .2s;text-transform:uppercase;}
+.fbtn{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;padding:5px 12px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--t3);cursor:pointer;transition:all .2s;text-transform:uppercase;}
 .fbtn:hover,.fbtn.on{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.07);}
 .fbtn.fr{border-color:rgba(255,45,85,.35);color:var(--red);}
 .fbtn.fa{border-color:rgba(255,184,0,.35);color:var(--amber);}
@@ -181,29 +189,29 @@ header{display:flex;align-items:center;justify-content:space-between;padding:16p
 
 .tbl-wrap{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;}
-thead th{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;text-align:left;padding:11px 15px;border-bottom:1px solid var(--border);background:var(--bg-panel);white-space:nowrap;}
+thead th{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--t3);text-transform:uppercase;text-align:left;padding:11px 15px;border-bottom:1px solid var(--border);background:var(--bg-panel);white-space:nowrap;}
 tbody tr{border-bottom:1px solid rgba(0,229,255,.04);transition:background .15s;cursor:pointer;}
 tbody tr:hover{background:rgba(0,229,255,.035);}
 tbody tr:last-child{border-bottom:none;}
 td{padding:12px 15px;font-size:12px;vertical-align:middle;}
-.td-src{font-family:'Share Tech Mono',monospace;color:var(--cyan);font-size:10px;white-space:nowrap;}
+.td-src{font-family:'JetBrains Mono',monospace;color:var(--cyan);font-size:10px;white-space:nowrap;}
 .td-title{color:var(--t1);max-width:280px;}
-.td-title small{display:block;color:var(--t3);font-size:9px;margin-top:3px;font-family:'Share Tech Mono',monospace;word-break:break-all;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.cat{font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 9px;border-radius:3px;white-space:nowrap;}
+.td-title small{display:block;color:var(--t3);font-size:9px;margin-top:3px;font-family:'JetBrains Mono',monospace;word-break:break-all;max-width:280px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cat{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 9px;border-radius:3px;white-space:nowrap;}
 .cat-repo{background:rgba(61,127,255,.1);color:#7ba8ff;border:1px solid rgba(61,127,255,.22);}
 .cat-cloud{background:rgba(0,229,255,.07);color:var(--cyan);border:1px solid rgba(0,229,255,.18);}
 .cat-paste{background:rgba(255,184,0,.07);color:var(--amber);border:1px solid rgba(255,184,0,.18);}
 .cat-dark{background:rgba(176,96,255,.1);color:var(--purple);border:1px solid rgba(176,96,255,.25);}
 .cat-leak{background:rgba(255,45,85,.12);color:#ff7096;border:1px solid rgba(255,45,85,.3);}
-.risk{display:inline-flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:10px;padding:4px 10px;border-radius:4px;white-space:nowrap;}
+.risk{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 10px;border-radius:4px;white-space:nowrap;}
 .rH{background:rgba(255,45,85,.1);color:var(--red);border:1px solid rgba(255,45,85,.28);}
 .rM{background:rgba(255,184,0,.08);color:var(--amber);border:1px solid rgba(255,184,0,.22);}
 .rL{background:rgba(0,255,136,.07);color:var(--green);border:1px solid rgba(0,255,136,.18);}
 .rC{background:rgba(255,45,85,.2);color:#ff5575;border:1px solid rgba(255,45,85,.45);box-shadow:0 0 8px rgba(255,45,85,.25);}
-.td-time{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);white-space:nowrap;}
-.td-act a{color:var(--cyan);text-decoration:none;font-family:'Share Tech Mono',monospace;font-size:10px;border:1px solid rgba(0,229,255,.22);padding:4px 10px;border-radius:4px;transition:all .2s;display:inline-block;white-space:nowrap;}
+.td-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);white-space:nowrap;}
+.td-act a{color:var(--cyan);text-decoration:none;font-family:'JetBrains Mono',monospace;font-size:10px;border:1px solid rgba(0,229,255,.22);padding:4px 10px;border-radius:4px;transition:all .2s;display:inline-block;white-space:nowrap;}
 .td-act a:hover{background:rgba(0,229,255,.1);}
-.empty{text-align:center;padding:55px 20px;color:var(--t3);font-family:'Share Tech Mono',monospace;font-size:12px;letter-spacing:2px;}
+.empty{text-align:center;padding:55px 20px;color:var(--t3);font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:2px;}
 .empty .ei{font-size:34px;margin-bottom:14px;opacity:.3;}
 
 /* VALIDATION QUEUE */
@@ -211,10 +219,10 @@ td{padding:12px 15px;font-size:12px;vertical-align:middle;}
 .vq-item:hover{border-color:rgba(0,229,255,.3);}
 .vq-hdr{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
 .vq-title{font-size:13px;color:var(--t1);flex:1;}
-.vq-meta{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);margin-bottom:10px;}
-.vq-detail{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);margin-bottom:12px;line-height:1.5;}
+.vq-meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);margin-bottom:10px;}
+.vq-detail{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);margin-bottom:12px;line-height:1.5;}
 .vq-actions{display:flex;gap:8px;flex-wrap:wrap;}
-.vq-btn{font-family:'Rajdhani',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;padding:6px 16px;border-radius:5px;cursor:pointer;transition:all .2s;border:1px solid;text-transform:uppercase;}
+.vq-btn{font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;padding:6px 16px;border-radius:5px;cursor:pointer;transition:all .2s;border:1px solid;text-transform:uppercase;}
 .vq-btn.confirm{border-color:var(--red);color:var(--red);background:rgba(255,45,85,.08);}
 .vq-btn.confirm:hover{background:rgba(255,45,85,.18);}
 .vq-btn.fp{border-color:var(--green);color:var(--green);background:rgba(0,255,136,.06);}
@@ -223,33 +231,33 @@ td{padding:12px 15px;font-size:12px;vertical-align:middle;}
 .vq-btn.inv:hover{background:rgba(255,184,0,.15);}
 .vq-btn.open{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.06);}
 .vq-btn.open:hover{background:rgba(0,229,255,.14);}
-.vq-empty{text-align:center;padding:40px;color:var(--t3);font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;}
+.vq-empty{text-align:center;padding:40px;color:var(--t3);font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:2px;}
 
 /* VALIDATED LOG */
 .vlog-item{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border-bottom:1px solid rgba(0,229,255,.05);}
 .vlog-item:last-child{border-bottom:none;}
-.vlog-badge{font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 9px;border-radius:3px;white-space:nowrap;flex-shrink:0;}
+.vlog-badge{font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 9px;border-radius:3px;white-space:nowrap;flex-shrink:0;}
 .vlog-badge.confirmed{background:rgba(255,45,85,.12);color:var(--red);border:1px solid rgba(255,45,85,.3);}
 .vlog-badge.fp{background:rgba(0,255,136,.08);color:var(--green);border:1px solid rgba(0,255,136,.2);}
 .vlog-badge.investigating{background:rgba(255,184,0,.08);color:var(--amber);border:1px solid rgba(255,184,0,.22);}
 .vlog-title{font-size:12px;color:var(--t2);flex:1;}
-.vlog-ts{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);flex-shrink:0;}
+.vlog-ts{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);flex-shrink:0;}
 
 /* MODAL */
 .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-ov.open{display:flex;}
 .modal{background:var(--bg-card);border:1px solid var(--border-h);border-radius:12px;padding:26px;max-width:580px;width:100%;box-shadow:var(--gcyan);animation:si .2s ease;}
 @keyframes si{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
-.modal-title{font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--cyan);letter-spacing:2px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
+.modal-title{font-family:'Inter',sans-serif;font-size:17px;font-weight:700;color:var(--cyan);letter-spacing:2px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center;}
 .modal-x{background:none;border:none;color:var(--t3);font-size:20px;cursor:pointer;transition:color .2s;}
 .modal-x:hover{color:var(--red);}
 .mrow{display:flex;gap:10px;margin-bottom:11px;padding-bottom:11px;border-bottom:1px solid var(--border);}
 .mrow:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
-.mrow label{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;min-width:110px;padding-top:2px;flex-shrink:0;}
-.mrow .val{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t1);word-break:break-all;flex:1;line-height:1.5;}
+.mrow label{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:2px;text-transform:uppercase;min-width:110px;padding-top:2px;flex-shrink:0;}
+.mrow .val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t1);word-break:break-all;flex:1;line-height:1.5;}
 .mrow .val a{color:var(--cyan);text-decoration:none;}
 .macts{display:flex;gap:9px;margin-top:18px;}
-.mbtn{flex:1;padding:10px;border-radius:6px;font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;text-align:center;text-decoration:none;display:block;border:1px solid;}
+.mbtn{flex:1;padding:10px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;text-align:center;text-decoration:none;display:block;border:1px solid;}
 .mbtn.p{border-color:var(--cyan);color:var(--cyan);background:rgba(0,229,255,.1);}
 .mbtn.p:hover{background:rgba(0,229,255,.2);}
 .mbtn.d{border-color:var(--red);color:var(--red);background:rgba(255,45,85,.08);}
@@ -257,14 +265,15 @@ td{padding:12px 15px;font-size:12px;vertical-align:middle;}
 
 /* FOOTER */
 footer{display:flex;justify-content:space-between;align-items:center;padding:14px 0 0;border-top:1px solid var(--border);margin-top:22px;flex-wrap:wrap;gap:8px;}
-footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;}
+footer span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;}
 .exp-btns{display:flex;gap:7px;}
-.exp-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:6px 14px;color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;}
+.exp-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:6px 14px;color:var(--t2);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;}
 .exp-btn:hover{border-color:var(--cyan);color:var(--cyan);}
 
 ::-webkit-scrollbar{width:5px;height:5px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+*{letter-spacing:0!important;}
 </style>
 </head>
 <body>
@@ -273,10 +282,10 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 <!-- HEADER -->
 <header>
   <div class="h-left">
-    <div class="logo-icon">🛰️</div>
+    <div class="logo-icon" aria-label="Dogui"></div>
     <div class="logo-text">
-      <h1>INE · CTI MONITOR</h1>
-      <p>INTELIGENCIA DE AMENAZAS CIBERNÉTICAS — v3.0</p>
+      <h1>DOGUI CIBERPATRULLAJE</h1>
+      <p>CENTRO DE INTELIGENCIA, MONITOREO Y RESPUESTA DIGITAL — v3.1</p>
     </div>
   </div>
   <div class="h-right">
@@ -287,18 +296,29 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
 
 <!-- TABS -->
 <div class="tabs">
-  <button class="tab active" onclick="showTab('dashboard',this)">📊 DASHBOARD</button>
-  <button class="tab" onclick="showTab('monitor',this)">📡 MONITOR</button>
-  <button class="tab" onclick="showTab('hallazgos',this)">🔍 HALLAZGOS</button>
-  <button class="tab" onclick="showTab('validacion',this)">✅ VALIDACIÓN <span id="vqBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></button>
-  <button class="tab" onclick="showTab('reportes',this)">📄 REPORTES</button>
-  <button class="tab" onclick="showTab('watchlist',this)">🎯 WATCHLIST</button>
-  <button class="tab" onclick="showTab('analisis',this)">🧪 ANÁLISIS</button>
-  <button class="tab" onclick="showTab('config',this)">⚙️ CONFIGURACIÓN</button>
+  <button class="tab active" onclick="showTab('dashboard',this)">Dashboard</button>
+  <button class="tab" onclick="showTab('monitor',this)">Monitor</button>
+  <button class="tab" onclick="showTab('hallazgos',this)">Hallazgos</button>
+  <button class="tab" onclick="showTab('validacion',this)">Validación <span id="vqBadge" style="display:none;background:var(--red);color:#fff;font-size:9px;padding:1px 6px;border-radius:10px;margin-left:4px;">0</span></button>
+  <button class="tab" onclick="showTab('reportes',this)">Reportes</button>
+  <button class="tab" onclick="showTab('watchlist',this)">Watchlist</button>
+  <button class="tab" onclick="showTab('analisis',this)">Análisis</button>
+  <button class="tab" onclick="showTab('config',this)">Configuración</button>
 </div>
 
 <!-- ══════════ TAB: DASHBOARD ══════════ -->
 <div id="tab-dashboard" class="tab-content active">
+  <div class="dash-actions">
+    <div class="dash-actions-copy">
+      <strong>Panel operativo Dogui</strong>
+      <span id="backendModeText">Verificando backend y modo de operación...</span>
+    </div>
+    <div class="dash-actions-buttons">
+      <button class="btn-scan" onclick="startDashboardScan()" style="font-size:13px;padding:9px 18px;">ESCANEAR AHORA</button>
+      <button class="btn-scan" onclick="loadDemoFindings()" style="font-size:13px;padding:9px 18px;">CARGAR DEMO</button>
+      <button class="btn-scan" onclick="showTab('monitor')" style="font-size:13px;padding:9px 18px;">ABRIR MONITOR</button>
+    </div>
+  </div>
   <div class="kpi-grid">
     <div class="kpi"><span>Hallazgos totales</span><strong id="kpiTotal">0</strong><small>deduplicados</small></div>
     <div class="kpi"><span>Hallazgos críticos</span><strong id="kpiCritical">0</strong><small>prioridad inmediata</small></div>
@@ -347,8 +367,8 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
         </select>
       </div>
       <div style="display:flex;gap:8px;align-items:flex-end">
-        <button class="btn-scan" id="btnScan" onclick="startScan()">⚡ ESCANEAR</button>
-        <button class="btn-stop" id="btnStop" onclick="stopScan()">⏹ DETENER</button>
+        <button class="btn-scan" id="btnScan" onclick="startScan()">ESCANEAR</button>
+        <button class="btn-stop" id="btnStop" onclick="stopScan()">DETENER</button>
       </div>
     </div>
 
@@ -433,7 +453,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
           </tr>
         </thead>
         <tbody id="findingsBody">
-          <tr><td colspan="7"><div class="empty"><div class="ei">🔍</div>Ejecuta un escaneo para ver hallazgos</div></td></tr>
+          <tr><td colspan="7"><div class="empty"><div class="ei">SCAN</div>Ejecuta un escaneo para ver hallazgos</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -471,11 +491,11 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
         <div class="api-grid">
           <div class="api-row">
             <label>Resumen ejecutivo</label>
-            <input type="text" id="reportTitle" value="Reporte ejecutivo CTI - INE" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+            <input type="text" id="reportTitle" value="Reporte ejecutivo Dogui Ciberpatrullaje" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           </div>
           <div class="api-row">
             <label>Clasificación</label>
-            <select id="reportClassification" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+            <select id="reportClassification" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
               <option>Uso oficial exclusivo</option>
               <option>TLP:AMBER</option>
               <option>TLP:RED</option>
@@ -519,11 +539,11 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
       <div class="api-grid">
         <div class="api-row">
           <label>Categoría</label>
-          <input type="text" id="watchCategory" value="Identidad" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <input type="text" id="watchCategory" value="Identidad" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         </div>
         <div class="api-row">
           <label>Término</label>
-          <input type="text" id="watchTerm" placeholder="CURP, RFC, OCR, lista nominal..." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <input type="text" id="watchTerm" placeholder="CURP, RFC, OCR, lista nominal..." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
@@ -548,7 +568,7 @@ footer span{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t
       <div class="api-grid">
         <div class="api-row">
           <label>Dominio base</label>
-          <input type="text" id="typoTarget" value="ine.mx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <input type="text" id="typoTarget" value="ine.mx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         </div>
       </div>
       <textarea id="typoCandidates" class="textarea" style="margin-top:12px;">lne.mx
@@ -568,11 +588,11 @@ credencial-ine.com</textarea>
       <div class="api-grid">
         <div class="api-row">
           <label>Archivo local</label>
-          <input type="file" id="fileInput" multiple accept=".pdf,.xlsx,.csv,.sql,.txt,.zip,.json,.log" style="color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:11px;">
+          <input type="file" id="fileInput" multiple accept=".pdf,.xlsx,.csv,.sql,.txt,.zip,.json,.log" style="color:var(--t2);font-family:'JetBrains Mono',monospace;font-size:11px;">
         </div>
         <div class="api-row">
           <label>Ruta backend opcional</label>
-          <input type="text" id="filePath" placeholder="C:\ruta\datos_usuarios.csv" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <input type="text" id="filePath" placeholder="C:\ruta\datos_usuarios.csv" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         </div>
       </div>
       <textarea id="fileText" class="textarea" style="margin-top:12px;" placeholder="También puedes pegar aquí texto de un CSV, SQL, TXT o PDF extraído..."></textarea>
@@ -599,7 +619,7 @@ credencial-ine.com</textarea>
       <div class="api-grid">
         <div class="api-row">
           <label>Tipo</label>
-          <select id="fpType" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <select id="fpType" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
             <option value="domain">Dominio</option>
             <option value="keyword">Keyword</option>
             <option value="source">Fuente</option>
@@ -607,7 +627,7 @@ credencial-ine.com</textarea>
         </div>
         <div class="api-row">
           <label>Valor</label>
-          <input type="text" id="fpValue" placeholder="ine.mx, noticia, comunicado oficial..." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <input type="text" id="fpValue" placeholder="ine.mx, noticia, comunicado oficial..." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
@@ -627,33 +647,33 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>GitHub Token</label>
-        <input type="password" id="keyGithub" class="fg input" placeholder="ghp_xxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="password" id="keyGithub" class="fg input" placeholder="ghp_xxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Gratuito — <a href="https://github.com/settings/tokens" target="_blank">github.com/settings/tokens</a></div>
       </div>
       <div class="api-row">
         <label>IntelX API Key</label>
-        <input type="password" id="keyIntelx" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
-        <div class="api-note" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">Gratuito limitado — <a href="https://intelx.io/account" target="_blank" style="color:var(--cyan);text-decoration:none;">intelx.io/account</a></div>
+        <input type="password" id="keyIntelx" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">Gratuito limitado — <a href="https://intelx.io/account" target="_blank" style="color:var(--cyan);text-decoration:none;">intelx.io/account</a></div>
       </div>
       <div class="api-row">
         <label>HaveIBeenPwned Key</label>
-        <input type="password" id="keyHibp" placeholder="xxxxxxxxxxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
-        <div class="api-note" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">~$3.50/mes — <a href="https://haveibeenpwned.com/API/Key" target="_blank" style="color:var(--cyan);text-decoration:none;">haveibeenpwned.com/API/Key</a></div>
+        <input type="password" id="keyHibp" placeholder="xxxxxxxxxxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">~$3.50/mes — <a href="https://haveibeenpwned.com/API/Key" target="_blank" style="color:var(--cyan);text-decoration:none;">haveibeenpwned.com/API/Key</a></div>
       </div>
       <div class="api-row">
         <label>LeakIX API Key</label>
-        <input type="password" id="keyLeakix" placeholder="xxxxxxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
-        <div class="api-note" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">Gratuito limitado — <a href="https://leakix.net" target="_blank" style="color:var(--cyan);text-decoration:none;">leakix.net</a></div>
+        <input type="password" id="keyLeakix" placeholder="xxxxxxxxxxxxxxxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">Gratuito limitado — <a href="https://leakix.net" target="_blank" style="color:var(--cyan);text-decoration:none;">leakix.net</a></div>
       </div>
       <div class="api-row">
         <label>OnionSearch Proxy</label>
-        <input type="text" id="keyOnionProxy" placeholder="127.0.0.1:9050" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
-        <div class="api-note" style="font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">Opcional; usa Tor local si los motores lo requieren</div>
+        <input type="text" id="keyOnionProxy" placeholder="127.0.0.1:9050" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <div class="api-note" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--t3);margin-top:3px;">Opcional; usa Tor local si los motores lo requieren</div>
       </div>
       <div class="api-row">
         <label>OnionSearch motores / limite</label>
-        <input type="text" id="keyOnionEngines" placeholder="ahmia darksearchio phobos" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <select id="keyOnionLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyOnionEngines" placeholder="ahmia darksearchio phobos" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyOnionLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="1">1 pagina por motor</option>
           <option value="2">2 paginas por motor</option>
           <option value="3">3 paginas por motor</option>
@@ -671,12 +691,12 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Objetivo TruffleHog</label>
-        <input type="text" id="keyTrufflehogTarget" value="https://github.com/DrDavid31/ciberpatrullajedogui" placeholder="https://github.com/org/repo o C:\ruta\repo" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyTrufflehogTarget" value="https://github.com/DrDavid31/ciberpatrullajedogui" placeholder="https://github.com/org/repo o C:\ruta\repo" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Repo, organizacion GitHub o ruta local autorizada</div>
       </div>
       <div class="api-row">
         <label>Modo</label>
-        <select id="keyTrufflehogMode" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <select id="keyTrufflehogMode" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="git">git repo</option>
           <option value="github-repo">github repo + metadata</option>
           <option value="github-org">github org</option>
@@ -685,12 +705,12 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>Resultados / limite</label>
-        <select id="keyTrufflehogResults" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyTrufflehogResults" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
           <option value="verified,unknown">verified + unknown</option>
           <option value="verified">solo verified</option>
           <option value="verified,unverified,unknown">todos</option>
         </select>
-        <select id="keyTrufflehogLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <select id="keyTrufflehogLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="10">10 hallazgos</option>
           <option value="20" selected>20 hallazgos</option>
           <option value="50">50 hallazgos</option>
@@ -699,7 +719,7 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>GitHub extras</label>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keyTrufflehogComments"> Issues y PR comments
         </label>
         <div class="api-note">Usa el GitHub Token si esta guardado</div>
@@ -712,34 +732,34 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Objetivo Gitleaks</label>
-        <input type="text" id="keyGitleaksTarget" value="." placeholder="C:\ruta\repo o C:\ruta\carpeta" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyGitleaksTarget" value="." placeholder="C:\ruta\repo o C:\ruta\carpeta" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Ruta local autorizada; usa . para el proyecto actual</div>
       </div>
       <div class="api-row">
         <label>Modo</label>
-        <select id="keyGitleaksMode" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <select id="keyGitleaksMode" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="dir">dir</option>
           <option value="git">git</option>
         </select>
       </div>
       <div class="api-row">
         <label>Config / baseline</label>
-        <input type="text" id="keyGitleaksConfig" placeholder="C:\ruta\.gitleaks.toml" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <input type="text" id="keyGitleaksBaseline" placeholder="C:\ruta\gitleaks-baseline.json" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyGitleaksConfig" placeholder="C:\ruta\.gitleaks.toml" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="text" id="keyGitleaksBaseline" placeholder="C:\ruta\gitleaks-baseline.json" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
       </div>
       <div class="api-row">
         <label>Limites</label>
-        <select id="keyGitleaksLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyGitleaksLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
           <option value="10">10 hallazgos</option>
           <option value="20" selected>20 hallazgos</option>
           <option value="50">50 hallazgos</option>
           <option value="100">100 hallazgos</option>
         </select>
-        <input type="number" id="keyGitleaksMaxMb" min="1" max="200" placeholder="Max MB por archivo" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="number" id="keyGitleaksMaxMb" min="1" max="200" placeholder="Max MB por archivo" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
       </div>
       <div class="api-row">
         <label>Git log opts</label>
-        <input type="text" id="keyGitleaksLogOpts" placeholder="--all" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyGitleaksLogOpts" placeholder="--all" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Solo modo git; ejemplo: --all</div>
       </div>
     </div>
@@ -750,22 +770,22 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Username(s)</label>
-        <input type="text" id="keySocialUsername" placeholder="usuario, otro_usuario" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keySocialUsername" placeholder="usuario, otro_usuario" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Si está vacío usa el término principal de búsqueda</div>
       </div>
       <div class="api-row">
         <label>Websites / países</label>
-        <input type="text" id="keySocialWebsites" placeholder="youtube tiktok github" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <input type="text" id="keySocialCountries" placeholder="us mx br" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keySocialWebsites" placeholder="youtube tiktok github" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="text" id="keySocialCountries" placeholder="us mx br" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
       </div>
       <div class="api-row">
         <label>Modo / método</label>
-        <select id="keySocialMode" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keySocialMode" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
           <option value="fast">fast</option>
           <option value="slow">slow</option>
           <option value="special">special</option>
         </select>
-        <select id="keySocialMethod" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <select id="keySocialMethod" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="find">find</option>
           <option value="get">get</option>
           <option value="all">all</option>
@@ -773,12 +793,12 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>Filtro / profiles</label>
-        <select id="keySocialFilter" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keySocialFilter" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
           <option value="good">good</option>
           <option value="good,maybe">good + maybe</option>
           <option value="all">all</option>
         </select>
-        <select id="keySocialProfiles" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <select id="keySocialProfiles" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="detected">detected</option>
           <option value="detected,unknown">detected + unknown</option>
           <option value="all">all</option>
@@ -786,8 +806,8 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>Tipo / top</label>
-        <input type="text" id="keySocialType" placeholder="adult, music, etc." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <select id="keySocialTop" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keySocialType" placeholder="adult, music, etc." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keySocialTop" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="50">top 50</option>
           <option value="100" selected>top 100</option>
           <option value="250">top 250</option>
@@ -796,17 +816,17 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>Límites / extras</label>
-        <select id="keySocialLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keySocialLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
           <option value="10">10 hallazgos</option>
           <option value="30" selected>30 hallazgos</option>
           <option value="50">50 hallazgos</option>
           <option value="100">100 hallazgos</option>
         </select>
-        <input type="number" id="keySocialTimeout" min="3" max="60" value="10" placeholder="Timeout" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+        <input type="number" id="keySocialTimeout" min="3" max="60" value="10" placeholder="Timeout" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
           <input type="checkbox" id="keySocialMetadata"> Metadata
         </label>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keySocialExtract"> Extract
         </label>
       </div>
@@ -818,15 +838,15 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Apprise URLs</label>
-        <textarea id="keyAppriseUrls" placeholder="discord://webhook_id/webhook_token&#10;tgram://bot_token/chat_id" rows="5" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;resize:vertical;"></textarea>
+        <textarea id="keyAppriseUrls" placeholder="discord://webhook_id/webhook_token&#10;tgram://bot_token/chat_id" rows="5" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;resize:vertical;"></textarea>
         <div class="api-note">Una URL por linea; soporta Telegram, Discord, Slack, email y más</div>
       </div>
       <div class="api-row">
         <label>Automatización</label>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
           <input type="checkbox" id="keyAppriseOnComplete"> Notificar al finalizar
         </label>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keyAppriseOnHigh" checked> Notificar si hay alto/critico
         </label>
       </div>
@@ -835,7 +855,7 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="testApprise()" style="font-size:13px;padding:9px 18px;">PROBAR APPRISE</button>
       <button class="btn-scan" onclick="notifyApprise()" style="font-size:13px;padding:9px 18px;">ENVIAR RESUMEN</button>
     </div>
-    <div id="appriseStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="appriseStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
@@ -843,18 +863,18 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>changedetection URL</label>
-        <input type="text" id="keyChangedetectionUrl" placeholder="http://localhost:5000" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyChangedetectionUrl" placeholder="http://localhost:5000" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Instancia self-hosted; la API vive en /api/v1</div>
       </div>
       <div class="api-row">
         <label>API key</label>
-        <input type="password" id="keyChangedetectionKey" placeholder="x-api-key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="password" id="keyChangedetectionKey" placeholder="x-api-key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Settings > API en changedetection.io</div>
       </div>
       <div class="api-row">
         <label>Tag / limite</label>
-        <input type="text" id="keyChangedetectionTag" value="ine-cti" placeholder="ine-cti" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <select id="keyChangedetectionLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyChangedetectionTag" value="ine-cti" placeholder="ine-cti" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyChangedetectionLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="10">10 watches</option>
           <option value="20" selected>20 watches</option>
           <option value="50">50 watches</option>
@@ -862,10 +882,10 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>Opciones</label>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
           <input type="checkbox" id="keyChangedetectionRecheck"> Recheck al escanear
         </label>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keyChangedetectionVerifyTls" checked> Verificar TLS
         </label>
       </div>
@@ -874,7 +894,7 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="testChangedetection()" style="font-size:13px;padding:9px 18px;">PROBAR CHANGEDETECTION</button>
       <button class="btn-scan" onclick="exportToChangedetection()" style="font-size:13px;padding:9px 18px;">CREAR WATCHES</button>
     </div>
-    <div id="changedetectionStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="changedetectionStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
@@ -882,17 +902,17 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Webhook Agent URL</label>
-        <input type="text" id="keyHuginnWebhookUrl" placeholder="https://huginn.local/users/1/web_requests/1/secret" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyHuginnWebhookUrl" placeholder="https://huginn.local/users/1/web_requests/1/secret" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">URL completa del Webhook Agent de Huginn</div>
       </div>
       <div class="api-row">
         <label>Limite / TLS</label>
-        <select id="keyHuginnLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
+        <select id="keyHuginnLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
           <option value="10">10 eventos</option>
           <option value="20" selected>20 eventos</option>
           <option value="50">50 eventos</option>
         </select>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keyHuginnVerifyTls" checked> Verificar TLS
         </label>
       </div>
@@ -901,7 +921,7 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="testHuginn()" style="font-size:13px;padding:9px 18px;">PROBAR HUGINN</button>
       <button class="btn-scan" onclick="exportToHuginn()" style="font-size:13px;padding:9px 18px;">ENVIAR EVENTOS</button>
     </div>
-    <div id="huginnStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="huginnStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
@@ -909,18 +929,18 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Aleph URL</label>
-        <input type="text" id="keyAlephUrl" value="https://aleph.occrp.org" placeholder="https://aleph.occrp.org" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyAlephUrl" value="https://aleph.occrp.org" placeholder="https://aleph.occrp.org" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Compatible con Aleph/OpenAleph</div>
       </div>
       <div class="api-row">
         <label>Aleph API key</label>
-        <input type="password" id="keyAlephKey" placeholder="ApiKey opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="password" id="keyAlephKey" placeholder="ApiKey opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Opcional para instancias con acceso privado</div>
       </div>
       <div class="api-row">
         <label>Schemata / limite</label>
-        <input type="text" id="keyAlephSchemata" placeholder="Person,Company,Document" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <select id="keyAlephLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyAlephSchemata" placeholder="Person,Company,Document" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyAlephLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="5">5 resultados</option>
           <option value="10" selected>10 resultados</option>
           <option value="25">25 resultados</option>
@@ -928,7 +948,7 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>TLS</label>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keyAlephVerifyTls" checked> Verificar TLS
         </label>
       </div>
@@ -937,7 +957,7 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="testAleph()" style="font-size:13px;padding:9px 18px;">PROBAR ALEPH</button>
       <button class="btn-scan" onclick="searchAlephNow()" style="font-size:13px;padding:9px 18px;">BUSCAR AHORA</button>
     </div>
-    <div id="alephStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="alephStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
@@ -945,12 +965,12 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Dataset FtM</label>
-        <input type="text" id="keyFtmDataset" value="ine-cti-monitor" placeholder="ine-cti-monitor" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyFtmDataset" value="ine-cti-monitor" placeholder="ine-cti-monitor" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Nombre de dataset para entidades normalizadas</div>
       </div>
       <div class="api-row">
         <label>Limite</label>
-        <select id="keyFtmLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <select id="keyFtmLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="25">25 entidades</option>
           <option value="100" selected>100 entidades</option>
           <option value="250">250 entidades</option>
@@ -961,7 +981,7 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="testFtm()" style="font-size:13px;padding:9px 18px;">PROBAR FTM</button>
       <button class="btn-scan" onclick="exportToFtm()" style="font-size:13px;padding:9px 18px;">NORMALIZAR HALLAZGOS</button>
     </div>
-    <div id="ftmStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="ftmStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
@@ -969,22 +989,22 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>TheHive URL</label>
-        <input type="text" id="keyThehiveUrl" placeholder="https://thehive.local" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyThehiveUrl" placeholder="https://thehive.local" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">TheHive 4/5; se crean alertas desde hallazgos</div>
       </div>
       <div class="api-row">
         <label>API key / org</label>
-        <input type="password" id="keyThehiveKey" placeholder="TheHive API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <input type="text" id="keyThehiveOrg" placeholder="org opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="password" id="keyThehiveKey" placeholder="TheHive API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="text" id="keyThehiveOrg" placeholder="org opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
       </div>
       <div class="api-row">
         <label>Limite / TLS</label>
-        <select id="keyThehiveLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
+        <select id="keyThehiveLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
           <option value="10">10 alertas</option>
           <option value="20" selected>20 alertas</option>
           <option value="50">50 alertas</option>
         </select>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keyThehiveVerifyTls" checked> Verificar TLS
         </label>
       </div>
@@ -993,7 +1013,7 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="testThehive()" style="font-size:13px;padding:9px 18px;">PROBAR THEHIVE</button>
       <button class="btn-scan" onclick="exportToThehive()" style="font-size:13px;padding:9px 18px;">CREAR ALERTAS</button>
     </div>
-    <div id="thehiveStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="thehiveStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
@@ -1001,13 +1021,13 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Webhook URL</label>
-        <input type="text" id="keyShuffleWebhookUrl" placeholder="https://shuffler.io/api/v1/webhooks/webhook_xxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyShuffleWebhookUrl" placeholder="https://shuffler.io/api/v1/webhooks/webhook_xxx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Webhook trigger de Shuffle</div>
       </div>
       <div class="api-row">
         <label>Token / limite</label>
-        <input type="password" id="keyShuffleToken" placeholder="Bearer opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <select id="keyShuffleLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="password" id="keyShuffleToken" placeholder="Bearer opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyShuffleLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="10">10 eventos</option>
           <option value="20" selected>20 eventos</option>
           <option value="50">50 eventos</option>
@@ -1015,7 +1035,7 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>TLS</label>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keyShuffleVerifyTls" checked> Verificar TLS
         </label>
       </div>
@@ -1024,7 +1044,7 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="testShuffle()" style="font-size:13px;padding:9px 18px;">PROBAR SHUFFLE</button>
       <button class="btn-scan" onclick="exportToShuffle()" style="font-size:13px;padding:9px 18px;">ENVIAR EVENTOS</button>
     </div>
-    <div id="shuffleStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="shuffleStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
@@ -1032,27 +1052,27 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Objetivo autorizado</label>
-        <input type="text" id="keyPdTarget" placeholder="ine.mx o https://www.ine.mx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyPdTarget" placeholder="ine.mx o https://www.ine.mx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Si esta vacio usa Dominio objetivo del monitor</div>
       </div>
       <div class="api-row">
         <label>Limite / timeout</label>
-        <select id="keyPdLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyPdLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
           <option value="25">25 hallazgos</option>
           <option value="50" selected>50 hallazgos</option>
           <option value="100">100 hallazgos</option>
         </select>
-        <input type="number" id="keyPdTimeout" value="240" min="30" max="900" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="number" id="keyPdTimeout" value="240" min="30" max="900" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
       </div>
       <div class="api-row">
         <label>Naabu puertos</label>
-        <input type="text" id="keyPdPorts" placeholder="80,443,8080 o top-100" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyPdPorts" placeholder="80,443,8080 o top-100" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
       </div>
       <div class="api-row">
         <label>Nuclei filtros</label>
-        <input type="text" id="keyNucleiTemplates" placeholder="templates opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <input type="text" id="keyNucleiSeverity" placeholder="critical,high,medium" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <input type="text" id="keyNucleiTags" placeholder="cve,exposure,misconfig" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyNucleiTemplates" placeholder="templates opcional" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="text" id="keyNucleiSeverity" placeholder="critical,high,medium" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="text" id="keyNucleiTags" placeholder="cve,exposure,misconfig" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
       </div>
     </div>
   </div>
@@ -1062,20 +1082,20 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>API key</label>
-        <input type="password" id="keyUrlscanKey" placeholder="urlscan.io API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="password" id="keyUrlscanKey" placeholder="urlscan.io API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
       </div>
       <div class="api-row">
         <label>Visibilidad / tags</label>
-        <select id="keyUrlscanVisibility" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyUrlscanVisibility" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
           <option value="unlisted" selected>unlisted</option>
           <option value="private">private</option>
           <option value="public">public</option>
         </select>
-        <input type="text" id="keyUrlscanTags" value="ine-cti" placeholder="ine-cti phishing" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyUrlscanTags" value="ine-cti" placeholder="ine-cti phishing" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
       </div>
       <div class="api-row">
         <label>Limite</label>
-        <select id="keyUrlscanLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <select id="keyUrlscanLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="5">5 URLs</option>
           <option value="10" selected>10 URLs</option>
           <option value="20">20 URLs</option>
@@ -1086,7 +1106,7 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="testUrlscan()" style="font-size:13px;padding:9px 18px;">PROBAR URLSCAN</button>
       <button class="btn-scan" onclick="submitUrlscan()" style="font-size:13px;padding:9px 18px;">ANALIZAR URLS</button>
     </div>
-    <div id="urlscanStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="urlscanStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
@@ -1094,8 +1114,8 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Sigma rules path</label>
-        <input type="text" id="keySigmaRulesPath" placeholder="C:\ruta\sigma\rules" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <select id="keySigmaLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keySigmaRulesPath" placeholder="C:\ruta\sigma\rules" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keySigmaLimit" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="25">25 reglas</option>
           <option value="50" selected>50 reglas</option>
           <option value="100">100 reglas</option>
@@ -1103,13 +1123,13 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>YARA rules path</label>
-        <input type="text" id="keyYaraRulesPath" placeholder="C:\ruta\rules.yar" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyYaraRulesPath" placeholder="C:\ruta\rules.yar" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
       </div>
       <div class="api-row">
         <label>Documentos / limite</label>
-        <input type="text" id="keyYaraTargetPath" placeholder="C:\ruta\documentos" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
-        <input type="number" id="keyYaraMaxFiles" value="200" min="1" max="1000" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <input type="text" id="keyYaraTargetPath" placeholder="C:\ruta\documentos" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <input type="number" id="keyYaraMaxFiles" value="200" min="1" max="1000" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keyYaraRecursive" checked> Recursivo
         </label>
       </div>
@@ -1120,8 +1140,8 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="testYara()" style="font-size:13px;padding:9px 18px;">PROBAR YARA</button>
       <button class="btn-scan" onclick="scanYaraDocs()" style="font-size:13px;padding:9px 18px;">ESCANEAR DOCS</button>
     </div>
-    <div id="sigmaStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
-    <div id="yaraStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="sigmaStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="yaraStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
@@ -1129,27 +1149,27 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>AIL URL</label>
-        <input type="text" id="keyAilUrl" placeholder="https://localhost:7000" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyAilUrl" placeholder="https://localhost:7000" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Instancia externa AIL Framework</div>
       </div>
       <div class="api-row">
         <label>AIL API Key</label>
-        <input type="password" id="keyAilKey" placeholder="AIL API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="password" id="keyAilKey" placeholder="AIL API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Se envia como header Authorization</div>
       </div>
       <div class="api-row">
         <label>AIL Tags</label>
-        <input type="text" id="keyAilTags" placeholder="ine-cti, osint" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyAilTags" placeholder="ine-cti, osint" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Opcional; separados por coma</div>
       </div>
       <div class="api-row">
         <label>AIL Tracker</label>
-        <select id="keyAilTrackerType" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
+        <select id="keyAilTrackerType" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:8px;">
           <option value="word">word</option>
           <option value="regex">regex</option>
           <option value="set">set</option>
         </select>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keyAilVerifyTls"> Verificar TLS
         </label>
       </div>
@@ -1159,7 +1179,7 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="exportToAil()" style="font-size:13px;padding:9px 18px;">ENVIAR HALLAZGOS</button>
       <button class="btn-scan" onclick="createAilTracker()" style="font-size:13px;padding:9px 18px;">CREAR TRACKER</button>
     </div>
-    <div id="ailStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="ailStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
@@ -1167,29 +1187,29 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>MISP URL</label>
-        <input type="text" id="keyMispUrl" placeholder="https://misp.local" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyMispUrl" placeholder="https://misp.local" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Instancia externa MISP</div>
       </div>
       <div class="api-row">
         <label>MISP API Key</label>
-        <input type="password" id="keyMispKey" placeholder="MISP API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="password" id="keyMispKey" placeholder="MISP API key" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Se envia como header Authorization</div>
       </div>
       <div class="api-row">
         <label>MISP Tags</label>
-        <input type="text" id="keyMispTags" placeholder="tlp:amber, osint, ine-cti" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyMispTags" placeholder="tlp:amber, osint, ine-cti" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Opcional; separados por coma</div>
       </div>
       <div class="api-row">
         <label>MISP Sharing</label>
-        <select id="keyMispDistribution" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
+        <select id="keyMispDistribution" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;margin-bottom:6px;">
           <option value="0">Your organisation only</option>
           <option value="1">This community only</option>
           <option value="2">Connected communities</option>
           <option value="3">All communities</option>
           <option value="5">Inherit event</option>
         </select>
-        <select id="keyMispThreatLevel" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <select id="keyMispThreatLevel" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="">Auto threat level</option>
           <option value="1">High</option>
           <option value="2">Medium</option>
@@ -1199,7 +1219,7 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>MISP Analysis</label>
-        <select id="keyMispAnalysis" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <select id="keyMispAnalysis" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
           <option value="0">Initial</option>
           <option value="1">Ongoing</option>
           <option value="2">Completed</option>
@@ -1207,10 +1227,10 @@ credencial-ine.com</textarea>
       </div>
       <div class="api-row">
         <label>MISP Flags</label>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">
           <input type="checkbox" id="keyMispVerifyTls"> Verificar TLS
         </label>
-        <label style="display:flex;align-items:center;gap:8px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
+        <label style="display:flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;">
           <input type="checkbox" id="keyMispPublish"> Publicar evento
         </label>
       </div>
@@ -1219,12 +1239,12 @@ credencial-ine.com</textarea>
       <button class="btn-scan" onclick="testMisp()" style="font-size:13px;padding:9px 18px;">PROBAR MISP</button>
       <button class="btn-scan" onclick="exportToMisp()" style="font-size:13px;padding:9px 18px;">ENVIAR EVENTO</button>
     </div>
-    <div id="mispStatus" style="display:none;margin-top:12px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
+    <div id="mispStatus" style="display:none;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:1.6;background:var(--bg-panel);padding:12px;border-radius:7px;border:1px solid var(--border);"></div>
   </div>
 
   <div class="card">
     <div class="card-title">Instrucciones de Instalación</div>
-    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--t2);line-height:2;background:var(--bg-panel);padding:16px;border-radius:7px;border:1px solid var(--border);">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2);line-height:2;background:var(--bg-panel);padding:16px;border-radius:7px;border:1px solid var(--border);">
       <span style="color:var(--t3)"># 1. Requisitos</span><br>
       Python 3.9+ &nbsp;|&nbsp; pip<br><br>
       <span style="color:var(--t3)"># 2. Instalar dependencias</span><br>
@@ -1239,7 +1259,7 @@ credencial-ine.com</textarea>
 
 <!-- FOOTER -->
 <footer>
-  <span>INE CTI MONITOR v3.0 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
+  <span>DOGUI CIBERPATRULLAJE v3.1 · USO OFICIAL EXCLUSIVO · SEGURIDAD INFORMÁTICA</span>
   <div class="exp-btns">
     <button class="exp-btn" onclick="exportData('csv')">⬇ CSV</button>
     <button class="exp-btn" onclick="exportData('json')">⬇ JSON</button>
@@ -1272,6 +1292,7 @@ let validated = [];
 let pendingValidation = [];
 let lastStats = {};
 let lastFileAnalysis = [];
+let backendOnline = false;
 let currentFindingFilter = 'all';
 let autoTimer = null;
 let pollTimer = null;
@@ -1301,8 +1322,10 @@ setInterval(()=>{
 function showTab(id, btn){
   document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('tab-'+id).classList.add('active');
-  btn.classList.add('active');
+  const panel = document.getElementById('tab-'+id);
+  if(panel) panel.classList.add('active');
+  const tabBtn = btn || Array.from(document.querySelectorAll('.tab')).find(t=>t.getAttribute('onclick')?.includes(`'${id}'`));
+  if(tabBtn) tabBtn.classList.add('active');
   if(id === 'dashboard') renderDashboard();
   if(id === 'watchlist') renderWatchlist();
   if(id === 'analisis') { renderFpRules(); updateDedupePanel(); }
@@ -1518,6 +1541,7 @@ renderWatchlist();
 renderFpRules();
 renderDashboard();
 updateDedupePanel();
+checkBackendHealth();
 
 function setAilStatus(msg, color='cyan'){
   const el = document.getElementById('ailStatus');
@@ -1528,14 +1552,39 @@ function setAilStatus(msg, color='cyan'){
 }
 
 async function postJson(path, body){
-  const r = await fetch(API+path, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(body)
-  });
+  let r;
+  try {
+    r = await fetch(API+path, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+  } catch(e){
+    throw new Error('Backend no disponible. Inicia python app.py para funciones reales.');
+  }
   const data = await r.json().catch(()=>({error:'Respuesta invalida'}));
-  if(!r.ok) throw new Error(data.error || data.message || r.statusText);
+  if(!r.ok) throw new Error(data.error || data.message || (backendOnline ? r.statusText : 'Backend no disponible. Inicia python app.py para funciones reales.'));
   return data;
+}
+
+async function checkBackendHealth(){
+  const modeText = document.getElementById('backendModeText');
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(()=>controller.abort(), 1800);
+    const r = await fetch(API+'/api/health', { signal: controller.signal });
+    clearTimeout(timer);
+    const data = await r.json();
+    backendOnline = !!r.ok;
+    if(backendOnline){
+      document.getElementById('sysStatus').textContent = 'BACKEND ACTIVO';
+      if(modeText) modeText.textContent = `Backend local activo · ${data.client || 'DOGUI'} v${data.version || 'ok'} · escaneos y exportaciones reales disponibles.`;
+      return;
+    }
+  } catch(e){}
+  backendOnline = false;
+  document.getElementById('sysStatus').textContent = 'MODO WEB DEMO';
+  if(modeText) modeText.textContent = 'Modo estático detectado. En GitHub Pages los escaneos se ejecutan como demo; para resultados reales inicia el backend con python app.py.';
 }
 
 function setIntegrationStatus(id, msg, color='cyan'){
@@ -1557,6 +1606,7 @@ function refreshStatsFromFindings(){
 }
 
 async function testAil(){
+  if(!backendOnline){ setAilStatus('Backend local no disponible. Inicia python app.py para probar AIL.', 'amber'); return; }
   try {
     setAilStatus('Probando conexion AIL...', 'cyan');
     const data = await postJson('/api/ail/test', { api_keys: getKeys() });
@@ -1567,6 +1617,7 @@ async function testAil(){
 }
 
 async function exportToAil(){
+  if(!backendOnline){ setAilStatus('Backend local no disponible. Inicia python app.py para enviar a AIL.', 'amber'); return; }
   if(!findings.length){ showNotif('No hay hallazgos para enviar a AIL','amber'); return; }
   try {
     setAilStatus('Enviando hallazgos a AIL...', 'cyan');
@@ -1580,6 +1631,7 @@ async function exportToAil(){
 }
 
 async function createAilTracker(){
+  if(!backendOnline){ setAilStatus('Backend local no disponible. Inicia python app.py para crear trackers AIL.', 'amber'); return; }
   const term = document.getElementById('searchTerm').value.trim() || 'INE';
   try {
     setAilStatus('Creando tracker AIL...', 'cyan');
@@ -1600,6 +1652,7 @@ function setMispStatus(msg, color='cyan'){
 }
 
 async function testMisp(){
+  if(!backendOnline){ setMispStatus('Backend local no disponible. Inicia python app.py para probar MISP.', 'amber'); return; }
   try {
     setMispStatus('Probando conexion MISP...', 'cyan');
     const data = await postJson('/api/misp/test', { api_keys: getKeys() });
@@ -1610,6 +1663,7 @@ async function testMisp(){
 }
 
 async function exportToMisp(){
+  if(!backendOnline){ setMispStatus('Backend local no disponible. Inicia python app.py para enviar a MISP.', 'amber'); return; }
   if(!findings.length){ showNotif('No hay hallazgos para enviar a MISP','amber'); return; }
   const term = document.getElementById('searchTerm').value.trim() || 'INE';
   try {
@@ -1617,7 +1671,7 @@ async function exportToMisp(){
     const data = await postJson('/api/misp/export', {
       api_keys: getKeys(),
       findings,
-      info: `INE CTI Monitor - ${term}`
+      info: `Dogui Ciberpatrullaje - ${term}`
     });
     setMispStatus(`MISP evento ${data.event_id || data.event_uuid || 'creado'} | atributos: ${data.attributes || 0}`, 'green');
   } catch(e){
@@ -1634,6 +1688,7 @@ function setAppriseStatus(msg, color='cyan'){
 }
 
 async function testApprise(){
+  if(!backendOnline){ setAppriseStatus('Backend local no disponible. Inicia python app.py para probar Apprise.', 'amber'); return; }
   try {
     setAppriseStatus('Enviando prueba Apprise...', 'cyan');
     const data = await postJson('/api/apprise/test', { api_keys: getKeys() });
@@ -1644,6 +1699,7 @@ async function testApprise(){
 }
 
 async function notifyApprise(){
+  if(!backendOnline){ setAppriseStatus('Backend local no disponible. Inicia python app.py para enviar notificaciones.', 'amber'); return; }
   const term = document.getElementById('searchTerm').value.trim() || 'INE';
   const domain = document.getElementById('searchDomain').value.trim() || 'ine.mx';
   try {
@@ -1886,10 +1942,39 @@ async function scanYaraDocs(){
   }
 }
 
+function activeModuleIds(){
+  return Array.from(document.querySelectorAll('.cbi.on')).map(e=>e.dataset.val);
+}
+
+async function startDashboardScan(){
+  showTab('monitor');
+  await startScan();
+}
+
+function loadDemoFindings(){
+  const ts = ()=>new Date().toLocaleTimeString('es-MX',{hour12:false});
+  findings = dedupeFindings(demoData.map(item=>({...item, detected:ts()}))).findings;
+  pendingValidation = [];
+  lastStats = {
+    sources_scanned: new Set(findings.map(f=>f.source_id || f.source)).size,
+    total_findings: findings.length,
+    high_critical: findings.filter(f=>severityRank(f.risk)>=3).length,
+    repos: findings.filter(f=>f.category_class==='cat-repo').length,
+    cloud: findings.filter(f=>f.category_class==='cat-cloud').length,
+    darkweb: findings.filter(f=>f.category_class==='cat-dark').length,
+  };
+  document.getElementById('sS').textContent = lastStats.sources_scanned;
+  refreshStatsFromFindings();
+  renderFindings();
+  syncValidationQueue();
+  updateVQBadge();
+  showNotif('Demo cargado con hallazgos operativos', 'green');
+}
+
 async function startScan(){
   const term    = document.getElementById('searchTerm').value.trim() || 'INE';
   const domain  = document.getElementById('searchDomain').value.trim() || 'ine.mx';
-  const modules = Array.from(document.querySelectorAll('.cbi.on')).map(e=>e.dataset.val);
+  const modules = activeModuleIds();
 
   if(!modules.length){ showNotif('Selecciona al menos un módulo','red'); return; }
 
@@ -1994,7 +2079,13 @@ async function pollStatus(){
       document.getElementById('sysStatus').textContent = 'COMPLETADO';
       scheduleAutoScan();
     }
-  } catch(e){ stopPolling(); }
+  } catch(e){
+    stopPolling();
+    document.getElementById('btnScan').disabled = false;
+    document.getElementById('btnStop').classList.remove('show');
+    document.getElementById('sysStatus').textContent = backendOnline ? 'ERROR DE BACKEND' : 'MODO WEB DEMO';
+    showNotif(backendOnline ? 'No se pudo consultar el backend' : 'Backend no disponible; usa modo demo o inicia python app.py', 'amber');
+  }
 }
 
 // ─── RENDER FINDINGS TABLE ───
@@ -2456,7 +2547,7 @@ function keywordCounts(rows){
 
 function reportPayload(){
   return {
-    title: document.getElementById('reportTitle')?.value || 'Reporte ejecutivo CTI - INE',
+    title: document.getElementById('reportTitle')?.value || 'Reporte ejecutivo Dogui Ciberpatrullaje',
     classification: document.getElementById('reportClassification')?.value || 'Uso oficial exclusivo',
     term: document.getElementById('searchTerm')?.value || 'INE',
     domain: document.getElementById('searchDomain')?.value || 'ine.mx',
@@ -2475,7 +2566,7 @@ async function generateReportPdf(){
     const r = await fetch(API+'/api/report/pdf',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     if(r.ok){
       const blob = await r.blob();
-      downloadBlob(blob, 'cti-ine-reporte-ejecutivo.pdf');
+      downloadBlob(blob, 'dogui-ciberpatrullaje-reporte-ejecutivo.pdf');
       setStatus('reportStatus','Reporte PDF generado desde backend','green');
       return;
     }
@@ -2784,7 +2875,7 @@ async function exportData(type){
 }
 
 function exportFilename(type){
-  return {csv:'cti-ine-findings.csv',json:'cti-ine-findings.json',excel:'cti-ine-findings.xlsx',stix:'cti-ine-stix-bundle.json'}[type] || 'cti-export.dat';
+  return {csv:'dogui-ciberpatrullaje-findings.csv',json:'dogui-ciberpatrullaje-findings.json',excel:'dogui-ciberpatrullaje-findings.xlsx',stix:'dogui-ciberpatrullaje-stix-bundle.json'}[type] || 'dogui-export.dat';
 }
 
 function toCsv(rows){
@@ -2810,13 +2901,13 @@ function toStix(rows){
         id:'indicator--'+cryptoId(f.url||f.title),
         created:now,
         modified:now,
-        name:String(f.title||'INE CTI finding').slice(0,250),
+        name:String(f.title||'Dogui Ciberpatrullaje finding').slice(0,250),
         description:String(f.detail||''),
         pattern:domain ? `[domain-name:value = '${domain}']` : `[url:value = '${String(f.url||'').replace(/'/g,'')}']`,
         pattern_type:'stix',
         valid_from:now,
-        labels:['ine-cti', normalizeRisk(f.risk).toLowerCase()],
-        external_references:[{source_name:f.source||'INE CTI Monitor', url:f.url||''}]
+        labels:['dogui-ciberpatrullaje', normalizeRisk(f.risk).toLowerCase()],
+        external_references:[{source_name:f.source||'Dogui Ciberpatrullaje', url:f.url||''}]
       };
     })
   };
@@ -2876,7 +2967,7 @@ function truncate(s,n){ return s&&s.length>n?s.substring(0,n)+'…':s; }
 
 function showNotif(msg, color='cyan'){
   const n = document.createElement('div');
-  n.style.cssText = `position:fixed;top:20px;right:20px;z-index:999;background:var(--bg-card);border:1px solid var(--${color});color:var(--${color});font-family:'Share Tech Mono',monospace;font-size:12px;padding:12px 20px;border-radius:7px;box-shadow:0 0 20px rgba(0,0,0,.5);animation:si .2s ease;`;
+  n.style.cssText = `position:fixed;top:20px;right:20px;z-index:999;background:var(--bg-card);border:1px solid var(--${color});color:var(--${color});font-family:'JetBrains Mono',monospace;font-size:12px;padding:12px 20px;border-radius:7px;box-shadow:0 0 20px rgba(0,0,0,.5);animation:si .2s ease;`;
   n.textContent = msg;
   document.body.appendChild(n);
   setTimeout(()=>n.remove(), 3500);

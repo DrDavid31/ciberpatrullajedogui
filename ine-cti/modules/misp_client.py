@@ -105,7 +105,7 @@ def _finding_comment(finding):
 
 
 def _attributes_for_finding(finding):
-    title = str(finding.get("title") or "Hallazgo INE CTI").strip()
+    title = str(finding.get("title") or "Hallazgo Dogui Ciberpatrullaje").strip()
     url = str(finding.get("url") or "").strip()
     raw = str(finding.get("raw") or "").strip()
     comment = _finding_comment(finding)
@@ -205,7 +205,7 @@ def export_findings(
 
     distribution = as_int(distribution, 0, {0, 1, 2, 3, 4, 5})
     analysis = as_int(analysis, 0, {0, 1, 2})
-    info = (info or f"INE CTI Monitor - {date.today().isoformat()}").strip()
+    info = (info or f"Dogui Ciberpatrullaje - {date.today().isoformat()}").strip()
 
     payload, filtered = build_event(
         filtered,
