@@ -66,7 +66,7 @@ def _observable_from_finding(finding):
 
 
 def create_alert(base_url, api_key, finding, org=None, verify_tls=True):
-    title = finding.get("title") or "INE CTI Monitor finding"
+    title = finding.get("title") or "Dogui Ciberpatrullaje finding"
     severity = 3 if finding.get("risk") in ("CRITICO", "CRÍTICO") else 2 if finding.get("risk") == "ALTO" else 1
     payload = {
         "title": title[:512],
