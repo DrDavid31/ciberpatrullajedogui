@@ -83,7 +83,7 @@ def format_finding_text(finding, index):
         "raw": finding.get("raw", ""),
     }
     return (
-        "INE CTI Monitor finding\n"
+        "Dogui Ciberpatrullaje finding\n"
         f"Finding: {index}\n"
         f"Source: {payload['source']}\n"
         f"Risk: {payload['risk']}\n"
@@ -157,7 +157,7 @@ def create_tracker(base_url, api_key, term, tracker_type="word", tags=None, veri
         "term": term,
         "type": tracker_type,
         "level": 1,
-        "description": "Creado desde INE CTI Monitor",
+        "description": "Creado desde Dogui Ciberpatrullaje",
     }
     if tracker_type == "set":
         payload["nb_words"] = 2
