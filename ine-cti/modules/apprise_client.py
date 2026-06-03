@@ -56,7 +56,7 @@ def send_notification(raw_urls, title, body, notify_type="info"):
 def test_connection(raw_urls):
     return send_notification(
         raw_urls,
-        "INE CTI Monitor - prueba Apprise",
+        "Dogui Ciberpatrullaje - prueba Apprise",
         "La integracion Apprise esta funcionando correctamente.",
         "success",
     )
