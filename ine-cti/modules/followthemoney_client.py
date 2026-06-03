@@ -52,7 +52,7 @@ def normalize_findings(findings, dataset="ine-cti-monitor", limit=100):
 
 def test_normalizer():
     sample = normalize_findings([{
-        "source": "INE CTI Monitor",
+        "source": "Dogui Ciberpatrullaje",
         "title": "Prueba FollowTheMoney",
         "url": "https://example.com",
         "detail": "Entidad de prueba",
