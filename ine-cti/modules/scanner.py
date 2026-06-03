@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-INE CTI Scanner — Módulos de búsqueda adaptados de SpiderFoot + DarkSearch
+Dogui Ciberpatrullaje Scanner — Módulos de búsqueda adaptados de SpiderFoot + DarkSearch
 Uso: monitoreo OSINT defensivo de información del INE expuesta públicamente
 """
 
