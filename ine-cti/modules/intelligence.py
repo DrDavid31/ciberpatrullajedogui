@@ -465,7 +465,7 @@ def report_lines(payload):
     dashboard = build_dashboard(findings, stats, payload.get("validated"), payload.get("watchlist"))
     critical = [f for f in findings if severity_rank(f.get("risk")) >= 3][:15]
     lines = [
-        "INE CTI Monitor - Reporte Ejecutivo",
+        "Dogui Ciberpatrullaje - Reporte Ejecutivo",
         f"Generado: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
         "",
         "Resumen ejecutivo",
@@ -685,13 +685,13 @@ def export_stix(findings):
             "id": object_id,
             "created": now,
             "modified": now,
-            "name": str(finding.get("title") or "INE CTI finding")[:250],
+            "name": str(finding.get("title") or "Dogui Ciberpatrullaje finding")[:250],
             "description": str(finding.get("detail") or ""),
             "pattern": pattern,
             "pattern_type": "stix",
             "valid_from": now,
             "labels": ["ine-cti", normalize_risk(finding.get("risk")).lower()],
-            "external_references": [{"source_name": str(finding.get("source") or "INE CTI Monitor"), "url": str(finding.get("url") or "")}],
+            "external_references": [{"source_name": str(finding.get("source") or "Dogui Ciberpatrullaje"), "url": str(finding.get("url") or "")}],
         })
     return {
         "type": "bundle",
