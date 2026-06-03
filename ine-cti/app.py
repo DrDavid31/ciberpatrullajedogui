@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-INE CTI Monitor — Backend Flask
+Dogui Ciberpatrullaje — Backend Flask
 Ejecutar: python app.py
 Acceder:  http://localhost:5000
 """
@@ -306,7 +306,7 @@ def maybe_send_apprise_summary(term, domain, api_keys):
         return
 
     notify_type = "warning" if high_count > 0 else "success"
-    title = f"INE CTI Monitor - {scan_state['stats'].get('total_findings', 0)} hallazgo(s)"
+    title = f"Dogui Ciberpatrullaje - {scan_state['stats'].get('total_findings', 0)} hallazgo(s)"
     try:
         result = apprise_send_notification(cfg["urls"], title, scan_summary_text(term, domain), notify_type)
         log(f"Apprise notificacion enviada a {result.get('targets')} destino(s)", "ok")
@@ -582,7 +582,7 @@ def export_json():
         "findings": scan_state["findings"],
     }, ensure_ascii=False, indent=2)
     return Response(payload, mimetype="application/json",
-                    headers={"Content-Disposition": "attachment;filename=cti-ine-findings.json"})
+                    headers={"Content-Disposition": "attachment;filename=dogui-ciberpatrullaje-findings.json"})
 
 
 @app.route("/api/export/csv")
@@ -597,7 +597,7 @@ def export_csv():
                          f.get("category",""), f.get("risk",""),
                          f.get("url",""), f.get("detail",""), f.get("detected","")])
     return Response(output.getvalue(), mimetype="text/csv",
-                    headers={"Content-Disposition": "attachment;filename=cti-ine-findings.csv"})
+                    headers={"Content-Disposition": "attachment;filename=dogui-ciberpatrullaje-findings.csv"})
 
 
 @app.route("/api/export/excel", methods=["GET", "POST"])
@@ -608,7 +608,7 @@ def export_excel():
     return Response(
         payload,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        headers={"Content-Disposition": "attachment;filename=cti-ine-findings.xlsx"},
+        headers={"Content-Disposition": "attachment;filename=dogui-ciberpatrullaje-findings.xlsx"},
     )
 
 
@@ -620,7 +620,7 @@ def export_stix_bundle():
     return Response(
         payload,
         mimetype="application/stix+json",
-        headers={"Content-Disposition": "attachment;filename=cti-ine-stix-bundle.json"},
+        headers={"Content-Disposition": "attachment;filename=dogui-ciberpatrullaje-stix-bundle.json"},
     )
 
 
@@ -635,7 +635,7 @@ def report_pdf():
     return Response(
         payload,
         mimetype="application/pdf",
-        headers={"Content-Disposition": "attachment;filename=cti-ine-reporte-ejecutivo.pdf"},
+        headers={"Content-Disposition": "attachment;filename=dogui-ciberpatrullaje-reporte-ejecutivo.pdf"},
     )
 
 
@@ -782,7 +782,7 @@ def misp_export():
     data = request.json or {}
     cfg = misp_config(data)
     findings = data.get("findings") or scan_state["findings"]
-    info = data.get("info") or f"INE CTI Monitor - {datetime.now().strftime('%Y-%m-%d')}"
+    info = data.get("info") or f"Dogui Ciberpatrullaje - {datetime.now().strftime('%Y-%m-%d')}"
     try:
         result = misp_export_findings(
             cfg["base_url"],
@@ -818,7 +818,7 @@ def apprise_test():
 def apprise_notify():
     data = request.json or {}
     cfg = apprise_config(data)
-    title = data.get("title") or "INE CTI Monitor - resumen"
+    title = data.get("title") or "Dogui Ciberpatrullaje - resumen"
     body = data.get("body") or scan_summary_text(
         data.get("term", "INE"),
         data.get("domain", "ine.mx"),
@@ -1100,8 +1100,8 @@ def yara_scan():
 def health():
     return jsonify({
         "status": "ok",
-        "version": "3.0",
-        "client": "INE",
+        "version": "3.1",
+        "client": "DOGUI",
         "executive_dashboard": True,
         "report_generator": True,
         "excel_export": True,
@@ -1136,7 +1136,7 @@ def health():
 
 if __name__ == "__main__":
     print("\n" + "="*55)
-    print("  INE CTI MONITOR — Backend iniciado")
+    print("  DOGUI CIBERPATRULLAJE — Backend iniciado")
     print("  URL: http://localhost:5000")
     print("="*55 + "\n")
     app.run(host="0.0.0.0", port=5000, debug=False)
