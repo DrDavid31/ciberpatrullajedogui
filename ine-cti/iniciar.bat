@@ -2,8 +2,8 @@
 chcp 65001 > nul
 echo.
 echo  ═══════════════════════════════════════════════════════
-echo   INE CTI MONITOR v2.0
-echo   Inteligencia de Amenazas Cibernéticas
+echo   DOGUI CIBERPATRULLAJE v3.1
+echo   Centro de inteligencia, monitoreo y respuesta digital
 echo  ═══════════════════════════════════════════════════════
 echo.
 
