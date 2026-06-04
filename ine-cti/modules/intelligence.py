@@ -16,40 +16,42 @@ from xml.sax.saxutils import escape as xml_escape
 
 
 DEFAULT_WATCHLIST = {
-    "Identidad": ["CURP", "RFC", "INE", "OCR", "CIC"],
-    "Electoral": [
-        "padron electoral",
-        "lista nominal",
-        "seccion electoral",
-        "casilla",
-        "clave de elector",
-        "credencial para votar",
-        "Instituto Nacional Electoral",
+    "Identidad": ["CURP", "RFC", "DNI", "pasaporte", "OCR", "CIC"],
+    "Credenciales": [
+        "password",
+        "contraseña",
+        "api key",
+        "token",
+        "secret",
+        "credenciales",
     ],
     "Riesgo digital": [
         "database",
         "dump",
         "sql",
-        "password",
-        "api key",
-        "token",
-        "credenciales",
+        "backup",
+        "xlsx",
+        "csv",
+        "confidencial",
+    ],
+    "Infraestructura": [
+        "admin",
+        "login",
+        "vpn",
+        "bucket",
+        "blob",
+        "subdomain",
+        "exposed",
     ],
 }
 
 
 DEFAULT_FP_RULES = [
     {
-        "type": "domain",
-        "value": "ine.mx",
-        "reason": "Dominio oficial del INE",
-        "enabled": True,
-    },
-    {
         "type": "keyword",
         "value": "comunicado oficial",
         "reason": "Contenido publico oficial",
-        "enabled": True,
+        "enabled": False,
     },
     {
         "type": "keyword",
@@ -116,10 +118,17 @@ def root_domain(domain):
     parts = [p for p in str(domain or "").lower().strip(".").split(".") if p]
     if len(parts) <= 2:
         return ".".join(parts)
+    two_level_suffixes = {
+        "gob.mx", "com.mx", "org.mx", "net.mx", "edu.mx",
+        "gov.uk", "co.uk", "org.uk", "com.br", "com.ar", "com.co",
+    }
+    suffix2 = ".".join(parts[-2:])
+    if suffix2 in two_level_suffixes:
+        return ".".join(parts[-3:])
     return ".".join(parts[-2:])
 
 
-def is_official_domain(domain, official="ine.mx"):
+def is_official_domain(domain, official=""):
     domain = str(domain or "").lower().strip(".")
     official = str(official or "").lower().strip(".")
     return bool(domain and official and (domain == official or domain.endswith("." + official)))
@@ -242,7 +251,7 @@ def count_credentials(findings):
     return total
 
 
-def build_dashboard(findings, stats=None, validations=None, watchlist=None, false_positive_rules=None):
+def build_dashboard(findings, stats=None, validations=None, watchlist=None, false_positive_rules=None, official_domain=""):
     deduped = deduplicate_findings(findings or [])
     rows = deduped["findings"]
     today = date.today().isoformat()
@@ -251,10 +260,10 @@ def build_dashboard(findings, stats=None, validations=None, watchlist=None, fals
     by_day = Counter(_date_key(f) for f in rows)
     domains = [extract_domain(f.get("url")) for f in rows]
     domains = [d for d in domains if d]
-    official = "ine.mx"
+    official = str(official_domain or "").strip().lower()
     suspicious_domains = sorted({
         d for d in domains
-        if not is_official_domain(d, official)
+        if (not official or not is_official_domain(d, official))
         and (severity_rank(next((f.get("risk") for f in rows if extract_domain(f.get("url")) == d), "")) >= 2)
     })
     closed = sum(1 for v in validations or [] if str(v.get("validation", "")).upper() in ("CONFIRMADO", "FALSO POSITIVO"))
@@ -325,7 +334,9 @@ def apply_false_positive_rules(findings, rules=None):
 
 
 def analyze_typosquatting(target_domain, candidates=None):
-    target = root_domain(target_domain or "ine.mx")
+    target = root_domain(target_domain or "")
+    if not target:
+        return []
     target_label = target.split(".")[0]
     rows = []
     for raw in candidates or []:
@@ -460,9 +471,9 @@ def read_file_for_analysis(path, max_bytes=5_000_000):
 def report_lines(payload):
     findings = payload.get("findings") or []
     stats = payload.get("stats") or {}
-    term = payload.get("term") or "INE"
-    domain = payload.get("domain") or "ine.mx"
-    dashboard = build_dashboard(findings, stats, payload.get("validated"), payload.get("watchlist"))
+    term = payload.get("term") or "Objetivo no especificado"
+    domain = payload.get("domain") or "Sin dominio especifico"
+    dashboard = build_dashboard(findings, stats, payload.get("validated"), payload.get("watchlist"), official_domain=payload.get("domain") or "")
     critical = [f for f in findings if severity_rank(f.get("risk")) >= 3][:15]
     lines = [
         "Dogui Ciberpatrullaje - Reporte Ejecutivo",
@@ -506,7 +517,7 @@ def report_lines(payload):
         "- Validar hallazgos criticos y crear casos SOC cuando aplique.",
         "- Rotar credenciales expuestas y revisar historial de acceso.",
         "- Solicitar baja de dominios de suplantacion y reforzar monitoreo.",
-        "- Mantener watchlist de palabras clave electorales e identidad.",
+        "- Mantener watchlist de palabras clave alineada al objetivo monitoreado.",
         "",
         "Anexos",
         "Incluye exportaciones CSV, JSON, Excel y STIX 2.1 para intercambio CTI.",

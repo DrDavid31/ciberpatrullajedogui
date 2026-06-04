@@ -69,7 +69,7 @@ def search_entities(base_url, query, api_key=None, schemata=None, limit=10, veri
 
 
 def test_connection(base_url, api_key=None, verify_tls=True):
-    findings = search_entities(base_url, "INE", api_key, limit=1, verify_tls=verify_tls)
+    findings = search_entities(base_url, "dogui", api_key, limit=1, verify_tls=verify_tls)
     return {
         "status": "ok",
         "message": "Conexion Aleph correcta",

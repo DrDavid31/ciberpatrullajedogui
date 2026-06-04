@@ -176,8 +176,8 @@ Agrégalas en la pestaña **Configuración** del monitor:
 ```json
 POST /api/scan/start
 {
-  "term": "INE",
-  "domain": "ine.mx",
+  "term": "banobras",
+  "domain": "banobras.gob.mx",
   "modules": ["github", "pastebin", "aws", "ahmia", "darksearch", "onionsearch", "trufflehog", "gitleaks", "socialanalyzer", "changedetection", "aleph", "subfinder", "httpx", "naabu", "nuclei"],
   "api_keys": {
     "github": "ghp_xxxx",
@@ -199,7 +199,7 @@ POST /api/scan/start
     "gitleaks_limit": 20,
     "gitleaks_max_mb": "",
     "gitleaks_log_opts": "",
-    "social_username": "INE",
+    "social_username": "banobras",
     "social_websites": "github youtube tiktok",
     "social_countries": "mx us",
     "social_mode": "fast",
@@ -240,7 +240,7 @@ POST /api/scan/start
     "shuffle_token": "",
     "shuffle_limit": 20,
     "shuffle_verify_tls": true,
-    "pd_target": "ine.mx",
+    "pd_target": "banobras.gob.mx",
     "pd_limit": 50,
     "pd_timeout": 240,
     "pd_ports": "80,443",

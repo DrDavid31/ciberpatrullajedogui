@@ -43,7 +43,7 @@ def test_connection(webhook_url, verify_tls=True):
     )
 
 
-def export_findings(webhook_url, findings, term="INE", domain="ine.mx", limit=20, verify_tls=True):
+def export_findings(webhook_url, findings, term="", domain="", limit=20, verify_tls=True):
     sent = []
     errors = []
     for finding in (findings or [])[: int(limit or 20)]:

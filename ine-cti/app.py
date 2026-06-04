@@ -7,9 +7,11 @@ Acceder:  http://localhost:5000
 
 import json
 import os
+import re
 import threading
 import time
 from datetime import datetime
+from urllib.parse import urlparse
 from flask import Flask, jsonify, request, send_from_directory, Response
 from flask_cors import CORS
 
@@ -118,6 +120,8 @@ scan_state = {
     },
     "started_at": None,
     "finished_at": None,
+    "term": "",
+    "domain": "",
 }
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
@@ -125,6 +129,61 @@ RESULTS_FILE = os.path.join(RESULTS_DIR, "findings.json")
 WATCHLIST_FILE = os.path.join(RESULTS_DIR, "watchlist.json")
 FP_RULES_FILE = os.path.join(RESULTS_DIR, "false_positive_rules.json")
 os.makedirs(RESULTS_DIR, exist_ok=True)
+
+
+KNOWN_TARGET_DOMAINS = {
+    "ine": "ine.mx",
+    "instituto nacional electoral": "ine.mx",
+    "banobras": "banobras.gob.mx",
+    "banco nacional de obras": "banobras.gob.mx",
+    "imss": "imss.gob.mx",
+    "issste": "issste.gob.mx",
+    "cfe": "cfe.mx",
+    "comision federal de electricidad": "cfe.mx",
+    "sat": "sat.gob.mx",
+    "servicio de administracion tributaria": "sat.gob.mx",
+    "unam": "unam.mx",
+    "ipn": "ipn.mx",
+}
+
+
+def normalize_search_term(value):
+    return str(value or "").strip().strip("\"'")
+
+
+def normalize_domain(value):
+    text = str(value or "").strip().lower()
+    if not text:
+        return ""
+    if "@" in text and "://" not in text:
+        text = text.rsplit("@", 1)[-1]
+    if "://" in text:
+        parsed = urlparse(text)
+        text = parsed.netloc or parsed.path.split("/")[0]
+    text = text.split("@")[-1].split("/")[0].split(":")[0].strip(".")
+    text = re.sub(r"[^a-z0-9.-]", "", text)
+    return text[4:] if text.startswith("www.") else text
+
+
+def looks_like_domain(value):
+    return bool(re.fullmatch(r"[a-z0-9.-]+\.[a-z]{2,}", normalize_domain(value)))
+
+
+def infer_domain_from_term(term):
+    text = normalize_search_term(term)
+    low = text.lower()
+    if not low:
+        return ""
+    if "@" in low or looks_like_domain(low):
+        return normalize_domain(low)
+    plain = (
+        low.replace("á", "a").replace("é", "e").replace("í", "i")
+        .replace("ó", "o").replace("ú", "u").replace("ü", "u")
+    )
+    for needle, domain in KNOWN_TARGET_DOMAINS.items():
+        if re.search(rf"\b{re.escape(needle)}\b", plain):
+            return domain
+    return ""
 
 
 def as_bool(value):
@@ -269,7 +328,7 @@ def yara_config(data):
     }
 
 
-def scan_summary_text(term="INE", domain="ine.mx"):
+def scan_summary_text(term="", domain=""):
     stats = scan_state.get("stats", {})
     lines = [
         f"Termino: {term}",
@@ -365,6 +424,8 @@ def run_scan(term, domain, active_modules, api_keys):
     scan_state["findings"] = []
     scan_state["started_at"] = datetime.now().isoformat()
     scan_state["finished_at"] = None
+    scan_state["term"] = term
+    scan_state["domain"] = domain
     for k in scan_state["stats"]:
         scan_state["stats"][k] = 0
 
@@ -525,8 +586,10 @@ def start_scan():
         return jsonify({"error": "Ya hay un escaneo en curso"}), 409
 
     data = request.json or {}
-    term           = data.get("term", "INE").strip() or "INE"
-    domain         = data.get("domain", "ine.mx").strip() or "ine.mx"
+    term           = normalize_search_term(data.get("term"))
+    if not term:
+        return jsonify({"error": "Termino de busqueda requerido"}), 400
+    domain         = normalize_domain(data.get("domain")) or infer_domain_from_term(term)
     active_modules = data.get("modules", ["github","pastebin","googledrive",
                                            "filerepos","aws","azure","gcloud",
                                            "ahmia","darksearch","onionsearch",
@@ -575,7 +638,8 @@ def export_json():
     from flask import Response
     payload = json.dumps({
         "meta": {
-            "term": "INE",
+            "term": scan_state.get("term", ""),
+            "domain": scan_state.get("domain", ""),
             "started_at": scan_state["started_at"],
             "stats": scan_state["stats"],
         },
@@ -647,7 +711,8 @@ def intel_dashboard():
     watchlist = data.get("watchlist") or load_json(WATCHLIST_FILE, DEFAULT_WATCHLIST)
     rules = data.get("false_positive_rules") or load_json(FP_RULES_FILE, DEFAULT_FP_RULES)
     reviewed = apply_false_positive_rules(findings, rules)
-    dashboard = build_dashboard(reviewed["findings"], stats, data.get("validated"), watchlist, rules)
+    official_domain = normalize_domain(data.get("domain")) or scan_state.get("domain", "")
+    dashboard = build_dashboard(reviewed["findings"], stats, data.get("validated"), watchlist, rules, official_domain=official_domain)
     dashboard["false_positives"] = {
         "count": reviewed["count"],
         "matches": reviewed["matches"],
@@ -692,7 +757,9 @@ def false_positive_rules_api():
 @app.route("/api/typosquatting/analyze", methods=["POST"])
 def typosquatting_api():
     data = request.json or {}
-    target = data.get("target") or "ine.mx"
+    target = normalize_domain(data.get("target")) or infer_domain_from_term(data.get("term", ""))
+    if not target:
+        return jsonify({"error": "Dominio base requerido para typosquatting"}), 400
     candidates = data.get("domains") or []
     if isinstance(candidates, str):
         candidates = [x.strip() for x in candidates.replace("\r", "\n").split("\n") if x.strip()]
@@ -749,7 +816,9 @@ def ail_export():
 def ail_tracker():
     data = request.json or {}
     cfg = ail_config(data)
-    term = data.get("term", "INE")
+    term = normalize_search_term(data.get("term"))
+    if not term:
+        return jsonify({"status": "error", "error": "Termino requerido para crear tracker"}), 400
     try:
         result = ail_create_tracker(
             cfg["base_url"],
@@ -819,9 +888,11 @@ def apprise_notify():
     data = request.json or {}
     cfg = apprise_config(data)
     title = data.get("title") or "Dogui Ciberpatrullaje - resumen"
+    term = normalize_search_term(data.get("term")) or scan_state.get("term", "")
+    domain = normalize_domain(data.get("domain")) or scan_state.get("domain", "") or infer_domain_from_term(term)
     body = data.get("body") or scan_summary_text(
-        data.get("term", "INE"),
-        data.get("domain", "ine.mx"),
+        term,
+        domain,
     )
     notify_type = data.get("type") or (
         "warning" if scan_state["stats"].get("high_critical", 0) else "info"
@@ -883,12 +954,14 @@ def huginn_export():
     data = request.json or {}
     cfg = huginn_config(data)
     findings = data.get("findings") or scan_state["findings"]
+    term = normalize_search_term(data.get("term")) or scan_state.get("term", "")
+    domain = normalize_domain(data.get("domain")) or scan_state.get("domain", "") or infer_domain_from_term(term)
     try:
         result = huginn_export_findings(
             cfg["webhook_url"],
             findings,
-            data.get("term", "INE"),
-            data.get("domain", "ine.mx"),
+            term,
+            domain,
             cfg["limit"],
             cfg["verify_tls"],
         )
@@ -914,7 +987,9 @@ def aleph_test():
 def aleph_search():
     data = request.json or {}
     cfg = aleph_config(data)
-    query = data.get("term") or data.get("query") or "INE"
+    query = normalize_search_term(data.get("term") or data.get("query"))
+    if not query:
+        return jsonify({"status": "error", "error": "Termino requerido para buscar en Aleph"}), 400
     try:
         findings = aleph_search_entities(
             cfg["base_url"],
