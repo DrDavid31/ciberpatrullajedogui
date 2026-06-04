@@ -61,7 +61,8 @@ header{display:flex;align-items:center;justify-content:space-between;padding:18p
 .card-title::before{content:'';width:8px;height:8px;border-radius:2px;background:var(--cyan);box-shadow:0 0 16px rgba(45,212,191,.45);}
 
 /* CONFIG GRID */
-.cfg-grid{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:14px;align-items:end;}
+.cfg-grid{display:grid;grid-template-columns:minmax(220px,1.35fr) minmax(180px,1fr) minmax(135px,.7fr) minmax(135px,.7fr) minmax(175px,.9fr) auto;gap:14px;align-items:end;}
+@media(max-width:1100px){.cfg-grid{grid-template-columns:1fr 1fr 1fr;}}
 @media(max-width:900px){.cfg-grid{grid-template-columns:1fr 1fr;}}
 @media(max-width:600px){.cfg-grid{grid-template-columns:1fr;}}
 .fg{display:flex;flex-direction:column;gap:6px;}
@@ -357,6 +358,14 @@ footer span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3
         <input type="text" id="searchDomain" placeholder="opcional: ejemplo.com">
       </div>
       <div class="fg">
+        <label>Desde</label>
+        <input type="date" id="dateFrom">
+      </div>
+      <div class="fg">
+        <label>Hasta</label>
+        <input type="date" id="dateTo">
+      </div>
+      <div class="fg">
         <label>Intervalo de auto-scan</label>
         <select id="autoInterval">
           <option value="0">Manual (sin auto-scan)</option>
@@ -449,11 +458,11 @@ footer span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3
         <thead>
           <tr>
             <th>#</th><th>Fuente</th><th>Hallazgo</th><th>Categoría</th>
-            <th>Riesgo</th><th>Hora</th><th>Acción</th>
+            <th>Riesgo</th><th>Publicado</th><th>Detectado</th><th>Acción</th>
           </tr>
         </thead>
         <tbody id="findingsBody">
-          <tr><td colspan="7"><div class="empty"><div class="ei">SCAN</div>Ejecuta un escaneo para ver hallazgos</div></td></tr>
+          <tr><td colspan="8"><div class="empty"><div class="ei">SCAN</div>Ejecuta un escaneo para ver hallazgos</div></td></tr>
         </tbody>
       </table>
     </div>
@@ -1346,6 +1355,12 @@ document.getElementById('searchTerm')?.addEventListener('input',()=>{
     domainEl.value = inferDomainFromTerm(term);
   }
 });
+['dateFrom','dateTo'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('change',()=>{
+    renderFindings();
+    renderDashboard();
+  });
+});
 
 // ─── KEYS ───
 function getKeys(){
@@ -1961,10 +1976,11 @@ async function startDashboardScan(){
 }
 
 function loadDemoFindings(){
-  const {term, domain} = getScanContext();
+  const {term, domain, dateFrom, dateTo} = getScanContext();
   if(!term){ showNotif('Escribe qué quieres buscar','amber'); document.getElementById('searchTerm')?.focus(); return; }
+  if(isInvalidDateRange(dateFrom, dateTo)){ showNotif('Rango de fechas inválido','red'); return; }
   const ts = ()=>new Date().toLocaleTimeString('es-MX',{hour12:false});
-  findings = dedupeFindings(buildDemoData(term, domain).map(item=>({...item, detected:ts()}))).findings;
+  findings = dedupeFindings(buildDemoData(term, domain, dateFrom, dateTo).map(item=>({...item, detected:ts()}))).findings;
   pendingValidation = [];
   lastStats = {
     sources_scanned: new Set(findings.map(f=>f.source_id || f.source)).size,
@@ -1983,13 +1999,14 @@ function loadDemoFindings(){
 }
 
 async function startScan(){
-  const {term, domain} = getScanContext();
+  const {term, domain, dateFrom, dateTo} = getScanContext();
   if(!term){ showNotif('Escribe qué quieres buscar','amber'); document.getElementById('searchTerm')?.focus(); return; }
+  if(isInvalidDateRange(dateFrom, dateTo)){ showNotif('Rango de fechas inválido','red'); return; }
   const modules = activeModuleIds();
 
   if(!modules.length){ showNotif('Selecciona al menos un módulo','red'); return; }
 
-  const body = { term, domain, modules, api_keys: getKeys() };
+  const body = { term, domain, date_from: dateFrom, date_to: dateTo, modules, api_keys: getKeys() };
 
   try {
     const r = await fetch(API+'/api/scan/start',{
@@ -2016,7 +2033,7 @@ async function startScan(){
   } catch(e){
     // Backend no disponible — modo demo
     showNotif('Backend no disponible — modo demo activado','amber');
-    runDemoScan(term, domain, modules);
+    runDemoScan(term, domain, modules, dateFrom, dateTo);
   }
 }
 
@@ -2101,16 +2118,18 @@ async function pollStatus(){
 
 // ─── RENDER FINDINGS TABLE ───
 function renderFindings(){
-  const filtered = currentFindingFilter === 'all'
+  const {dateFrom, dateTo} = getScanContext();
+  const byRisk = currentFindingFilter === 'all'
     ? findings
     : findings.filter(f=>normalizeRisk(f.risk) === normalizeRisk(currentFindingFilter));
+  const filtered = byRisk.filter(f=>findingInUiDateRange(f, dateFrom, dateTo));
 
   document.getElementById('countBadge').textContent = filtered.length;
   renderMonitorFindings(filtered);
   const tbody = document.getElementById('findingsBody');
 
   if(!filtered.length){
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty"><div class="ei">🔍</div>Sin hallazgos${currentFindingFilter!=='all'?' para este filtro':' — ejecuta un escaneo'}</div></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8"><div class="empty"><div class="ei">🔍</div>Sin hallazgos${currentFindingFilter!=='all'?' para este filtro':' — ejecuta un escaneo'}</div></td></tr>`;
     return;
   }
 
@@ -2124,7 +2143,8 @@ function renderFindings(){
       </td>
       <td><span class="cat ${f.category_class||'cat-repo'}">${esc(f.category)}</span></td>
       <td><span class="risk ${riskClass(f.risk)}">${riskIcon(f.risk)} ${f.risk}</span></td>
-      <td class="td-time">${f.detected||''}</td>
+      <td class="td-time" title="${esc(formatDateTooltip(f))}">${esc(displayPublishedDate(f))}</td>
+      <td class="td-time">${esc(f.detected||'')}</td>
       <td class="td-act"><a href="${esc(f.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">VER →</a></td>
     </tr>
   `).join('');
@@ -2150,6 +2170,7 @@ function renderMonitorFindings(filtered){
           <span class="risk ${riskClass(f.risk)}">${riskIcon(f.risk)} ${f.risk}</span>
         </span>
         <span class="live-finding-title">${esc(truncate(f.title,80))}</span>
+        <span class="live-finding-detail">Publicado: ${esc(displayPublishedDate(f))} · Detectado: ${esc(f.detected||'')}</span>
         <span class="live-finding-detail">${esc(truncate(f.detail || f.url || '',110))}</span>
       </button>
     `;
@@ -2188,7 +2209,7 @@ function renderValidationQueue(){
         <div class="vq-title">${esc(truncate(f.title,80))}</div>
         <span class="risk ${riskClass(f.risk)}" style="flex-shrink:0;">${riskIcon(f.risk)} ${f.risk}</span>
       </div>
-      <div class="vq-meta">📡 ${esc(f.source)} &nbsp;|&nbsp; ${esc(f.category)} &nbsp;|&nbsp; 🕐 ${f.detected||''}</div>
+      <div class="vq-meta">📡 ${esc(f.source)} &nbsp;|&nbsp; ${esc(f.category)} &nbsp;|&nbsp; Publicado: ${esc(displayPublishedDate(f))} &nbsp;|&nbsp; 🕐 ${f.detected||''}</div>
       <div class="vq-detail">${esc(truncate(f.detail||'',120))}</div>
       <div class="vq-actions">
         <button class="vq-btn confirm" onclick="validateItem(${i},'CONFIRMADO')">🚨 Confirmar amenaza</button>
@@ -2321,14 +2342,25 @@ function getScanContext(){
   const domainEl = document.getElementById('searchDomain');
   const term = normalizeDemoTerm(termEl?.value || DEFAULT_TERM);
   let domain = normalizeDemoDomain(domainEl?.value || DEFAULT_DOMAIN);
+  const dateFrom = normalizeDateInput(document.getElementById('dateFrom')?.value || '');
+  const dateTo = normalizeDateInput(document.getElementById('dateTo')?.value || '');
   if(!domainTouched && !domain){
     domain = inferDomainFromTerm(term);
     if(domainEl) domainEl.value = domain;
   }
-  return {term, domain};
+  return {term, domain, dateFrom, dateTo};
 }
 
-function buildDemoData(term, domain){
+function normalizeDateInput(value){
+  const text = String(value || '').trim();
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? text : '';
+}
+
+function isInvalidDateRange(dateFrom, dateTo){
+  return !!(dateFrom && dateTo && dateFrom > dateTo);
+}
+
+function buildDemoData(term, domain, dateFrom='', dateTo=''){
   const target = normalizeDemoTerm(term);
   const targetUpper = target.toUpperCase();
   const slug = slugFromTerm(target);
@@ -2341,9 +2373,10 @@ function buildDemoData(term, domain){
   const typoRoot = host.replace(/\.(gob\.)?mx$/,'').replace(/\./g,'-') || slug;
   const typoDomain = `${typoRoot}-mx.com`;
   const orgLabel = targetUpper.length > 34 ? `${targetUpper.slice(0, 31)}...` : targetUpper;
+  const demoDates = demoPublicationDates(dateFrom, dateTo);
 
   return [
-    {source:'GitHub',source_id:'github',title:`Archivo config.env en repo público — referencia a ${orgLabel}`,url:repoUrl,category:'Código/Repositorio',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:`Dork de codigo para ${target}. Validar si contiene credenciales reales antes de escalar.`,detected:'',is_dork:true},
+    {source:'GitHub',source_id:'github',title:`Archivo config.env en repo público — referencia a ${orgLabel}`,url:repoUrl,category:'Código/Repositorio',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:`Dork de codigo para ${target}. Validar si contiene credenciales reales antes de escalar.`,detected:'',published_at:demoDates[0],date_source:'Fecha demo de repositorio',date_status:'Fecha simulada para modo demo',is_dork:true},
     {source:'Pastebin',source_id:'pastebin',title:`Google Dork: pastebin.com + "${target}"`,url:`https://www.google.com/search?q=site:pastebin.com+${qQuoted}`,category:'Pastebin/Leak',category_class:'cat-paste',risk:'CRÍTICO',risk_class:'risk-critical',detail:`Busqueda OSINT simulada para posibles leaks con menciones de ${target}.`,detected:'',is_dork:true},
     {source:'Google Drive/Docs',source_id:'googledrive',title:`Google Drive — archivos compartidos: "${target}"`,url:`https://www.google.com/search?q=site:drive.google.com+${qQuoted}`,category:'Repositorio Público',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:`Dork: site:drive.google.com "${target}"`,detected:'',is_dork:true},
     {source:'Dropbox/OneDrive/MEGA',source_id:'filerepos',title:`Repositorios de archivos relacionados con ${target}`,url:`https://www.google.com/search?q=(site:dropbox.com+OR+site:onedrive.live.com+OR+site:mega.nz)+${qQuoted}`,category:'Repositorio Público',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Busqueda simulada en repositorios de archivos compartidos.',detected:'',is_dork:true},
@@ -2367,10 +2400,28 @@ function buildDemoData(term, domain){
     {source:'Intelligence X',source_id:'intelx',title:`Intelligence X: documentos indexados de ${target}`,url:`https://intelx.io/?s=${q}`,category:'Investigacion Documental',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Busqueda demo de documentos, emails y artefactos historicos.',detected:'',is_dork:false},
     {source:'Typosquatting',source_id:'typosquatting',title:`Dominio similar detectado: ${typoDomain}`,url:`https://${typoDomain}`,category:'Dominio Sospechoso',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:`Similitud alta con ${host} | Posible phishing o suplantacion.`,detected:'',is_dork:false},
     {source:'Analisis de archivos',source_id:'file-analysis',title:`Archivo sensible: ${slug}_usuarios.csv`,url:`${slug}_usuarios.csv`,category:'Archivo sensible',category_class:'cat-leak',risk:'CRÍTICO',risk_class:'risk-critical',detail:`143 posibles identificadores, 87 correos y 12 menciones de ${target}. Demo hasta analizar archivos reales.`,detected:'',is_dork:false}
-  ];
+  ].map((item, index)=>({
+    ...item,
+    published_at: item.published_at || demoDates[index % demoDates.length],
+    date_source: item.date_source || 'Fecha demo',
+    date_status: item.date_status || 'Fecha simulada para modo demo'
+  }));
 }
 
-async function runDemoScan(term, domain, modules){
+function demoPublicationDates(dateFrom='', dateTo=''){
+  const end = dateTo ? new Date(dateTo + 'T00:00:00') : new Date();
+  const start = dateFrom ? new Date(dateFrom + 'T00:00:00') : new Date(end.getTime() - 21*86400000);
+  const safeStart = Number.isNaN(start.getTime()) ? new Date(end.getTime() - 21*86400000) : start;
+  const safeEnd = Number.isNaN(end.getTime()) || safeStart > end ? new Date(safeStart.getTime() + 21*86400000) : end;
+  const spanDays = Math.max(1, Math.floor((safeEnd - safeStart) / 86400000));
+  return Array.from({length:7}, (_,i)=>{
+    const offset = Math.floor((spanDays * i) / 6);
+    const d = new Date(safeStart.getTime() + offset*86400000);
+    return d.toISOString().slice(0,10);
+  });
+}
+
+async function runDemoScan(term, domain, modules, dateFrom='', dateTo=''){
   document.getElementById('btnScan').disabled = true;
   document.getElementById('btnStop').classList.add('show');
   document.getElementById('scanBox').classList.add('on');
@@ -2388,9 +2439,10 @@ async function runDemoScan(term, domain, modules){
     logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight;
   };
 
-  const demoFindings = buildDemoData(term, domain);
+  const demoFindings = buildDemoData(term, domain, dateFrom, dateTo);
   addLog(`Iniciando demo — término: "${term}"`, 'info');
   addLog(`Dominio objetivo demo: ${domain}`, 'info');
+  if(dateFrom || dateTo) addLog(`Filtro temporal demo: ${dateFrom || 'sin inicio'} a ${dateTo || 'sin fin'}`, 'info');
   const ts = ()=>new Date().toLocaleTimeString('es-MX',{hour12:false});
 
   for(let i=0;i<modules.length;i++){
@@ -2445,6 +2497,8 @@ function openModal(idx){
     <div class="mrow"><label>Categoría</label><div class="val"><span class="cat ${f.category_class||''}">${esc(f.category)}</span></div></div>
     <div class="mrow"><label>Riesgo</label><div class="val"><span class="risk ${riskClass(f.risk)}">${riskIcon(f.risk)} ${f.risk}</span></div></div>
     <div class="mrow"><label>URL</label><div class="val"><a href="${esc(f.url)}" target="_blank">${esc(f.url)}</a></div></div>
+    <div class="mrow"><label>Publicado/Indexado</label><div class="val">${esc(displayPublishedDate(f))}</div></div>
+    <div class="mrow"><label>Fuente de fecha</label><div class="val">${esc(formatDateTooltip(f))}</div></div>
     <div class="mrow"><label>Detectado</label><div class="val">${f.detected||'—'}</div></div>
   `;
   document.getElementById('modalLink').href = f.url;
@@ -2535,7 +2589,8 @@ function dedupeFindings(list){
 
 function dashboardModel(){
   const deduped = dedupeFindings(findings);
-  const rows = deduped.findings;
+  const {dateFrom, dateTo} = getScanContext();
+  const rows = deduped.findings.filter(f=>findingInUiDateRange(f, dateFrom, dateTo));
   const today = new Date().toISOString().slice(0,10);
   const bySource = countBy(rows, f=>f.source || 'Desconocida');
   const bySeverity = ['CRITICO','ALTO','MEDIO','BAJO'].map(k=>({label:k, value:rows.filter(f=>normalizeRisk(f.risk)===k).length}));
@@ -2622,6 +2677,34 @@ function dateKey(value){
   return new Date().toISOString().slice(0,10);
 }
 
+function publishedDateValue(f){
+  const raw = String(f?.published_at || f?.indexed_at || f?.source_date || f?.updated_at || '');
+  return /^\d{4}-\d{2}-\d{2}/.test(raw) ? raw.slice(0,10) : '';
+}
+
+function displayPublishedDate(f){
+  const value = publishedDateValue(f);
+  if(value) return value;
+  const start = normalizeDateInput(f?.date_range_from || '');
+  const end = normalizeDateInput(f?.date_range_to || '');
+  if(start || end) return `Rango aplicado: ${start || 'sin inicio'} a ${end || 'sin fin'}`;
+  return 'No disponible';
+}
+
+function formatDateTooltip(f){
+  const value = publishedDateValue(f);
+  const source = f?.date_source || f?.date_status || 'La fuente no entrega fecha de publicacion';
+  return value ? `${source}: ${value}` : `${source}: ${displayPublishedDate(f)}`;
+}
+
+function findingInUiDateRange(f, dateFrom='', dateTo=''){
+  const value = publishedDateValue(f);
+  if(!value) return true;
+  if(dateFrom && value < dateFrom) return false;
+  if(dateTo && value > dateTo) return false;
+  return true;
+}
+
 function isCredentialFinding(f){
   const text = [f.title,f.detail,f.category].join(' ').toLowerCase();
   return !!f.is_secret || ['api key','apikey','token','password','secret','credencial','credential','clave'].some(x=>text.includes(x));
@@ -2647,14 +2730,17 @@ function keywordCounts(rows){
 }
 
 function reportPayload(){
-  const {term, domain} = getScanContext();
+  const {term, domain, dateFrom, dateTo} = getScanContext();
+  const filteredFindings = findings.filter(f=>findingInUiDateRange(f, dateFrom, dateTo));
   return {
     title: document.getElementById('reportTitle')?.value || 'Reporte ejecutivo Dogui Ciberpatrullaje',
     classification: document.getElementById('reportClassification')?.value || 'Uso oficial exclusivo',
     term: term || 'Objetivo no especificado',
     domain: domain || 'Sin dominio especifico',
+    date_from: dateFrom,
+    date_to: dateTo,
     generated_at: new Date().toISOString(),
-    findings,
+    findings: filteredFindings,
     validated,
     watchlist,
     stats: lastStats,
@@ -2685,8 +2771,9 @@ function reportHtml(payload){
   const critical = payload.findings.filter(f=>severityRank(f.risk)>=3).slice(0,20);
   const sourceRows = m.charts.source.map(r=>`<li>${esc(r.label)}: ${r.value}</li>`).join('');
   const criticalRows = critical.length ? critical.map(f=>`
-    <tr><td>${esc(f.risk)}</td><td>${esc(f.source)}</td><td>${esc(f.title)}</td><td>${esc(f.url)}</td><td>${esc(f.detail||'')}</td></tr>
-  `).join('') : '<tr><td colspan="5">Sin hallazgos críticos.</td></tr>';
+    <tr><td>${esc(f.risk)}</td><td>${esc(f.source)}</td><td>${esc(displayPublishedDate(f))}</td><td>${esc(f.title)}</td><td>${esc(f.url)}</td><td>${esc(f.detail||'')}</td></tr>
+  `).join('') : '<tr><td colspan="6">Sin hallazgos críticos.</td></tr>';
+  const rangeText = `${payload.date_from || 'sin inicio'} a ${payload.date_to || 'sin fin'}`;
   return `<!doctype html><html><head><meta charset="utf-8"><title>${esc(payload.title)}</title>
   <style>body{font-family:Arial,sans-serif;color:#111;margin:34px;line-height:1.45}h1{font-size:24px}h2{font-size:16px;margin-top:22px;border-bottom:1px solid #ccc;padding-bottom:5px}table{width:100%;border-collapse:collapse;font-size:11px}td,th{border:1px solid #ccc;padding:6px;vertical-align:top}.k{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.k div{border:1px solid #ccc;padding:10px}.muted{color:#555;font-size:12px}</style>
   </head><body>
@@ -2694,9 +2781,9 @@ function reportHtml(payload){
   <h2>Resumen ejecutivo</h2><div class="k">
   <div><b>${m.kpis.total}</b><br>Hallazgos totales</div><div><b>${m.kpis.critical}</b><br>Críticos</div><div><b>${m.kpis.creds}</b><br>Credenciales</div><div><b>${m.kpis.domains}</b><br>Dominios sospechosos</div>
   </div>
-  <h2>Alcance del monitoreo</h2><p>Término: ${esc(payload.term)}. Dominio: ${esc(payload.domain)}. Fuentes OSINT, repositorios, nube pública, dark web indexada, CTI y análisis local.</p>
+  <h2>Alcance del monitoreo</h2><p>Término: ${esc(payload.term)}. Dominio: ${esc(payload.domain)}. Rango temporal: ${esc(rangeText)}. Fuentes OSINT, repositorios, nube pública, dark web indexada, CTI y análisis local.</p>
   <h2>Fuentes analizadas</h2><ul>${sourceRows || '<li>Sin fuentes registradas</li>'}</ul>
-  <h2>Hallazgos críticos y evidencia</h2><table><thead><tr><th>Riesgo</th><th>Fuente</th><th>Hallazgo</th><th>Evidencia</th><th>Detalle</th></tr></thead><tbody>${criticalRows}</tbody></table>
+  <h2>Hallazgos críticos y evidencia</h2><table><thead><tr><th>Riesgo</th><th>Fuente</th><th>Publicado</th><th>Hallazgo</th><th>Evidencia</th><th>Detalle</th></tr></thead><tbody>${criticalRows}</tbody></table>
   <h2>Análisis técnico</h2><p>Duplicados colapsados: ${m.kpis.dupes}. Casos abiertos: ${m.kpis.open}. Casos cerrados: ${m.kpis.closed}.</p>
   <h2>Riesgo</h2><p>Los hallazgos críticos o altos deben validarse, documentarse y escalarse como caso SOC cuando impliquen credenciales, datos personales, infraestructura expuesta o suplantación.</p>
   <h2>Recomendaciones</h2><ul><li>Validar evidencia y prioridad.</li><li>Rotar secretos expuestos.</li><li>Solicitar baja de dominios de phishing.</li><li>Ajustar reglas de falsos positivos y watchlist.</li></ul>
@@ -3005,13 +3092,13 @@ function exportFilename(type){
 }
 
 function toCsv(rows){
-  const header = ['#','Fuente','Titulo','Categoria','Riesgo','URL','Detalle','Detectado','Duplicados'];
-  const lines = [header].concat((rows||[]).map((f,i)=>[i+1,f.source,f.title,f.category,f.risk,f.url,f.detail,f.detected,f.duplicate_count||1]));
+  const header = ['#','Fuente','Titulo','Categoria','Riesgo','Publicado/Indexado','Fuente fecha','URL','Detalle','Detectado','Duplicados'];
+  const lines = [header].concat((rows||[]).map((f,i)=>[i+1,f.source,f.title,f.category,f.risk,displayPublishedDate(f),f.date_source||f.date_status||'',f.url,f.detail,f.detected,f.duplicate_count||1]));
   return lines.map(row=>row.map(v=>`"${String(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
 }
 
 function toExcelHtml(rows){
-  return `<table><tr><th>#</th><th>Fuente</th><th>Titulo</th><th>Categoria</th><th>Riesgo</th><th>URL</th><th>Detalle</th><th>Detectado</th></tr>${(rows||[]).map((f,i)=>`<tr><td>${i+1}</td><td>${esc(f.source)}</td><td>${esc(f.title)}</td><td>${esc(f.category)}</td><td>${esc(f.risk)}</td><td>${esc(f.url)}</td><td>${esc(f.detail)}</td><td>${esc(f.detected)}</td></tr>`).join('')}</table>`;
+  return `<table><tr><th>#</th><th>Fuente</th><th>Titulo</th><th>Categoria</th><th>Riesgo</th><th>Publicado/Indexado</th><th>Fuente fecha</th><th>URL</th><th>Detalle</th><th>Detectado</th></tr>${(rows||[]).map((f,i)=>`<tr><td>${i+1}</td><td>${esc(f.source)}</td><td>${esc(f.title)}</td><td>${esc(f.category)}</td><td>${esc(f.risk)}</td><td>${esc(displayPublishedDate(f))}</td><td>${esc(f.date_source||f.date_status||'')}</td><td>${esc(f.url)}</td><td>${esc(f.detail)}</td><td>${esc(f.detected)}</td></tr>`).join('')}</table>`;
 }
 
 function toStix(rows){

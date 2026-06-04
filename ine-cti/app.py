@@ -122,6 +122,8 @@ scan_state = {
     "finished_at": None,
     "term": "",
     "domain": "",
+    "date_from": "",
+    "date_to": "",
 }
 
 RESULTS_DIR = os.path.join(os.path.dirname(__file__), "results")
@@ -184,6 +186,56 @@ def infer_domain_from_term(term):
         if re.search(rf"\b{re.escape(needle)}\b", plain):
             return domain
     return ""
+
+
+def normalize_date(value):
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    match = re.match(r"^(\d{4}-\d{2}-\d{2})", text)
+    if not match:
+        return ""
+    try:
+        datetime.strptime(match.group(1), "%Y-%m-%d")
+        return match.group(1)
+    except ValueError:
+        return ""
+
+
+def finding_publication_date(finding):
+    for key in ("published_at", "indexed_at", "source_date", "updated_at"):
+        value = normalize_date(finding.get(key))
+        if value:
+            return value
+    return ""
+
+
+def finding_publication_label(finding):
+    published = finding_publication_date(finding)
+    if published:
+        return published
+    start = normalize_date(finding.get("date_range_from"))
+    end = normalize_date(finding.get("date_range_to"))
+    if start or end:
+        return f"Rango aplicado: {start or 'sin inicio'} a {end or 'sin fin'}"
+    return "No disponible"
+
+
+def finding_in_date_range(finding, date_from="", date_to=""):
+    pub_date = finding_publication_date(finding)
+    if not pub_date:
+        return True
+    if date_from and pub_date < date_from:
+        return False
+    if date_to and pub_date > date_to:
+        return False
+    return True
+
+
+def filter_findings_by_date(findings, date_from="", date_to=""):
+    if not date_from and not date_to:
+        return findings
+    return [finding for finding in findings or [] if finding_in_date_range(finding, date_from, date_to)]
 
 
 def as_bool(value):
@@ -417,7 +469,7 @@ def add_findings(new_findings, module_type="repo"):
             scan_state["stats"]["leaks"] += 1
 
 
-def run_scan(term, domain, active_modules, api_keys):
+def run_scan(term, domain, active_modules, api_keys, date_from="", date_to=""):
     scan_state["running"] = True
     scan_state["progress"] = 0
     scan_state["log"] = []
@@ -426,20 +478,25 @@ def run_scan(term, domain, active_modules, api_keys):
     scan_state["finished_at"] = None
     scan_state["term"] = term
     scan_state["domain"] = domain
+    scan_state["date_from"] = date_from
+    scan_state["date_to"] = date_to
     for k in scan_state["stats"]:
         scan_state["stats"][k] = 0
 
     log(f"Iniciando escaneo CTI — término: '{term}' | dominio: '{domain}'", "info")
     log(f"Módulos activos: {', '.join(active_modules)}", "info")
 
+    if date_from or date_to:
+        log(f"Filtro temporal: {date_from or 'sin inicio'} a {date_to or 'sin fin'}", "info")
+
     modules = [
-        ("github",      "GitHub / GitLab",         lambda: scan_github(term, api_keys.get("github"))),
-        ("pastebin",    "Pastebin",                 lambda: scan_pastebin(term)),
-        ("googledrive", "Google Drive / Docs",      lambda: scan_googledrive(term)),
-        ("filerepos",   "Dropbox / OneDrive / MEGA",lambda: scan_file_repos(term)),
+        ("github",      "GitHub / GitLab",         lambda: scan_github(term, api_keys.get("github"), date_from, date_to)),
+        ("pastebin",    "Pastebin",                 lambda: scan_pastebin(term, date_from, date_to)),
+        ("googledrive", "Google Drive / Docs",      lambda: scan_googledrive(term, date_from, date_to)),
+        ("filerepos",   "Dropbox / OneDrive / MEGA",lambda: scan_file_repos(term, date_from, date_to)),
         ("aws",         "AWS S3 Buckets",           lambda: scan_s3(term)),
-        ("azure",       "Azure Blob Storage",       lambda: scan_azure(term)),
-        ("gcloud",      "Google Cloud Storage",     lambda: scan_gcs(term)),
+        ("azure",       "Azure Blob Storage",       lambda: scan_azure(term, date_from, date_to)),
+        ("gcloud",      "Google Cloud Storage",     lambda: scan_gcs(term, date_from, date_to)),
         ("ahmia",       "Ahmia (Dark Web)",         lambda: scan_ahmia(term)),
         ("darksearch",  "DarkSearch.io",            lambda: scan_darksearch(term)),
         ("onionsearch", "OnionSearch",              lambda: scan_onionsearch(
@@ -520,9 +577,9 @@ def run_scan(term, domain, active_modules, api_keys):
             projectdiscovery_config(api_keys)["limit"],
             projectdiscovery_config(api_keys)["timeout"],
         )),
-        ("leakix",      "LeakIX",                   lambda: scan_leakix(term, api_keys.get("leakix"))),
+        ("leakix",      "LeakIX",                   lambda: scan_leakix(term, api_keys.get("leakix"), date_from, date_to)),
         ("hibp",        "HaveIBeenPwned",           lambda: scan_hibp(domain, api_keys.get("hibp"))),
-        ("intelx",      "Intelligence X",           lambda: scan_intelx(term, api_keys.get("intelx"))),
+        ("intelx",      "Intelligence X",           lambda: scan_intelx(term, api_keys.get("intelx"), date_from, date_to)),
     ]
 
     active = [(mid, mlabel, mfn) for mid, mlabel, mfn in modules if mid in active_modules]
@@ -535,7 +592,7 @@ def run_scan(term, domain, active_modules, api_keys):
         log(f"[{i+1}/{total}] Escaneando: {mlabel}...", "info")
 
         try:
-            results = mfn()
+            results = filter_findings_by_date(mfn(), date_from, date_to)
             real = [r for r in results if not r.get("is_system") and not r.get("is_negative")]
             add_findings(results)
             if real:
@@ -560,6 +617,8 @@ def run_scan(term, domain, active_modules, api_keys):
                 "meta": {
                     "term": term,
                     "domain": domain,
+                    "date_from": date_from,
+                    "date_to": date_to,
                     "started_at": scan_state["started_at"],
                     "finished_at": scan_state["finished_at"],
                     "stats": scan_state["stats"],
@@ -590,6 +649,10 @@ def start_scan():
     if not term:
         return jsonify({"error": "Termino de busqueda requerido"}), 400
     domain         = normalize_domain(data.get("domain")) or infer_domain_from_term(term)
+    date_from      = normalize_date(data.get("date_from"))
+    date_to        = normalize_date(data.get("date_to"))
+    if date_from and date_to and date_from > date_to:
+        return jsonify({"error": "Rango de fechas invalido: date_from no puede ser mayor que date_to"}), 400
     active_modules = data.get("modules", ["github","pastebin","googledrive",
                                            "filerepos","aws","azure","gcloud",
                                            "ahmia","darksearch","onionsearch",
@@ -599,9 +662,9 @@ def start_scan():
                                            "naabu","nuclei","leakix","hibp","intelx"])
     api_keys       = data.get("api_keys", {})
 
-    t = threading.Thread(target=run_scan, args=(term, domain, active_modules, api_keys), daemon=True)
+    t = threading.Thread(target=run_scan, args=(term, domain, active_modules, api_keys, date_from, date_to), daemon=True)
     t.start()
-    return jsonify({"status": "started", "term": term, "domain": domain})
+    return jsonify({"status": "started", "term": term, "domain": domain, "date_from": date_from, "date_to": date_to})
 
 
 @app.route("/api/scan/status")
@@ -614,6 +677,8 @@ def scan_status():
         "log":             scan_state["log"][-30:],
         "started_at":      scan_state["started_at"],
         "finished_at":     scan_state["finished_at"],
+        "date_from":       scan_state.get("date_from", ""),
+        "date_to":         scan_state.get("date_to", ""),
     })
 
 
@@ -640,6 +705,8 @@ def export_json():
         "meta": {
             "term": scan_state.get("term", ""),
             "domain": scan_state.get("domain", ""),
+            "date_from": scan_state.get("date_from", ""),
+            "date_to": scan_state.get("date_to", ""),
             "started_at": scan_state["started_at"],
             "stats": scan_state["stats"],
         },
@@ -655,10 +722,12 @@ def export_csv():
     import csv, io
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["#", "Fuente", "Título", "Categoría", "Riesgo", "URL", "Detalle", "Detectado"])
+    writer.writerow(["#", "Fuente", "Titulo", "Categoria", "Riesgo", "Publicado/Indexado", "Fuente fecha", "URL", "Detalle", "Detectado"])
     for i, f in enumerate(scan_state["findings"], 1):
         writer.writerow([i, f.get("source",""), f.get("title",""),
                          f.get("category",""), f.get("risk",""),
+                         finding_publication_label(f),
+                         f.get("date_source","") or f.get("date_status",""),
                          f.get("url",""), f.get("detail",""), f.get("detected","")])
     return Response(output.getvalue(), mimetype="text/csv",
                     headers={"Content-Disposition": "attachment;filename=dogui-ciberpatrullaje-findings.csv"})

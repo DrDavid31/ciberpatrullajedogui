@@ -34,10 +34,68 @@ def ts():
     return datetime.now().strftime("%H:%M:%S")
 
 
+def normalize_date(value):
+    text = str(value or "").strip()
+    match = re.match(r"^(\d{4}-\d{2}-\d{2})", text)
+    return match.group(1) if match else ""
+
+
+def date_query_suffix(date_from=None, date_to=None):
+    parts = []
+    if normalize_date(date_from):
+        parts.append(f"after:{normalize_date(date_from)}")
+    if normalize_date(date_to):
+        parts.append(f"before:{normalize_date(date_to)}")
+    return " ".join(parts)
+
+
+def apply_date_query(query, date_from=None, date_to=None):
+    suffix = date_query_suffix(date_from, date_to)
+    return f"{query} {suffix}".strip() if suffix else query
+
+
+def date_meta(published_at="", source="", date_from=None, date_to=None):
+    published = normalize_date(published_at)
+    start = normalize_date(date_from)
+    end = normalize_date(date_to)
+    if published:
+        return {
+            "published_at": published,
+            "date_source": source or "Fecha reportada por la fuente",
+            "date_status": "Fecha disponible",
+        }
+    if start or end:
+        return {
+            "published_at": "",
+            "date_source": source or "Filtro temporal aplicado en la consulta",
+            "date_status": "La fuente no entrega fecha directa; se uso el filtro de busqueda",
+            "date_range_from": start,
+            "date_range_to": end,
+        }
+    return {
+        "published_at": "",
+        "date_source": source or "No disponible",
+        "date_status": "La fuente no entrega fecha de publicacion",
+    }
+
+
+def in_date_range(value, date_from=None, date_to=None):
+    published = normalize_date(value)
+    if not published:
+        return True
+    start = normalize_date(date_from)
+    end = normalize_date(date_to)
+    if start and published < start:
+        return False
+    if end and published > end:
+        return False
+    return True
+
+
 # ─────────────────────────────────────────────
 # MÓDULO 1 — GitHub Search
 # ─────────────────────────────────────────────
-def scan_github(term, token=None):
+def scan_github(term, token=None, date_from=None, date_to=None):
     results = []
     headers = HEADERS.copy()
     if token:
@@ -49,25 +107,35 @@ def scan_github(term, token=None):
         if r.status_code == 200:
             data = r.json()
             for item in data.get("items", []):
+                repo = item.get("repository", {}) or {}
+                repo_date = repo.get("updated_at") or repo.get("pushed_at") or repo.get("created_at") or ""
+                if not in_date_range(repo_date, date_from, date_to):
+                    continue
                 results.append({
                     "source": "GitHub",
                     "source_id": "github",
-                    "title": f"{item.get('name','archivo')} en {item.get('repository',{}).get('full_name','')}",
+                    "title": f"{item.get('name','archivo')} en {repo.get('full_name','')}",
                     "url": item.get("html_url", "#"),
                     "category": "Código/Repositorio",
                     "category_class": "cat-repo",
                     "risk": "ALTO",
                     "risk_class": "risk-high",
                     "raw": item.get("html_url", ""),
-                    "detail": f"Archivo: {item.get('path','')} | Repo: {item.get('repository',{}).get('full_name','')}",
+                    "detail": f"Archivo: {item.get('path','')} | Repo: {repo.get('full_name','')}",
                     "detected": ts(),
+                    **date_meta(repo_date, "Fecha de actualizacion/push del repositorio", date_from, date_to),
                 })
         elif r.status_code == 403:
             results.append(_rate_limit_notice("GitHub"))
         elif r.status_code == 422:
             # Sin token solo permite búsquedas limitadas
-            results.append(_fallback_dork("GitHub", term,
-                f"https://github.com/search?q={quote(term)}&type=code"))
+            results.append(_fallback_dork(
+                "GitHub",
+                term,
+                f"https://github.com/search?q={quote(apply_date_query(term, date_from, date_to))}&type=code",
+                date_from,
+                date_to,
+            ))
     except Exception as e:
         results.append(_error_notice("GitHub", str(e)))
     return results
@@ -76,11 +144,11 @@ def scan_github(term, token=None):
 # ─────────────────────────────────────────────
 # MÓDULO 2 — Pastebin (vía búsqueda pública)
 # ─────────────────────────────────────────────
-def scan_pastebin(term):
+def scan_pastebin(term, date_from=None, date_to=None):
     results = []
     # Pastebin bloquea scraping directo; usamos Google dork como fallback verificable
-    url = (f"https://www.google.com/search?q=site%3Apastebin.com+"
-           f"%22{quote(term)}%22&num=10")
+    query = apply_date_query(f'site:pastebin.com "{term}"', date_from, date_to)
+    url = f"https://www.google.com/search?q={quote(query)}&num=10"
     results.append({
         "source": "Pastebin",
         "source_id": "pastebin",
@@ -94,6 +162,7 @@ def scan_pastebin(term):
         "detail": "Verificar manualmente — dork lista pastes públicos que contienen el término",
         "detected": ts(),
         "is_dork": True,
+        **date_meta("", "Google dork", date_from, date_to),
     })
     return results
 
@@ -155,7 +224,7 @@ def scan_s3(term):
 # ─────────────────────────────────────────────
 # MÓDULO 4 — Azure Blob Storage
 # ─────────────────────────────────────────────
-def scan_azure(term):
+def scan_azure(term, date_from=None, date_to=None):
     results = []
     variants = [
         term.lower().replace(" ", ""),
@@ -188,7 +257,8 @@ def scan_azure(term):
         time.sleep(0.2)
 
     # Dork complementario
-    dork_url = f"https://www.google.com/search?q=site%3Ablob.core.windows.net+%22{quote(term)}%22"
+    dork_q = apply_date_query(f'site:blob.core.windows.net "{term}"', date_from, date_to)
+    dork_url = f"https://www.google.com/search?q={quote(dork_q)}"
     results.append({
         "source": "Azure Blob Storage",
         "source_id": "azure",
@@ -202,6 +272,7 @@ def scan_azure(term):
         "detail": "Verificar manualmente resultados del dork en Google",
         "detected": ts(),
         "is_dork": True,
+        **date_meta("", "Google dork", date_from, date_to),
     })
     return results
 
@@ -209,9 +280,10 @@ def scan_azure(term):
 # ─────────────────────────────────────────────
 # MÓDULO 5 — Google Cloud Storage
 # ─────────────────────────────────────────────
-def scan_gcs(term):
+def scan_gcs(term, date_from=None, date_to=None):
     results = []
-    dork_url = f"https://www.google.com/search?q=site%3Astorage.googleapis.com+%22{quote(term)}%22"
+    dork_q = apply_date_query(f'site:storage.googleapis.com "{term}"', date_from, date_to)
+    dork_url = f"https://www.google.com/search?q={quote(dork_q)}"
     results.append({
         "source": "Google Cloud Storage",
         "source_id": "gcloud",
@@ -225,6 +297,7 @@ def scan_gcs(term):
         "detail": "Verificar manualmente — busca buckets GCS públicos que contienen el término",
         "detected": ts(),
         "is_dork": True,
+        **date_meta("", "Google dork", date_from, date_to),
     })
 
     # Intento directo en bucket común
@@ -254,7 +327,7 @@ def scan_gcs(term):
 # ─────────────────────────────────────────────
 # MÓDULO 6 — Google Drive (dorks)
 # ─────────────────────────────────────────────
-def scan_googledrive(term):
+def scan_googledrive(term, date_from=None, date_to=None):
     results = []
     dorks = [
         (f'site:drive.google.com "{term}"', "Google Drive — archivos compartidos"),
@@ -262,6 +335,7 @@ def scan_googledrive(term):
         (f'site:sheets.google.com "{term}"', "Google Sheets — hojas de cálculo"),
     ]
     for q, label in dorks:
+        q = apply_date_query(q, date_from, date_to)
         url = f"https://www.google.com/search?q={quote(q)}"
         results.append({
             "source": "Google Drive/Docs",
@@ -276,6 +350,7 @@ def scan_googledrive(term):
             "detail": f"Dork: {q}",
             "detected": ts(),
             "is_dork": True,
+            **date_meta("", "Google dork", date_from, date_to),
         })
     return results
 
@@ -283,7 +358,7 @@ def scan_googledrive(term):
 # ─────────────────────────────────────────────
 # MÓDULO 7 — Dropbox / OneDrive / MediaFire
 # ─────────────────────────────────────────────
-def scan_file_repos(term):
+def scan_file_repos(term, date_from=None, date_to=None):
     results = []
     sources = [
         ("dropbox.com", "Dropbox", "cat-repo", "ALTO", "risk-high"),
@@ -293,7 +368,8 @@ def scan_file_repos(term):
         ("box.com", "Box", "cat-repo", "MEDIO", "risk-medium"),
     ]
     for site, label, cat_class, risk, risk_class in sources:
-        url = f"https://www.google.com/search?q=site%3A{quote(site)}+%22{quote(term)}%22"
+        q = apply_date_query(f'site:{site} "{term}"', date_from, date_to)
+        url = f"https://www.google.com/search?q={quote(q)}"
         results.append({
             "source": label,
             "source_id": label.lower(),
@@ -307,6 +383,7 @@ def scan_file_repos(term):
             "detail": f"Dork Google: site:{site} \"{term}\"",
             "detected": ts(),
             "is_dork": True,
+            **date_meta("", "Google dork", date_from, date_to),
         })
     return results
 
@@ -1088,7 +1165,7 @@ def _social_analyzer_risk(rate):
 # ─────────────────────────────────────────────
 # MÓDULO 10 — LeakIX (servicios expuestos)
 # ─────────────────────────────────────────────
-def scan_leakix(term, api_key=None):
+def scan_leakix(term, api_key=None, date_from=None, date_to=None):
     results = []
     headers = HEADERS.copy()
     headers["Accept"] = "application/json"
@@ -1101,6 +1178,9 @@ def scan_leakix(term, api_key=None):
         if r.status_code == 200:
             data = r.json() if api_key else []
             for item in data[:6]:
+                item_date = item.get("time") or item.get("updated_at") or item.get("created_at") or ""
+                if not in_date_range(item_date, date_from, date_to):
+                    continue
                 results.append({
                     "source": "LeakIX",
                     "source_id": "leakix",
@@ -1113,6 +1193,7 @@ def scan_leakix(term, api_key=None):
                     "raw": item.get("host", ""),
                     "detail": item.get("summary", f"Servicio expuesto relacionado con '{term}'")[:150],
                     "detected": ts(),
+                    **date_meta(item_date, "Fecha de indexacion LeakIX", date_from, date_to),
                 })
         # Siempre agregar dork de LeakIX
         results.append({
@@ -1128,6 +1209,7 @@ def scan_leakix(term, api_key=None):
             "detail": "Plataforma que indexa servicios y datos expuestos en internet — verificar manualmente",
             "detected": ts(),
             "is_dork": True,
+            **date_meta("", "LeakIX search", date_from, date_to),
         })
     except Exception as e:
         results.append(_error_notice("LeakIX", str(e)))
@@ -1190,7 +1272,7 @@ def scan_hibp(domain, api_key=None):
 # ─────────────────────────────────────────────
 # MÓDULO 12 — IntelX (dark web + breaches)
 # ─────────────────────────────────────────────
-def scan_intelx(term, api_key=None):
+def scan_intelx(term, api_key=None, date_from=None, date_to=None):
     results = []
     if not api_key:
         url = f"https://intelx.io/?s={quote(term)}"
@@ -1207,6 +1289,7 @@ def scan_intelx(term, api_key=None):
             "detail": "Requiere API key gratuita en intelx.io — verificar manualmente",
             "detected": ts(),
             "is_dork": True,
+            **date_meta("", "Intelligence X search", date_from, date_to),
         })
         return results
 
@@ -1224,6 +1307,9 @@ def scan_intelx(term, api_key=None):
             r2 = requests.get(result_url, headers=headers, timeout=TIMEOUT)
             if r2.status_code == 200:
                 for item in r2.json().get("records", [])[:8]:
+                    item_date = item.get("date", "")
+                    if not in_date_range(item_date, date_from, date_to):
+                        continue
                     results.append({
                         "source": "Intelligence X",
                         "source_id": "intelx",
@@ -1236,6 +1322,7 @@ def scan_intelx(term, api_key=None):
                         "raw": item.get("name", ""),
                         "detail": f"Tipo: {item.get('type','')} | Fecha: {item.get('date','')[:10]}",
                         "detected": ts(),
+                        **date_meta(item_date, "Fecha reportada por Intelligence X", date_from, date_to),
                     })
     except Exception as e:
         results.append(_error_notice("IntelX", str(e)))
@@ -1279,7 +1366,7 @@ def _error_notice(source, err):
     }
 
 
-def _fallback_dork(source, term, url):
+def _fallback_dork(source, term, url, date_from=None, date_to=None):
     return {
         "source": source,
         "source_id": source.lower(),
@@ -1293,4 +1380,5 @@ def _fallback_dork(source, term, url):
         "detail": "Verificar manualmente — abre el enlace para ver resultados",
         "detected": ts(),
         "is_dork": True,
+        **date_meta("", "Filtro temporal aplicado en la consulta", date_from, date_to),
     }

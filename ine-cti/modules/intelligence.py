@@ -114,6 +114,23 @@ def extract_domain(value):
     return host.strip(".")
 
 
+def normalize_date_value(value):
+    match = re.match(r"^(\d{4}-\d{2}-\d{2})", str(value or "").strip())
+    return match.group(1) if match else ""
+
+
+def finding_publication_label(finding):
+    for key in ("published_at", "indexed_at", "source_date", "updated_at"):
+        value = normalize_date_value(finding.get(key))
+        if value:
+            return value
+    start = normalize_date_value(finding.get("date_range_from"))
+    end = normalize_date_value(finding.get("date_range_to"))
+    if start or end:
+        return f"Rango aplicado: {start or 'sin inicio'} a {end or 'sin fin'}"
+    return "No disponible"
+
+
 def root_domain(domain):
     parts = [p for p in str(domain or "").lower().strip(".").split(".") if p]
     if len(parts) <= 2:
@@ -473,6 +490,8 @@ def report_lines(payload):
     stats = payload.get("stats") or {}
     term = payload.get("term") or "Objetivo no especificado"
     domain = payload.get("domain") or "Sin dominio especifico"
+    date_from = payload.get("date_from") or "sin inicio"
+    date_to = payload.get("date_to") or "sin fin"
     dashboard = build_dashboard(findings, stats, payload.get("validated"), payload.get("watchlist"), official_domain=payload.get("domain") or "")
     critical = [f for f in findings if severity_rank(f.get("risk")) >= 3][:15]
     lines = [
@@ -481,6 +500,7 @@ def report_lines(payload):
         "",
         "Resumen ejecutivo",
         f"Se monitoreo el termino '{term}' y el dominio '{domain}'.",
+        f"Rango temporal: {date_from} a {date_to}.",
         f"Hallazgos totales: {dashboard['kpis']['total_findings']}",
         f"Hallazgos criticos: {dashboard['kpis']['critical_findings']}",
         f"Credenciales detectadas: {dashboard['kpis']['credentials_detected']}",
@@ -496,6 +516,7 @@ def report_lines(payload):
     if critical:
         for finding in critical:
             lines.append(f"- [{finding.get('risk')}] {finding.get('source')}: {finding.get('title')}")
+            lines.append(f"  Publicado/Indexado: {finding_publication_label(finding)}")
             lines.append(f"  Evidencia: {finding.get('url')}")
             if finding.get("detail"):
                 lines.append(f"  Detalle: {finding.get('detail')}")
@@ -607,22 +628,26 @@ def wrap_text(text, width):
 def export_csv(findings):
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["#", "Fuente", "Titulo", "Categoria", "Riesgo", "URL", "Detalle", "Detectado", "Duplicados"])
+    writer.writerow(["#", "Fuente", "Titulo", "Categoria", "Riesgo", "Publicado/Indexado", "Fuente fecha", "URL", "Detalle", "Detectado", "Duplicados"])
     for i, f in enumerate(findings or [], 1):
         writer.writerow([
             i, f.get("source", ""), f.get("title", ""), f.get("category", ""),
-            f.get("risk", ""), f.get("url", ""), f.get("detail", ""),
+            f.get("risk", ""), finding_publication_label(f),
+            f.get("date_source", "") or f.get("date_status", ""),
+            f.get("url", ""), f.get("detail", ""),
             f.get("detected", ""), f.get("duplicate_count", 1),
         ])
     return output.getvalue().encode("utf-8-sig")
 
 
 def export_xlsx(findings):
-    rows = [["#", "Fuente", "Titulo", "Categoria", "Riesgo", "URL", "Detalle", "Detectado", "Duplicados"]]
+    rows = [["#", "Fuente", "Titulo", "Categoria", "Riesgo", "Publicado/Indexado", "Fuente fecha", "URL", "Detalle", "Detectado", "Duplicados"]]
     for i, f in enumerate(findings or [], 1):
         rows.append([
             i, f.get("source", ""), f.get("title", ""), f.get("category", ""),
-            f.get("risk", ""), f.get("url", ""), f.get("detail", ""),
+            f.get("risk", ""), finding_publication_label(f),
+            f.get("date_source", "") or f.get("date_status", ""),
+            f.get("url", ""), f.get("detail", ""),
             f.get("detected", ""), f.get("duplicate_count", 1),
         ])
     sheet_rows = []
