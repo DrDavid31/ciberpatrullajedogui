@@ -350,11 +350,11 @@ footer span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3
     <div class="cfg-grid">
       <div class="fg">
         <label>Término de búsqueda</label>
-        <input type="text" id="searchTerm" placeholder='"INE" OR "padrón electoral"' value="INE">
+        <input type="text" id="searchTerm" placeholder="empresa, dominio, usuario, marca, keyword o persona">
       </div>
       <div class="fg">
         <label>Dominio objetivo</label>
-        <input type="text" id="searchDomain" placeholder="ine.mx" value="ine.mx">
+        <input type="text" id="searchDomain" placeholder="opcional: ejemplo.com">
       </div>
       <div class="fg">
         <label>Intervalo de auto-scan</label>
@@ -543,7 +543,7 @@ footer span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3
         </div>
         <div class="api-row">
           <label>Término</label>
-          <input type="text" id="watchTerm" placeholder="CURP, RFC, OCR, lista nominal..." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <input type="text" id="watchTerm" placeholder="token, password, api key, dominio, marca..." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
@@ -568,15 +568,10 @@ footer span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--t3
       <div class="api-grid">
         <div class="api-row">
           <label>Dominio base</label>
-          <input type="text" id="typoTarget" value="ine.mx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <input type="text" id="typoTarget" placeholder="ejemplo.com" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         </div>
       </div>
-      <textarea id="typoCandidates" class="textarea" style="margin-top:12px;">lne.mx
-ine-gob.mx
-ine-mx.com
-institutonacionalelectoral.com
-inecredencial.com
-credencial-ine.com</textarea>
+      <textarea id="typoCandidates" class="textarea" style="margin-top:12px;" placeholder="Pega dominios candidatos, uno por línea. Si lo dejas vacío, Dogui genera variantes demo del dominio base."></textarea>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
         <button class="btn-scan" onclick="analyzeTypos()" style="font-size:13px;padding:9px 18px;">ANALIZAR DOMINIOS</button>
       </div>
@@ -627,7 +622,7 @@ credencial-ine.com</textarea>
         </div>
         <div class="api-row">
           <label>Valor</label>
-          <input type="text" id="fpValue" placeholder="ine.mx, noticia, comunicado oficial..." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
+          <input type="text" id="fpValue" placeholder="dominio oficial, noticia, comunicado oficial..." style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
@@ -1052,7 +1047,7 @@ credencial-ine.com</textarea>
     <div class="api-grid">
       <div class="api-row">
         <label>Objetivo autorizado</label>
-        <input type="text" id="keyPdTarget" placeholder="ine.mx o https://www.ine.mx" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
+        <input type="text" id="keyPdTarget" placeholder="dominio.com o https://www.dominio.com" style="background:var(--bg-panel);border:1px solid var(--border);border-radius:6px;padding:9px 12px;color:var(--t1);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;width:100%;">
         <div class="api-note">Si esta vacio usa Dominio objetivo del monitor</div>
       </div>
       <div class="api-row">
@@ -1297,19 +1292,21 @@ let currentFindingFilter = 'all';
 let autoTimer = null;
 let pollTimer = null;
 const API = ''; // mismo origen
+const DEFAULT_TERM = '';
+const DEFAULT_DOMAIN = '';
 const DEFAULT_WATCHLIST = {
-  'Identidad': ['CURP','RFC','INE','OCR','CIC'],
-  'Electoral': ['Instituto Nacional Electoral','credencial para votar','lista nominal','padrón electoral','clave de elector','sección electoral','casilla'],
-  'Riesgo digital': ['database','dump','sql','password','api key','token','credenciales']
+  'Identidad': ['CURP','RFC','DNI','pasaporte','OCR','CIC'],
+  'Credenciales': ['password','contraseña','api key','token','secret','credenciales'],
+  'Documentos': ['database','dump','sql','backup','xlsx','csv','confidencial'],
+  'Infraestructura': ['admin','login','vpn','bucket','blob','subdomain','exposed']
 };
-let watchlist = loadJsonLocal('cti_watchlist', DEFAULT_WATCHLIST);
+let watchlist = normalizeStoredWatchlist(loadJsonLocal('cti_watchlist', DEFAULT_WATCHLIST));
 const DEFAULT_FP_RULES = [
-  {type:'domain', value:'ine.mx', reason:'Dominio oficial del INE', enabled:true},
-  {type:'keyword', value:'comunicado oficial', reason:'Documento publico oficial', enabled:true},
+  {type:'keyword', value:'comunicado oficial', reason:'Contenido publico oficial', enabled:false},
   {type:'keyword', value:'noticia', reason:'Mencion periodistica legitima', enabled:false},
   {type:'keyword', value:'periodistico', reason:'Mencion periodistica legitima', enabled:false}
 ];
-let fpRules = loadJsonLocal('cti_fp_rules', DEFAULT_FP_RULES);
+let fpRules = normalizeStoredFpRules(loadJsonLocal('cti_fp_rules', DEFAULT_FP_RULES));
 
 // ─── CLOCK ───
 setInterval(()=>{
@@ -1337,6 +1334,17 @@ document.querySelectorAll('.cbi').forEach(el=>{
     el.classList.toggle('on');
     el.querySelector('input').checked = el.classList.contains('on');
   });
+});
+
+let domainTouched = false;
+document.getElementById('searchDomain')?.addEventListener('input',()=>{ domainTouched = true; });
+document.getElementById('searchTerm')?.addEventListener('input',()=>{
+  if(domainTouched) return;
+  const term = normalizeDemoTerm(document.getElementById('searchTerm').value);
+  const domainEl = document.getElementById('searchDomain');
+  if(domainEl){
+    domainEl.value = inferDomainFromTerm(term);
+  }
 });
 
 // ─── KEYS ───
@@ -1632,7 +1640,8 @@ async function exportToAil(){
 
 async function createAilTracker(){
   if(!backendOnline){ setAilStatus('Backend local no disponible. Inicia python app.py para crear trackers AIL.', 'amber'); return; }
-  const term = document.getElementById('searchTerm').value.trim() || 'INE';
+  const {term} = getScanContext();
+  if(!term){ showNotif('Escribe un término para crear el tracker','amber'); return; }
   try {
     setAilStatus('Creando tracker AIL...', 'cyan');
     const data = await postJson('/api/ail/tracker', { api_keys: getKeys(), term });
@@ -1665,7 +1674,7 @@ async function testMisp(){
 async function exportToMisp(){
   if(!backendOnline){ setMispStatus('Backend local no disponible. Inicia python app.py para enviar a MISP.', 'amber'); return; }
   if(!findings.length){ showNotif('No hay hallazgos para enviar a MISP','amber'); return; }
-  const term = document.getElementById('searchTerm').value.trim() || 'INE';
+  const {term} = getScanContext();
   try {
     setMispStatus('Creando evento MISP...', 'cyan');
     const data = await postJson('/api/misp/export', {
@@ -1700,8 +1709,8 @@ async function testApprise(){
 
 async function notifyApprise(){
   if(!backendOnline){ setAppriseStatus('Backend local no disponible. Inicia python app.py para enviar notificaciones.', 'amber'); return; }
-  const term = document.getElementById('searchTerm').value.trim() || 'INE';
-  const domain = document.getElementById('searchDomain').value.trim() || 'ine.mx';
+  const {term, domain} = getScanContext();
+  if(!term){ showNotif('Escribe un término para enviar el resumen','amber'); return; }
   try {
     setAppriseStatus('Enviando resumen Apprise...', 'cyan');
     const data = await postJson('/api/apprise/notify', { api_keys: getKeys(), term, domain });
@@ -1746,8 +1755,7 @@ async function testHuginn(){
 
 async function exportToHuginn(){
   if(!findings.length){ showNotif('No hay hallazgos para enviar a Huginn','amber'); return; }
-  const term = document.getElementById('searchTerm').value.trim() || 'INE';
-  const domain = document.getElementById('searchDomain').value.trim() || 'ine.mx';
+  const {term, domain} = getScanContext();
   try {
     setIntegrationStatus('huginnStatus','Enviando eventos Huginn...', 'cyan');
     const data = await postJson('/api/huginn/export', { api_keys: getKeys(), findings, term, domain });
@@ -1770,7 +1778,8 @@ async function testAleph(){
 }
 
 async function searchAlephNow(){
-  const term = document.getElementById('searchTerm').value.trim() || 'INE';
+  const {term} = getScanContext();
+  if(!term){ showNotif('Escribe un término para buscar en Aleph','amber'); return; }
   try {
     setIntegrationStatus('alephStatus','Buscando en Aleph...', 'cyan');
     const data = await postJson('/api/aleph/search', { api_keys: getKeys(), term });
@@ -1952,8 +1961,10 @@ async function startDashboardScan(){
 }
 
 function loadDemoFindings(){
+  const {term, domain} = getScanContext();
+  if(!term){ showNotif('Escribe qué quieres buscar','amber'); document.getElementById('searchTerm')?.focus(); return; }
   const ts = ()=>new Date().toLocaleTimeString('es-MX',{hour12:false});
-  findings = dedupeFindings(demoData.map(item=>({...item, detected:ts()}))).findings;
+  findings = dedupeFindings(buildDemoData(term, domain).map(item=>({...item, detected:ts()}))).findings;
   pendingValidation = [];
   lastStats = {
     sources_scanned: new Set(findings.map(f=>f.source_id || f.source)).size,
@@ -1968,12 +1979,12 @@ function loadDemoFindings(){
   renderFindings();
   syncValidationQueue();
   updateVQBadge();
-  showNotif('Demo cargado con hallazgos operativos', 'green');
+  showNotif(`Demo cargado para ${term}`, 'green');
 }
 
 async function startScan(){
-  const term    = document.getElementById('searchTerm').value.trim() || 'INE';
-  const domain  = document.getElementById('searchDomain').value.trim() || 'ine.mx';
+  const {term, domain} = getScanContext();
+  if(!term){ showNotif('Escribe qué quieres buscar','amber'); document.getElementById('searchTerm')?.focus(); return; }
   const modules = activeModuleIds();
 
   if(!modules.length){ showNotif('Selecciona al menos un módulo','red'); return; }
@@ -2005,7 +2016,7 @@ async function startScan(){
   } catch(e){
     // Backend no disponible — modo demo
     showNotif('Backend no disponible — modo demo activado','amber');
-    runDemoScan(term, modules);
+    runDemoScan(term, domain, modules);
   }
 }
 
@@ -2253,29 +2264,113 @@ function scheduleAutoScan(){
 }
 
 // ─── DEMO MODE (sin backend) ───
-const demoData = [
-  {source:'GitHub',source_id:'github',title:'Archivo config.env en repo público — referencia a INE',url:'https://github.com/search?q=INE&type=code',category:'Código/Repositorio',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:'Archivo .env con credenciales — repo público',detected:'',is_dork:false},
-  {source:'AWS S3',source_id:'aws',title:'Bucket S3 existe (acceso restringido): ine-backup',url:'https://ine-backup.s3.amazonaws.com/',category:'Cloud Storage',category_class:'cat-cloud',risk:'BAJO',risk_class:'risk-low',detail:'Bucket existe con ACL restrictiva',detected:'',is_dork:false},
-  {source:'Ahmia (Dark Web)',source_id:'ahmia',title:'Mención de INE en foro dark web indexado',url:'https://ahmia.fi/search/?q=INE',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Contenido dark web indexado por Ahmia',detected:'',is_dork:false},
-  {source:'Pastebin',source_id:'pastebin',title:'Google Dork: pastebin.com + "INE"',url:'https://www.google.com/search?q=site:pastebin.com+"INE"',category:'Pastebin/Leak',category_class:'cat-paste',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Verificar manualmente',detected:'',is_dork:true},
-  {source:'Google Drive/Docs',source_id:'googledrive',title:'Google Drive — archivos compartidos: "INE"',url:'https://www.google.com/search?q=site:drive.google.com+"INE"',category:'Repositorio Público',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:'Dork: site:drive.google.com "INE"',detected:'',is_dork:true},
-  {source:'DarkSearch.io',source_id:'darksearch',title:'Resultado en DarkSearch para "INE"',url:'https://darksearch.io/search?q=INE',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Contenido dark web con referencia a INE',detected:'',is_dork:false},
-  {source:'OnionSearch/Ahmia',source_id:'onionsearch',title:'Resultado OnionSearch para "INE"',url:'http://exampleonionurl.onion/',category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Motor: ahmia | Dominio: exampleonionurl.onion',detected:'',is_dork:false},
-  {source:'trufflehog - git',source_id:'trufflehog',title:'TruffleHog: GitHub token (verificado)',url:'https://github.com/DrDavid31/ciberpatrullajedogui',category:'Credenciales Filtradas',category_class:'cat-leak',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Detector: GitHub | Decoder: PLAIN | Estado: verificado',detected:'',is_dork:false,is_secret:true},
-  {source:'Gitleaks',source_id:'gitleaks',title:'Gitleaks: generic-api-key',url:'https://github.com/gitleaks/gitleaks',category:'Credenciales Filtradas',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:'Rule: generic-api-key | Ubicacion: config.env:12 | Fingerprint: demo',detected:'',is_dork:false,is_secret:true},
-  {source:'Social Analyzer',source_id:'socialanalyzer',title:'Perfil posible: INE en github',url:'https://github.com/INE',category:'Perfil Social',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Sitio: github | Rate: 60',detected:'',is_dork:false},
-  {source:'changedetection.io',source_id:'changedetection',title:'Monitor web: portal INE con cambio reciente',url:'https://www.ine.mx/',category:'Monitoreo de Cambios',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Watch demo | Ultimo cambio detectado en contenido publico',detected:'',is_dork:false},
-  {source:'Aleph',source_id:'aleph',title:'Aleph: entidad/documento relacionado con INE',url:'https://aleph.occrp.org/search?q=INE',category:'Investigacion Documental',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Schema: Document | Dataset: demo Aleph',detected:'',is_dork:false},
-  {source:'subfinder',source_id:'subfinder',title:'Subdominio detectado: www.ine.mx',url:'https://www.ine.mx',category:'Superficie Expuesta',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Fuente: passive demo',detected:'',is_dork:false},
-  {source:'httpx',source_id:'httpx',title:'Servicio HTTP activo: Portal INE',url:'https://www.ine.mx',category:'Servicio Expuesto',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:'HTTP 200 | Tech: demo',detected:'',is_dork:false},
-  {source:'naabu',source_id:'naabu',title:'Puerto abierto: ine.mx:443',url:'ine.mx:443',category:'Servicio Expuesto',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:'Host: ine.mx | Puerto: 443',detected:'',is_dork:false},
-  {source:'nuclei',source_id:'nuclei',title:'Nuclei: exposicion informativa demo',url:'https://www.ine.mx',category:'Vulnerabilidad',category_class:'cat-leak',risk:'MEDIO',risk_class:'risk-medium',detail:'Template: demo | Severity: MEDIUM',detected:'',is_dork:false},
-  {source:'Typosquatting',source_id:'typosquatting',title:'Dominio similar detectado: ine-mx.com',url:'https://ine-mx.com',category:'Dominio Sospechoso',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:'Similitud alta | Posible phishing o suplantacion',detected:'',is_dork:false},
-  {source:'Analisis de archivos',source_id:'file-analysis',title:'Archivo sensible: datos_usuarios.csv',url:'datos_usuarios.csv',category:'Archivo sensible',category_class:'cat-leak',risk:'CRÍTICO',risk_class:'risk-critical',detail:'143 posibles CURP, 87 correos, 12 menciones de INE',detected:'',is_dork:false},
-  {source:'GitHub',source_id:'github',title:'Archivo config.env en repo público — referencia a INE',url:'https://github.com/search?q=INE&type=code',category:'Código/Repositorio',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:'Duplicado demo de la misma URL',detected:'',is_dork:false},
-];
+function normalizeDemoTerm(value){
+  const cleaned = String(value || '').trim().replace(/^["']+|["']+$/g, '');
+  return cleaned || DEFAULT_TERM;
+}
 
-async function runDemoScan(term, modules){
+function stripAccents(value){
+  return String(value || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function slugFromTerm(term){
+  const cleaned = stripAccents(normalizeDemoTerm(term))
+    .toLowerCase()
+    .replace(/https?:\/\//g, ' ')
+    .replace(/\b(or|and|not|site|inurl|intitle|filetype)\b/g, ' ')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+  return cleaned || 'objetivo';
+}
+
+function normalizeDemoDomain(value){
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/.*$/, '')
+    .replace(/[^a-z0-9.-]/g, '');
+}
+
+function looksLikeDomain(value){
+  const text = String(value || '').trim().toLowerCase();
+  if(!text) return false;
+  const domain = normalizeDemoDomain(text.includes('@') ? text.split('@').pop() : text);
+  return /^[a-z0-9.-]+\.[a-z]{2,}$/.test(domain);
+}
+
+function inferDomainFromTerm(term){
+  const t = stripAccents(normalizeDemoTerm(term)).toLowerCase();
+  if(!t) return DEFAULT_DOMAIN;
+  if(t.includes('@')) return normalizeDemoDomain(t.split('@').pop());
+  if(looksLikeDomain(t)) return normalizeDemoDomain(t);
+  if(/\bine\b|instituto nacional electoral|credencial para votar|padron electoral|lista nominal/.test(t)) return 'ine.mx';
+  if(/\bbanobras\b|banco nacional de obras/.test(t)) return 'banobras.gob.mx';
+  if(/\bimss\b/.test(t)) return 'imss.gob.mx';
+  if(/\bissste\b/.test(t)) return 'issste.gob.mx';
+  if(/\bcfe\b|comision federal de electricidad/.test(t)) return 'cfe.mx';
+  if(/\bsat\b|servicio de administracion tributaria/.test(t)) return 'sat.gob.mx';
+  if(/\bunam\b/.test(t)) return 'unam.mx';
+  if(/\bipn\b/.test(t)) return 'ipn.mx';
+  return DEFAULT_DOMAIN;
+}
+
+function getScanContext(){
+  const termEl = document.getElementById('searchTerm');
+  const domainEl = document.getElementById('searchDomain');
+  const term = normalizeDemoTerm(termEl?.value || DEFAULT_TERM);
+  let domain = normalizeDemoDomain(domainEl?.value || DEFAULT_DOMAIN);
+  if(!domainTouched && !domain){
+    domain = inferDomainFromTerm(term);
+    if(domainEl) domainEl.value = domain;
+  }
+  return {term, domain};
+}
+
+function buildDemoData(term, domain){
+  const target = normalizeDemoTerm(term);
+  const targetUpper = target.toUpperCase();
+  const slug = slugFromTerm(target);
+  const handle = slug.replace(/-/g, '');
+  const host = normalizeDemoDomain(domain) || `${slug}.example`;
+  const hostUrl = `https://${host}`;
+  const q = encodeURIComponent(target);
+  const qQuoted = encodeURIComponent(`"${target}"`);
+  const repoUrl = `https://github.com/search?q=${q}&type=code`;
+  const typoRoot = host.replace(/\.(gob\.)?mx$/,'').replace(/\./g,'-') || slug;
+  const typoDomain = `${typoRoot}-mx.com`;
+  const orgLabel = targetUpper.length > 34 ? `${targetUpper.slice(0, 31)}...` : targetUpper;
+
+  return [
+    {source:'GitHub',source_id:'github',title:`Archivo config.env en repo público — referencia a ${orgLabel}`,url:repoUrl,category:'Código/Repositorio',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:`Dork de codigo para ${target}. Validar si contiene credenciales reales antes de escalar.`,detected:'',is_dork:true},
+    {source:'Pastebin',source_id:'pastebin',title:`Google Dork: pastebin.com + "${target}"`,url:`https://www.google.com/search?q=site:pastebin.com+${qQuoted}`,category:'Pastebin/Leak',category_class:'cat-paste',risk:'CRÍTICO',risk_class:'risk-critical',detail:`Busqueda OSINT simulada para posibles leaks con menciones de ${target}.`,detected:'',is_dork:true},
+    {source:'Google Drive/Docs',source_id:'googledrive',title:`Google Drive — archivos compartidos: "${target}"`,url:`https://www.google.com/search?q=site:drive.google.com+${qQuoted}`,category:'Repositorio Público',category_class:'cat-repo',risk:'ALTO',risk_class:'risk-high',detail:`Dork: site:drive.google.com "${target}"`,detected:'',is_dork:true},
+    {source:'Dropbox/OneDrive/MEGA',source_id:'filerepos',title:`Repositorios de archivos relacionados con ${target}`,url:`https://www.google.com/search?q=(site:dropbox.com+OR+site:onedrive.live.com+OR+site:mega.nz)+${qQuoted}`,category:'Repositorio Público',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Busqueda simulada en repositorios de archivos compartidos.',detected:'',is_dork:true},
+    {source:'AWS S3',source_id:'aws',title:`Bucket S3 posible: ${slug}-backup`,url:`https://${slug}-backup.s3.amazonaws.com/`,category:'Cloud Storage',category_class:'cat-cloud',risk:'BAJO',risk_class:'risk-low',detail:'Bucket demo con acceso restringido; confirmar exposicion real con backend.',detected:'',is_dork:false},
+    {source:'Azure Blob',source_id:'azure',title:`Contenedor Azure posible: ${slug}-files`,url:`https://${slug}.blob.core.windows.net/files/`,category:'Cloud Storage',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:'Ruta demo para validar contenedores publicos o mal configurados.',detected:'',is_dork:false},
+    {source:'Google Cloud',source_id:'gcloud',title:`Bucket Google Cloud posible: ${slug}-public`,url:`https://storage.googleapis.com/${slug}-public/`,category:'Cloud Storage',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:'Ruta demo para busqueda de storage publico relacionado.',detected:'',is_dork:false},
+    {source:'Ahmia (Dark Web)',source_id:'ahmia',title:`Mencion de ${target} en foro dark web indexado`,url:`https://ahmia.fi/search/?q=${q}`,category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:`Contenido dark web indexado con referencia a ${target}.`,detected:'',is_dork:false},
+    {source:'DarkSearch.io',source_id:'darksearch',title:`Resultado en DarkSearch para "${target}"`,url:`https://darksearch.io/search?q=${q}`,category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:`Busqueda simulada de menciones dark web para ${target}.`,detected:'',is_dork:false},
+    {source:'OnionSearch/Ahmia',source_id:'onionsearch',title:`Resultado OnionSearch para "${target}"`,url:`http://${slug}-intel-demo.onion/`,category:'Dark Web Indexada',category_class:'cat-dark',risk:'CRÍTICO',risk_class:'risk-critical',detail:'Motor: ahmia | Resultado demo; requiere backend/Tor para validar.',detected:'',is_dork:false},
+    {source:'trufflehog - git',source_id:'trufflehog',title:`TruffleHog: patron de secreto en repos de ${target}`,url:repoUrl,category:'Credenciales Filtradas',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:'Coincidencia demo. Ejecuta TruffleHog local para confirmar secretos verificados.',detected:'',is_dork:false,is_secret:true},
+    {source:'Gitleaks',source_id:'gitleaks',title:`Gitleaks: posible api-key relacionada con ${target}`,url:repoUrl,category:'Credenciales Filtradas',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:'Rule: generic-api-key | Ubicacion demo: config.env:12 | Confirmar con backend.',detected:'',is_dork:false,is_secret:true},
+    {source:'Social Analyzer',source_id:'socialanalyzer',title:`Perfil posible: ${target} en GitHub`,url:`https://github.com/${handle}`,category:'Perfil Social',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Sitio: github | Resultado demo para revision manual.',detected:'',is_dork:false},
+    {source:'changedetection.io',source_id:'changedetection',title:`Monitor web: ${host} con cambio reciente`,url:hostUrl,category:'Monitoreo de Cambios',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Watch demo | Ultimo cambio detectado en contenido publico.',detected:'',is_dork:false},
+    {source:'Aleph',source_id:'aleph',title:`Aleph: entidad/documento relacionado con ${target}`,url:`https://aleph.occrp.org/search?q=${q}`,category:'Investigacion Documental',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Schema: Document | Dataset: demo Aleph.',detected:'',is_dork:false},
+    {source:'subfinder',source_id:'subfinder',title:`Subdominio detectado: www.${host}`,url:`https://www.${host}`,category:'Superficie Expuesta',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:`Fuente: passive demo | Dominio objetivo: ${host}`,detected:'',is_dork:false},
+    {source:'httpx',source_id:'httpx',title:`Servicio HTTP activo: ${host}`,url:hostUrl,category:'Servicio Expuesto',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:'HTTP 200 | Tech: demo | Requiere backend para fingerprint real.',detected:'',is_dork:false},
+    {source:'naabu',source_id:'naabu',title:`Puerto abierto: ${host}:443`,url:`${host}:443`,category:'Servicio Expuesto',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:`Host: ${host} | Puerto: 443 | Demo`,detected:'',is_dork:false},
+    {source:'nuclei',source_id:'nuclei',title:`Nuclei: exposicion informativa en ${host}`,url:hostUrl,category:'Vulnerabilidad',category_class:'cat-leak',risk:'MEDIO',risk_class:'risk-medium',detail:'Template: demo | Severity: MEDIUM | Ejecuta backend para plantillas reales.',detected:'',is_dork:false},
+    {source:'LeakIX',source_id:'leakix',title:`LeakIX: superficie indexada para ${host}`,url:`https://leakix.net/search?page=0&q=${encodeURIComponent(host)}`,category:'Servicio Expuesto',category_class:'cat-cloud',risk:'MEDIO',risk_class:'risk-medium',detail:'Consulta demo de servicios expuestos indexados.',detected:'',is_dork:false},
+    {source:'HaveIBeenPwned',source_id:'hibp',title:`HIBP: dominio/correos vinculados a ${host}`,url:`https://haveibeenpwned.com/DomainSearch`,category:'Credenciales Filtradas',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:'Requiere API key para resultados reales de brechas.',detected:'',is_dork:false,is_secret:true},
+    {source:'Intelligence X',source_id:'intelx',title:`Intelligence X: documentos indexados de ${target}`,url:`https://intelx.io/?s=${q}`,category:'Investigacion Documental',category_class:'cat-repo',risk:'MEDIO',risk_class:'risk-medium',detail:'Busqueda demo de documentos, emails y artefactos historicos.',detected:'',is_dork:false},
+    {source:'Typosquatting',source_id:'typosquatting',title:`Dominio similar detectado: ${typoDomain}`,url:`https://${typoDomain}`,category:'Dominio Sospechoso',category_class:'cat-leak',risk:'ALTO',risk_class:'risk-high',detail:`Similitud alta con ${host} | Posible phishing o suplantacion.`,detected:'',is_dork:false},
+    {source:'Analisis de archivos',source_id:'file-analysis',title:`Archivo sensible: ${slug}_usuarios.csv`,url:`${slug}_usuarios.csv`,category:'Archivo sensible',category_class:'cat-leak',risk:'CRÍTICO',risk_class:'risk-critical',detail:`143 posibles identificadores, 87 correos y 12 menciones de ${target}. Demo hasta analizar archivos reales.`,detected:'',is_dork:false}
+  ];
+}
+
+async function runDemoScan(term, domain, modules){
   document.getElementById('btnScan').disabled = true;
   document.getElementById('btnStop').classList.add('show');
   document.getElementById('scanBox').classList.add('on');
@@ -2293,7 +2388,9 @@ async function runDemoScan(term, modules){
     logEl.appendChild(d); logEl.scrollTop = logEl.scrollHeight;
   };
 
+  const demoFindings = buildDemoData(term, domain);
   addLog(`Iniciando demo — término: "${term}"`, 'info');
+  addLog(`Dominio objetivo demo: ${domain}`, 'info');
   const ts = ()=>new Date().toLocaleTimeString('es-MX',{hour12:false});
 
   for(let i=0;i<modules.length;i++){
@@ -2305,7 +2402,7 @@ async function runDemoScan(term, modules){
     addLog(`Escaneando: ${mod}...`, 'info');
     await sleep(500);
 
-    const hit = demoData.find(d=>d.source_id===mod || d.source.toLowerCase().includes(mod));
+    const hit = demoFindings.find(d=>d.source_id===mod || d.source.toLowerCase().includes(mod));
     if(hit){
       const f = {...hit, detected: ts()};
       findings.push(f);
@@ -2358,7 +2455,7 @@ function closeModal(e){ if(e.target.id==='modalOv') document.getElementById('mod
 
 // ─── EXECUTIVE INTELLIGENCE ───
 function normalizeRisk(r){
-  const raw = String(r||'').toUpperCase();
+  const raw = stripAccents(String(r||'')).toUpperCase();
   if(raw.includes('CRIT')) return 'CRITICO';
   if(raw.includes('ALTO') || raw.includes('HIGH')) return 'ALTO';
   if(raw.includes('MEDIO') || raw.includes('MEDIUM')) return 'MEDIO';
@@ -2383,13 +2480,16 @@ function extractDomain(value){
 
 function rootDomain(domain){
   const parts = String(domain||'').toLowerCase().replace(/^www\./,'').split('.').filter(Boolean);
-  return parts.length <= 2 ? parts.join('.') : parts.slice(-2).join('.');
+  if(parts.length <= 2) return parts.join('.');
+  const suffix2 = parts.slice(-2).join('.');
+  const twoLevelSuffixes = new Set(['gob.mx','com.mx','org.mx','net.mx','edu.mx','gov.uk','co.uk','org.uk','com.br','com.ar','com.co']);
+  return twoLevelSuffixes.has(suffix2) ? parts.slice(-3).join('.') : parts.slice(-2).join('.');
 }
 
-function isOfficialDomain(domain, official='ine.mx'){
+function isOfficialDomain(domain, official=''){
   const d = String(domain||'').toLowerCase();
   const o = String(official||'').toLowerCase();
-  return d === o || d.endsWith('.'+o);
+  return !!(d && o && (d === o || d.endsWith('.'+o)));
 }
 
 function hashString(text){
@@ -2441,7 +2541,8 @@ function dashboardModel(){
   const bySeverity = ['CRITICO','ALTO','MEDIO','BAJO'].map(k=>({label:k, value:rows.filter(f=>normalizeRisk(f.risk)===k).length}));
   const byDay = countBy(rows, f=>dateKey(f.detected || f.first_detected));
   const domains = rows.map(f=>extractDomain(f.url)).filter(Boolean);
-  const suspicious = Array.from(new Set(domains.filter(d=>!isOfficialDomain(d,'ine.mx') && d.includes('.'))));
+  const officialDomain = normalizeDemoDomain(document.getElementById('searchDomain')?.value || '');
+  const suspicious = Array.from(new Set(domains.filter(d=>d.includes('.') && (!officialDomain || !isOfficialDomain(d, officialDomain)))));
   const closed = validated.filter(v=>['CONFIRMADO','FALSO POSITIVO'].includes(String(v.validation||'').toUpperCase())).length;
   const open = Math.max(rows.filter(f=>severityRank(f.risk)>=3 && !f.false_positive).length - closed, 0);
   return {
@@ -2546,11 +2647,12 @@ function keywordCounts(rows){
 }
 
 function reportPayload(){
+  const {term, domain} = getScanContext();
   return {
     title: document.getElementById('reportTitle')?.value || 'Reporte ejecutivo Dogui Ciberpatrullaje',
     classification: document.getElementById('reportClassification')?.value || 'Uso oficial exclusivo',
-    term: document.getElementById('searchTerm')?.value || 'INE',
-    domain: document.getElementById('searchDomain')?.value || 'ine.mx',
+    term: term || 'Objetivo no especificado',
+    domain: domain || 'Sin dominio especifico',
     generated_at: new Date().toISOString(),
     findings,
     validated,
@@ -2649,8 +2751,14 @@ function resetWatchlist(){
 
 // ─── TYPOSQUATTING ───
 function analyzeTypos(){
-  const target = document.getElementById('typoTarget').value.trim() || 'ine.mx';
-  const domains = document.getElementById('typoCandidates').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  const {domain} = getScanContext();
+  const target = normalizeDemoDomain(document.getElementById('typoTarget').value.trim() || domain);
+  if(!target){ showNotif('Escribe un dominio base para typosquatting','amber'); return; }
+  let domains = document.getElementById('typoCandidates').value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
+  if(!domains.length){
+    domains = demoTypoCandidates(target);
+    document.getElementById('typoCandidates').value = domains.join('\n');
+  }
   const riskWeight = {Alto:3, Medio:2, Bajo:1};
   const results = domains.map(d=>typoScore(target,d)).sort((a,b)=>(riskWeight[b.risk]||0)-(riskWeight[a.risk]||0) || b.score-a.score);
   document.getElementById('typoResults').innerHTML = miniTable(['Dominio','Similitud','Riesgo','Posible uso'], results.map(r=>[r.domain,r.similarity,r.risk,r.possible_use]));
@@ -2671,6 +2779,24 @@ function analyzeTypos(){
     findings = dedupeFindings(findings.concat(newFindings)).findings;
     refreshStatsFromFindings(); renderFindings(); syncValidationQueue(); updateVQBadge();
   }
+}
+
+function demoTypoCandidates(target){
+  const root = rootDomain(target);
+  const parts = root.split('.');
+  const label = parts[0] || slugFromTerm(target);
+  const suffix = parts.slice(1).join('.') || 'com';
+  const first = label[0] || 'x';
+  const rest = label.slice(1);
+  const swapped = label.length > 3 ? label.slice(0,1) + label[2] + label[1] + label.slice(3) : `${label}1`;
+  return Array.from(new Set([
+    `${first === 'l' ? 'i' : 'l'}${rest}.${suffix}`,
+    `${label}-${suffix.replace(/\./g,'-')}.com`,
+    `${label}mx.com`,
+    `${label}-seguro.com`,
+    `${label}login.com`,
+    `${swapped}.${suffix}`
+  ]));
 }
 
 function typoScore(target, candidate){
@@ -2936,6 +3062,24 @@ function loadJsonLocal(key, fallback){
   catch(e){ return JSON.parse(JSON.stringify(fallback)); }
 }
 function saveJsonLocal(key, value){ try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){} }
+function normalizeStoredWatchlist(value){
+  const text = JSON.stringify(value || {}).toLowerCase();
+  const legacy = text.includes('instituto nacional electoral') || text.includes('lista nominal') || text.includes('"electoral"');
+  if(legacy){
+    saveJsonLocal('cti_watchlist', DEFAULT_WATCHLIST);
+    return JSON.parse(JSON.stringify(DEFAULT_WATCHLIST));
+  }
+  return value && Object.keys(value).length ? value : JSON.parse(JSON.stringify(DEFAULT_WATCHLIST));
+}
+function normalizeStoredFpRules(value){
+  const rules = Array.isArray(value) ? value : [];
+  const legacy = rules.some(r=>String(r.value || '').toLowerCase() === 'ine.mx');
+  if(legacy){
+    saveJsonLocal('cti_fp_rules', DEFAULT_FP_RULES);
+    return JSON.parse(JSON.stringify(DEFAULT_FP_RULES));
+  }
+  return rules.length ? rules : JSON.parse(JSON.stringify(DEFAULT_FP_RULES));
+}
 function escAttr(s){ return String(s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
 function miniTable(headers, rows){
   if(!rows.length) return '<div class="vq-empty">Sin resultados</div>';

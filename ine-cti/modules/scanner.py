@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Dogui Ciberpatrullaje Scanner — Módulos de búsqueda adaptados de SpiderFoot + DarkSearch
-Uso: monitoreo OSINT defensivo de información del INE expuesta públicamente
+Uso: monitoreo OSINT defensivo de objetivos, dominios, marcas, usuarios o palabras clave
 """
 
 import csv
@@ -1139,6 +1139,9 @@ def scan_leakix(term, api_key=None):
 # ─────────────────────────────────────────────
 def scan_hibp(domain, api_key=None):
     results = []
+    domain = str(domain or "").strip()
+    if not domain:
+        return results
     if not api_key:
         # Sin API key solo podemos generar el dork
         url = f"https://haveibeenpwned.com/DomainSearch/{domain}"
