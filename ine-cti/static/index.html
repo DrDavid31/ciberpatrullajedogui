@@ -1658,14 +1658,18 @@ function setIntegrationStatus(id, msg, color='cyan'){
 }
 
 function findingStats(rows=findings){
-  return (rows || []).reduce((acc, item)=>{
+  const sourceIds = new Set();
+  const stats = (rows || []).reduce((acc, item)=>{
     acc.total++;
+    if(item.source_id || item.source) sourceIds.add(item.source_id || item.source);
     if(severityRank(item.risk) >= 3) acc.highCritical++;
     if(item.category_class === 'cat-repo') acc.repos++;
     if(item.category_class === 'cat-cloud') acc.cloud++;
     if(item.category_class === 'cat-dark') acc.darkweb++;
     return acc;
   }, {total:0, highCritical:0, repos:0, cloud:0, darkweb:0});
+  stats.sources = sourceIds.size;
+  return stats;
 }
 
 function applyStatsPanel(stats){
@@ -2035,14 +2039,15 @@ function loadDemoFindings(){
   if(isInvalidDateRange(dateFrom, dateTo)){ showNotif('Rango de fechas inválido','red'); return; }
   const ts = ()=>new Date().toLocaleTimeString('es-MX',{hour12:false});
   findings = dedupeFindings(buildDemoData(term, domain, dateFrom, dateTo).map(item=>({...item, detected:ts()}))).findings;
+  const stats = findingStats(findings);
   pendingValidation = [];
   lastStats = {
-    sources_scanned: new Set(findings.map(f=>f.source_id || f.source)).size,
-    total_findings: findings.length,
-    high_critical: findings.filter(f=>severityRank(f.risk)>=3).length,
-    repos: findings.filter(f=>f.category_class==='cat-repo').length,
-    cloud: findings.filter(f=>f.category_class==='cat-cloud').length,
-    darkweb: findings.filter(f=>f.category_class==='cat-dark').length,
+    sources_scanned: stats.sources,
+    total_findings: stats.total,
+    high_critical: stats.highCritical,
+    repos: stats.repos,
+    cloud: stats.cloud,
+    darkweb: stats.darkweb,
   };
   setText('sS', lastStats.sources_scanned);
   refreshStatsFromFindings();
@@ -2101,11 +2106,13 @@ async function stopScan(){
 
 // ─── POLLING ───
 function startPolling(){
+  stopPolling();
   pollTimer = setInterval(pollStatus, 1200);
 }
 
 function stopPolling(){
   if(pollTimer) clearInterval(pollTimer);
+  pollTimer = null;
 }
 
 async function pollStatus(){
@@ -2119,10 +2126,10 @@ async function pollStatus(){
 
     // Update progress
     document.getElementById('progFill').style.width  = status.progress+'%';
-    document.getElementById('scanPct').textContent   = status.progress+'%';
-    document.getElementById('scanLbl').textContent   = status.running
+    setText('scanPct', status.progress+'%');
+    setText('scanLbl', status.running
       ? 'ESCANEANDO: ' + (status.current_module||'').toUpperCase()
-      : 'COMPLETADO';
+      : (status.current_module || 'COMPLETADO').toUpperCase());
 
     // Update stats
     const s = status.stats || {};
@@ -2148,24 +2155,21 @@ async function pollStatus(){
     // Update findings
     findings = findData.findings || [];
     findings = dedupeFindings(findings).findings;
-    renderFindings();
-    syncValidationQueue();
-    updateVQBadge();
-    renderDashboard();
-    updateDedupePanel();
+    syncValidationQueue(false);
+    scheduleUiRefresh({findingsView:true, validation:true, dashboard:true, dedupe:true});
 
     if(!status.running){
       stopPolling();
       document.getElementById('btnScan').disabled = false;
       document.getElementById('btnStop').classList.remove('show');
-      document.getElementById('sysStatus').textContent = 'COMPLETADO';
+      setText('sysStatus', (status.current_module || 'COMPLETADO').toUpperCase());
       scheduleAutoScan();
     }
   } catch(e){
     stopPolling();
     document.getElementById('btnScan').disabled = false;
     document.getElementById('btnStop').classList.remove('show');
-    document.getElementById('sysStatus').textContent = backendOnline ? 'ERROR DE BACKEND' : 'MODO WEB DEMO';
+    setText('sysStatus', backendOnline ? 'ERROR DE BACKEND' : 'MODO WEB DEMO');
     showNotif(backendOnline ? 'No se pudo consultar el backend' : 'Backend no disponible; usa modo demo o inicia python app.py', 'amber');
   }
 }

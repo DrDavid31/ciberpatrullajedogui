@@ -5,10 +5,8 @@ Requiere instalar los binarios y tenerlos en PATH.
 """
 
 import json
-import os
 import shutil
 import subprocess
-import tempfile
 from datetime import datetime
 
 
@@ -34,6 +32,17 @@ def _missing(tool):
         "is_system": True,
         "is_negative": True,
     }]
+
+
+def _risk_class(risk):
+    value = str(risk or "").strip().upper()
+    if value in ("CRITICO", "CRÍTICO", "CRITICAL"):
+        return "risk-critical"
+    if value in ("ALTO", "HIGH"):
+        return "risk-high"
+    if value in ("MEDIO", "MEDIUM"):
+        return "risk-medium"
+    return "risk-low"
 
 
 def _run(cmd, timeout=PD_TIMEOUT, input_text=None):
@@ -106,6 +115,7 @@ def scan_httpx(target, limit=50, timeout=PD_TIMEOUT):
         status = item.get("status_code") or item.get("status-code") or ""
         title = item.get("title") or url
         tech = item.get("tech") or item.get("webserver") or ""
+        risk = "MEDIO" if status else "BAJO"
         findings.append({
             "source": "httpx",
             "source_id": "httpx",
@@ -113,8 +123,8 @@ def scan_httpx(target, limit=50, timeout=PD_TIMEOUT):
             "url": url if str(url).startswith(("http://", "https://")) else f"https://{url}",
             "category": "Servicio Expuesto",
             "category_class": "cat-cloud",
-            "risk": "MEDIO" if status else "BAJO",
-            "risk_class": "risk-medium",
+            "risk": risk,
+            "risk_class": _risk_class(risk),
             "detail": f"HTTP {status}" + (f" | Tech: {tech}" if tech else ""),
             "detected": _ts(),
             "is_dork": False,
@@ -142,6 +152,7 @@ def scan_naabu(host, ports="", limit=50, timeout=PD_TIMEOUT):
         port = item.get("port") or item.get("raw")
         if not port:
             continue
+        risk = "ALTO" if str(port) in ("21", "22", "23", "3389", "5900") else "MEDIO"
         findings.append({
             "source": "naabu",
             "source_id": "naabu",
@@ -149,8 +160,8 @@ def scan_naabu(host, ports="", limit=50, timeout=PD_TIMEOUT):
             "url": f"{target}:{port}",
             "category": "Servicio Expuesto",
             "category_class": "cat-cloud",
-            "risk": "ALTO" if str(port) in ("21", "22", "23", "3389", "5900") else "MEDIO",
-            "risk_class": "risk-high",
+            "risk": risk,
+            "risk_class": _risk_class(risk),
             "detail": f"Host: {target} | Puerto: {port}",
             "detected": _ts(),
             "is_dork": False,
@@ -181,7 +192,7 @@ def scan_nuclei(target, templates="", severity="", tags="", limit=50, timeout=PD
         info = item.get("info") or {}
         name = info.get("name") or item.get("template-id") or "Nuclei finding"
         sev = str(info.get("severity") or item.get("severity") or "info").upper()
-        risk = {"CRITICAL": "CRÍTICO", "HIGH": "ALTO", "MEDIUM": "MEDIO", "LOW": "BAJO"}.get(sev, "BAJO")
+        risk = {"CRITICAL": "CRITICO", "HIGH": "ALTO", "MEDIUM": "MEDIO", "LOW": "BAJO"}.get(sev, "BAJO")
         matched = item.get("matched-at") or item.get("host") or target
         findings.append({
             "source": "nuclei",
@@ -191,7 +202,7 @@ def scan_nuclei(target, templates="", severity="", tags="", limit=50, timeout=PD
             "category": "Vulnerabilidad",
             "category_class": "cat-leak",
             "risk": risk,
-            "risk_class": "risk-high" if risk in ("ALTO", "CRÍTICO") else "risk-medium",
+            "risk_class": _risk_class(risk),
             "detail": f"Template: {item.get('template-id', '')} | Severity: {sev}",
             "detected": _ts(),
             "is_dork": False,

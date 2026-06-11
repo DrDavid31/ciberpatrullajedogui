@@ -6,7 +6,7 @@
 echo ""
 echo "  DOGUI CIBERPATRULLAJE"
 echo ""
-echo "  v3.1 — Centro de inteligencia, monitoreo y respuesta digital"
+echo "  v3.2 — Centro de inteligencia, monitoreo y respuesta digital"
 echo "═══════════════════════════════════════════════════════════════"
 echo ""
 
