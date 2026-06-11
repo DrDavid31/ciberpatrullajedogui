@@ -1,4 +1,4 @@
-# Dogui Ciberpatrullaje v3.1
+# Dogui Ciberpatrullaje v3.2
 ## Centro de inteligencia, monitoreo y respuesta digital
 
 Sistema de ciberpatrullaje OSINT defensivo para detectar información sensible

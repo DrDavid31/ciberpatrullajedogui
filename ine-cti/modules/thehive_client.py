@@ -65,9 +65,18 @@ def _observable_from_finding(finding):
     return {"dataType": "other", "data": str(raw)[:500], "message": finding.get("detail", "")}
 
 
+def _severity_from_risk(risk):
+    value = str(risk or "").strip().upper().replace("Í", "I")
+    if value in ("CRITICO", "CRITICAL"):
+        return 3
+    if value in ("ALTO", "HIGH"):
+        return 2
+    return 1
+
+
 def create_alert(base_url, api_key, finding, org=None, verify_tls=True):
     title = finding.get("title") or "Dogui Ciberpatrullaje finding"
-    severity = 3 if finding.get("risk") in ("CRITICO", "CRÍTICO") else 2 if finding.get("risk") == "ALTO" else 1
+    severity = _severity_from_risk(finding.get("risk"))
     payload = {
         "title": title[:512],
         "description": finding.get("detail") or title,

@@ -2,7 +2,7 @@
 chcp 65001 > nul
 echo.
 echo  ═══════════════════════════════════════════════════════
-echo   DOGUI CIBERPATRULLAJE v3.1
+echo   DOGUI CIBERPATRULLAJE v3.2
 echo   Centro de inteligencia, monitoreo y respuesta digital
 echo  ═══════════════════════════════════════════════════════
 echo.

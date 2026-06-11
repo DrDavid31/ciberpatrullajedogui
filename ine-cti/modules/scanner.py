@@ -125,10 +125,10 @@ def scan_github(term, token=None, date_from=None, date_to=None):
                     "detected": ts(),
                     **date_meta(repo_date, "Fecha de actualizacion/push del repositorio", date_from, date_to),
                 })
-        elif r.status_code == 403:
-            results.append(_rate_limit_notice("GitHub"))
-        elif r.status_code == 422:
-            # Sin token solo permite búsquedas limitadas
+        elif r.status_code in (401, 403, 422):
+            # Sin token o con rate limit, deja una busqueda web verificable.
+            if r.status_code == 403:
+                results.append(_rate_limit_notice("GitHub"))
             results.append(_fallback_dork(
                 "GitHub",
                 term,

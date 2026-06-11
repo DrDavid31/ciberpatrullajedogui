@@ -10,6 +10,7 @@ import os
 import re
 import threading
 import time
+import unicodedata
 from datetime import datetime
 from urllib.parse import urlparse
 from flask import Flask, jsonify, request, send_from_directory, Response
@@ -93,10 +94,12 @@ from modules.intelligence import (
     export_xlsx,
     finding_signature,
     load_json,
+    normalize_risk,
     read_file_for_analysis,
     render_pdf,
     report_lines,
     save_json,
+    severity_rank,
 )
 
 app = Flask(__name__, static_folder="static")
@@ -147,6 +150,13 @@ KNOWN_TARGET_DOMAINS = {
     "unam": "unam.mx",
     "ipn": "ipn.mx",
 }
+
+DEFAULT_SCAN_MODULES = (
+    "github", "pastebin", "googledrive", "filerepos", "aws", "azure", "gcloud",
+    "ahmia", "darksearch", "onionsearch", "trufflehog", "gitleaks",
+    "socialanalyzer", "changedetection", "aleph", "subfinder", "httpx",
+    "naabu", "nuclei", "leakix", "hibp", "intelx",
+)
 
 
 def normalize_search_term(value):
@@ -236,6 +246,81 @@ def filter_findings_by_date(findings, date_from="", date_to=""):
     if not date_from and not date_to:
         return findings
     return [finding for finding in findings or [] if finding_in_date_range(finding, date_from, date_to)]
+
+
+def fold_text(value):
+    normalized = unicodedata.normalize("NFKD", str(value or ""))
+    return "".join(ch for ch in normalized if not unicodedata.combining(ch)).lower()
+
+
+def normalize_module_ids(value):
+    if isinstance(value, str):
+        candidates = [value]
+    elif isinstance(value, (list, tuple, set)):
+        candidates = value
+    else:
+        candidates = []
+    known = set(DEFAULT_SCAN_MODULES)
+    modules = []
+    seen = set()
+    for mid in (str(item or "").strip().lower() for item in candidates):
+        if mid in known and mid not in seen:
+            modules.append(mid)
+            seen.add(mid)
+    return modules
+
+
+def finding_category_flags(finding):
+    category_class = str(finding.get("category_class") or "").strip().lower()
+    category = fold_text(finding.get("category"))
+    return {
+        "repos": category_class == "cat-repo" or "repositorio" in category or "codigo" in category,
+        "cloud": category_class == "cat-cloud" or "cloud" in category or "storage" in category or "expuesto" in category,
+        "darkweb": category_class == "cat-dark" or "dark web" in category,
+        "leaks": category_class in ("cat-leak", "cat-paste") or any(
+            word in category for word in ("credencial", "leak", "filtrada", "pastebin")
+        ),
+    }
+
+
+def increment_stats_for_finding(finding):
+    scan_state["stats"]["total_findings"] += 1
+    if severity_rank(finding.get("risk")) >= 3:
+        scan_state["stats"]["high_critical"] += 1
+    flags = finding_category_flags(finding)
+    for key, enabled in flags.items():
+        if enabled:
+            scan_state["stats"][key] += 1
+
+
+def update_existing_finding(existing, incoming):
+    previous_rank = severity_rank(existing.get("risk"))
+    previous_flags = finding_category_flags(existing)
+    existing["duplicate_count"] = int(existing.get("duplicate_count") or 1) + 1
+    existing["last_detected"] = incoming.get("detected") or datetime.now().isoformat()
+    sources = set(existing.get("sources_seen") or [existing.get("source", "")])
+    if incoming.get("source"):
+        sources.add(incoming.get("source"))
+    existing["sources_seen"] = sorted(source for source in sources if source)
+
+    incoming_rank = severity_rank(incoming.get("risk"))
+    if incoming_rank > previous_rank:
+        existing["risk"] = incoming.get("risk")
+        existing["risk_class"] = incoming.get("risk_class", existing.get("risk_class"))
+
+    for field in (
+        "title", "detail", "url", "category", "category_class", "published_at",
+        "indexed_at", "source_date", "updated_at", "date_source", "date_status",
+    ):
+        if incoming.get(field) and not existing.get(field):
+            existing[field] = incoming.get(field)
+
+    if previous_rank < 3 <= severity_rank(existing.get("risk")):
+        scan_state["stats"]["high_critical"] += 1
+    next_flags = finding_category_flags(existing)
+    for key, enabled in next_flags.items():
+        if enabled and not previous_flags.get(key):
+            scan_state["stats"][key] += 1
 
 
 def as_bool(value):
@@ -395,7 +480,7 @@ def scan_summary_text(term="", domain=""):
     ]
     top = [
         finding for finding in scan_state.get("findings", [])
-        if finding.get("risk") in ("CRÍTICO", "CRITICO", "ALTO")
+        if severity_rank(finding.get("risk")) >= 3
         and not finding.get("is_system")
         and not finding.get("is_negative")
     ][:5]
@@ -435,38 +520,29 @@ def log(msg, level="info"):
 
 
 def add_findings(new_findings, module_type="repo"):
-    for f in new_findings:
-        if f.get("is_system"):
+    existing_by_key = {
+        (item.get("dedupe_key") or finding_signature(item)): item
+        for item in scan_state["findings"]
+        if item and not item.get("is_system")
+    }
+
+    for finding in new_findings or []:
+        if finding.get("is_system"):
             continue
-        key = f.get("dedupe_key") or finding_signature(f)
-        f["dedupe_key"] = key
-        existing = next((item for item in scan_state["findings"] if item.get("dedupe_key") == key), None)
+        key = finding.get("dedupe_key") or finding_signature(finding)
+        finding["dedupe_key"] = key
+        existing = existing_by_key.get(key)
         if existing:
-            existing["duplicate_count"] = int(existing.get("duplicate_count") or 1) + 1
-            existing["last_detected"] = f.get("detected") or datetime.now().isoformat()
-            sources = set(existing.get("sources_seen") or [existing.get("source", "")])
-            if f.get("source"):
-                sources.add(f.get("source"))
-            existing["sources_seen"] = sorted(s for s in sources if s)
+            update_existing_finding(existing, finding)
             log("Hallazgo ya existente. Se actualizo ultima fecha de deteccion.", "info")
             continue
-        f.setdefault("duplicate_count", 1)
-        f.setdefault("first_detected", f.get("detected") or datetime.now().isoformat())
-        f.setdefault("last_detected", f.get("detected") or f["first_detected"])
-        f.setdefault("sources_seen", [f.get("source", "")] if f.get("source") else [])
-        scan_state["findings"].append(f)
-        scan_state["stats"]["total_findings"] += 1
-        if f.get("risk") in ("ALTO", "CRÍTICO"):
-            scan_state["stats"]["high_critical"] += 1
-        cat = f.get("category", "")
-        if "Repositorio" in cat or "Código" in cat:
-            scan_state["stats"]["repos"] += 1
-        if "Cloud" in cat or "Expuesto" in cat:
-            scan_state["stats"]["cloud"] += 1
-        if "Dark Web" in cat:
-            scan_state["stats"]["darkweb"] += 1
-        if "Credencial" in cat or "Leak" in cat or "Filtrada" in cat:
-            scan_state["stats"]["leaks"] += 1
+        finding.setdefault("duplicate_count", 1)
+        finding.setdefault("first_detected", finding.get("detected") or datetime.now().isoformat())
+        finding.setdefault("last_detected", finding.get("detected") or finding["first_detected"])
+        finding.setdefault("sources_seen", [finding.get("source", "")] if finding.get("source") else [])
+        scan_state["findings"].append(finding)
+        existing_by_key[key] = finding
+        increment_stats_for_finding(finding)
 
 
 def run_scan(term, domain, active_modules, api_keys, date_from="", date_to=""):
@@ -488,6 +564,11 @@ def run_scan(term, domain, active_modules, api_keys, date_from="", date_to=""):
 
     if date_from or date_to:
         log(f"Filtro temporal: {date_from or 'sin inicio'} a {date_to or 'sin fin'}", "info")
+
+    changedetection_cfg = changedetection_config(api_keys)
+    aleph_cfg = aleph_config(api_keys)
+    pd_cfg = projectdiscovery_config(api_keys)
+    pd_target = pd_cfg["target"] or domain
 
     modules = [
         ("github",      "GitHub / GitLab",         lambda: scan_github(term, api_keys.get("github"), date_from, date_to)),
@@ -538,54 +619,60 @@ def run_scan(term, domain, active_modules, api_keys, date_from="", date_to=""):
             api_keys.get("social_limit", 30),
         )),
         ("changedetection", "changedetection.io",   lambda: changedetection_scan_watches(
-            changedetection_config(api_keys)["base_url"],
-            changedetection_config(api_keys)["api_key"],
-            changedetection_config(api_keys)["tag"],
-            changedetection_config(api_keys)["recheck"],
-            changedetection_config(api_keys)["limit"],
-            changedetection_config(api_keys)["verify_tls"],
+            changedetection_cfg["base_url"],
+            changedetection_cfg["api_key"],
+            changedetection_cfg["tag"],
+            changedetection_cfg["recheck"],
+            changedetection_cfg["limit"],
+            changedetection_cfg["verify_tls"],
         )),
         ("aleph",       "Aleph",                    lambda: aleph_search_entities(
-            aleph_config(api_keys)["base_url"],
+            aleph_cfg["base_url"],
             term,
-            aleph_config(api_keys)["api_key"],
-            aleph_config(api_keys)["schemata"],
-            aleph_config(api_keys)["limit"],
-            aleph_config(api_keys)["verify_tls"],
+            aleph_cfg["api_key"],
+            aleph_cfg["schemata"],
+            aleph_cfg["limit"],
+            aleph_cfg["verify_tls"],
         )),
         ("subfinder",   "ProjectDiscovery subfinder", lambda: pd_scan_subfinder(
-            projectdiscovery_config(api_keys)["target"] or domain,
-            projectdiscovery_config(api_keys)["limit"],
-            projectdiscovery_config(api_keys)["timeout"],
+            pd_target,
+            pd_cfg["limit"],
+            pd_cfg["timeout"],
         )),
         ("httpx",       "ProjectDiscovery httpx", lambda: pd_scan_httpx(
-            projectdiscovery_config(api_keys)["target"] or domain,
-            projectdiscovery_config(api_keys)["limit"],
-            projectdiscovery_config(api_keys)["timeout"],
+            pd_target,
+            pd_cfg["limit"],
+            pd_cfg["timeout"],
         )),
         ("naabu",       "ProjectDiscovery naabu", lambda: pd_scan_naabu(
-            projectdiscovery_config(api_keys)["target"] or domain,
-            projectdiscovery_config(api_keys)["ports"],
-            projectdiscovery_config(api_keys)["limit"],
-            projectdiscovery_config(api_keys)["timeout"],
+            pd_target,
+            pd_cfg["ports"],
+            pd_cfg["limit"],
+            pd_cfg["timeout"],
         )),
         ("nuclei",      "ProjectDiscovery nuclei", lambda: pd_scan_nuclei(
-            projectdiscovery_config(api_keys)["target"] or domain,
-            projectdiscovery_config(api_keys)["nuclei_templates"],
-            projectdiscovery_config(api_keys)["nuclei_severity"],
-            projectdiscovery_config(api_keys)["nuclei_tags"],
-            projectdiscovery_config(api_keys)["limit"],
-            projectdiscovery_config(api_keys)["timeout"],
+            pd_target,
+            pd_cfg["nuclei_templates"],
+            pd_cfg["nuclei_severity"],
+            pd_cfg["nuclei_tags"],
+            pd_cfg["limit"],
+            pd_cfg["timeout"],
         )),
         ("leakix",      "LeakIX",                   lambda: scan_leakix(term, api_keys.get("leakix"), date_from, date_to)),
         ("hibp",        "HaveIBeenPwned",           lambda: scan_hibp(domain, api_keys.get("hibp"))),
         ("intelx",      "Intelligence X",           lambda: scan_intelx(term, api_keys.get("intelx"), date_from, date_to)),
     ]
 
-    active = [(mid, mlabel, mfn) for mid, mlabel, mfn in modules if mid in active_modules]
+    active_ids = set(normalize_module_ids(active_modules))
+    active = [(mid, mlabel, mfn) for mid, mlabel, mfn in modules if mid in active_ids]
     total = len(active)
+    canceled = False
 
     for i, (mid, mlabel, mfn) in enumerate(active):
+        if not scan_state["running"]:
+            canceled = True
+            log("Escaneo cancelado por el usuario", "warn")
+            break
         scan_state["current_module"] = mlabel
         scan_state["progress"] = int((i / total) * 100)
         scan_state["stats"]["sources_scanned"] = i + 1
@@ -605,10 +692,13 @@ def run_scan(term, domain, active_modules, api_keys, date_from="", date_to=""):
         time.sleep(0.5)
 
     scan_state["progress"] = 100
-    scan_state["current_module"] = "Completado"
+    scan_state["current_module"] = "Cancelado" if canceled else "Completado"
     scan_state["running"] = False
     scan_state["finished_at"] = datetime.now().isoformat()
-    log(f"Escaneo finalizado — {scan_state['stats']['total_findings']} hallazgos totales", "ok")
+    if canceled:
+        log(f"Escaneo cancelado — {scan_state['stats']['total_findings']} hallazgos acumulados", "warn")
+    else:
+        log(f"Escaneo finalizado — {scan_state['stats']['total_findings']} hallazgos totales", "ok")
 
     # Guardar resultados en disco
     try:
@@ -653,14 +743,12 @@ def start_scan():
     date_to        = normalize_date(data.get("date_to"))
     if date_from and date_to and date_from > date_to:
         return jsonify({"error": "Rango de fechas invalido: date_from no puede ser mayor que date_to"}), 400
-    active_modules = data.get("modules", ["github","pastebin","googledrive",
-                                           "filerepos","aws","azure","gcloud",
-                                           "ahmia","darksearch","onionsearch",
-                                           "trufflehog","gitleaks",
-                                           "socialanalyzer","changedetection",
-                                           "aleph","subfinder","httpx",
-                                           "naabu","nuclei","leakix","hibp","intelx"])
-    api_keys       = data.get("api_keys", {})
+    active_modules = normalize_module_ids(data.get("modules", DEFAULT_SCAN_MODULES))
+    if not active_modules:
+        return jsonify({"error": "Selecciona al menos un modulo valido"}), 400
+    api_keys = data.get("api_keys", {})
+    if not isinstance(api_keys, dict):
+        api_keys = {}
 
     t = threading.Thread(target=run_scan, args=(term, domain, active_modules, api_keys, date_from, date_to), daemon=True)
     t.start()
@@ -684,17 +772,20 @@ def scan_status():
 
 @app.route("/api/scan/findings")
 def get_findings():
-    risk_filter = request.args.get("risk", "all")
+    raw_risk_filter = request.args.get("risk", "all")
+    risk_filter = normalize_risk(raw_risk_filter)
     findings = scan_state["findings"]
-    if risk_filter != "all":
-        findings = [f for f in findings if f.get("risk") == risk_filter]
+    if str(raw_risk_filter).lower() != "all":
+        findings = [f for f in findings if normalize_risk(f.get("risk")) == risk_filter]
     return jsonify({"findings": findings, "total": len(findings)})
 
 
 @app.route("/api/scan/stop", methods=["POST"])
 def stop_scan():
-    scan_state["running"] = False
-    log("Escaneo detenido manualmente", "warn")
+    if scan_state["running"]:
+        scan_state["running"] = False
+        scan_state["current_module"] = "Cancelando"
+        log("Escaneo detenido manualmente", "warn")
     return jsonify({"status": "stopped"})
 
 
